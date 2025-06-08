@@ -1,4 +1,3 @@
-
  ---
 
 <div align="center">    
@@ -20,21 +19,6 @@
 - [Contact](#contact) -->
 <!-- - [Citation](#citation) -->
 
-
-## Ngo-Setup steps:
-
-```bash
-conda create -n rotta python=3.9
-conda activate rotta
-
-
-pip install torch torchvision torchaudio --pre --index-url https://download.pytorch.org/whl/nightly/cu126
-
-pip install numpy scipy scikit-learn matplotlib
-
-pip install -r requirements.txt
-
-```
 
 
 ## Overview
