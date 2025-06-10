@@ -1,0 +1,32 @@
+# Đường dẫn dữ liệu
+DATA:
+  CHEXPERT_PATH: "/path/to/your/chexpert/dataset/"
+  VINDR_PATH: "/path/to/your/vindr-cxr/dataset/"
+  CHEXPERT_TRAIN_CSV: "CheXpert-v1.0-small/train.csv"
+  CHEXPERT_TEST_CSV: "CheXpert-v1.0-small/valid.csv" # Dùng tập valid của CheXpert làm tập test
+  VINDR_TEST_CSV: "annotations/image_labels_test.csv"
+
+# Các lớp bệnh chung (giả định đã ánh xạ nhãn)
+# Đây là 5 lớp phổ biến có trong cả CheXpert và VinDr-CXR
+COMMON_DISEASES:
+  - "Cardiomegaly"         # Tim to
+  - "Edema"                # Phù nề
+  - "Consolidation"        # Đông đặc
+  - "Atelectasis"          # Xẹp phổi
+  - "Pleural Effusion"     # Tràn dịch màng phổi
+
+# Cấu hình mô hình
+MODEL:
+  ARCH: "resnet50"           # Kiến trúc mô hình
+  PRETRAINED_ON: "cifar100" # Tải trọng số từ CIFAR-100 (sẽ thay bằng ImageNet vì phù hợp hơn)
+  NUM_CLASSES: 5             # Số lớp bệnh chung
+
+# Cấu hình huấn luyện
+TRAINING:
+  DEVICE: "cuda"
+  EPOCHS: 10
+  BATCH_SIZE: 32
+  LEARNING_RATE: 0.001
+
+# Thư mục lưu kết quả
+OUTPUT_DIR: "./results/"
