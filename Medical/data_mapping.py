@@ -5,15 +5,13 @@ import pandas as pd
 # ==============================================================================
 # Chọn 5 bệnh lý phổ biến và nhất quán nhất
 COMMON_DISEASES = [
+    'No Finding',
     'Atelectasis',
     'Cardiomegaly',
     'Consolidation',
     'Pleural Effusion',
     'Pneumothorax'
 ]
-
-# Thêm nhãn 'No Finding' vào danh sách cuối cùng
-FINAL_LABEL_SET = ['No Finding'] + COMMON_DISEASES
 
 
 # ==============================================================================
@@ -24,15 +22,15 @@ def map_chexpert_labels(df_raw):
     """
     Ánh xạ nhãn cho bộ dữ liệu CheXpert.
     - Xử lý giá trị không chắc chắn (-1).
-    - Giữ lại các cột trong FINAL_LABEL_SET.
+    - Giữ lại các cột trong COMMON_DISEASES.
     """
     # CheXpert đã có sẵn tất cả các cột cần thiết với tên chuẩn
     # Chỉ cần xử lý các giá trị không chắc chắn (-1.0)
     
-    df_mapped = df_raw[['Path'] + FINAL_LABEL_SET].copy()
+    df_mapped = df_raw[['Path'] + COMMON_DISEASES].copy()
     df_mapped = df_mapped.fillna(0) # Coi NaN là 0
 
-    for col in FINAL_LABEL_SET:
+    for col in COMMON_DISEASES:
         if col in df_mapped.columns:
             # Chiến lược phổ biến: Coi "không chắc chắn" là "dương tính" để không bỏ lỡ bệnh
             # Hoặc bạn có thể coi là 0: df_mapped[col] = df_mapped[col].replace(-1.0, 0)
@@ -78,13 +76,13 @@ def map_vindr_labels(df_raw):
     # Một ảnh là 'No Finding' nếu tổng các bệnh trong COMMON_DISEASES bằng 0
     df_wide['No Finding'] = (df_wide[COMMON_DISEASES].sum(axis=1) == 0).astype(int)
     
-    # Đảm bảo tất cả các cột trong FINAL_LABEL_SET đều tồn tại
-    for label in FINAL_LABEL_SET:
+    # Đảm bảo tất cả các cột trong COMMON_DISEASES đều tồn tại
+    for label in COMMON_DISEASES:
         if label not in df_wide.columns:
             df_wide[label] = 0
 
     # Giữ lại các cột cần thiết theo đúng thứ tự
-    df_mapped = df_wide[['image_id'] + FINAL_LABEL_SET].copy()
+    df_mapped = df_wide[['image_id'] + COMMON_DISEASES].copy()
     
     return df_mapped
 
@@ -110,7 +108,7 @@ def map_chestxray14_labels(df_raw):
     df_raw['No Finding'] = df_raw['labels'].apply(lambda x: 1 if 'No Finding' in x else 0)
     
     # Giữ lại các cột cần thiết
-    df_mapped = df_raw[['Image Index'] + FINAL_LABEL_SET].copy()
+    df_mapped = df_raw[['Image Index'] + COMMON_DISEASES].copy()
     # Đổi tên cột 'Image Index' thành 'image_id' cho nhất quán
     df_mapped.rename(columns={'Image Index': 'image_id'}, inplace=True)
     
@@ -161,7 +159,7 @@ def map_padchest_labels(df_raw):
                        how='left').fillna(0)
     df_wide = df_wide.drop_duplicates(subset=['ImageID'])
                        
-    df_mapped = df_wide[['ImageID'] + FINAL_LABEL_SET].copy()
+    df_mapped = df_wide[['ImageID'] + COMMON_DISEASES].copy()
     df_mapped.rename(columns={'ImageID': 'image_id'}, inplace=True)
 
     return df_mapped

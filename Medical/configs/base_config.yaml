@@ -1,8 +1,8 @@
 # Đường dẫn dữ liệu
 DATA:
-  CHEXPERT_PATH: "../Medical/datasets/"
-  CHEXPERT_TRAIN_CSV: "CheXpert-v1.0-small/train.csv"
-  CHEXPERT_TEST_CSV: "CheXpert-v1.0-small/valid.csv" # Dùng tập valid của CheXpert làm tập test
+  CHEXPERT_PATH: "../Medical/datasets/CheXpert-v1.0-small"
+  CHEXPERT_TRAIN_CSV: "train.csv"
+  CHEXPERT_TEST_CSV: "valid.csv" # Dùng tập valid của CheXpert làm tập test
 
   VINDR_PATH: "../Medical/datasets/vinbigdata-chest-xray"
   VINDR_EVAL_CSV: "train.csv"
@@ -15,12 +15,12 @@ DATA:
 # Các lớp bệnh chung (giả định đã ánh xạ nhãn)
 # Đây là 5 lớp phổ biến có trong cả CheXpert và VinDr-CXR
 COMMON_DISEASES:
-  - "Atelectasis"
-  - "Cardiomegaly"
-  - "Consolidation"
-  - "Pleural Effusion"
-  - "Pneumothorax"
-  - "Nodule/Mass"
+    - 'Atelectasis'
+    - 'Cardiomegaly'
+    - 'Consolidation'
+    - 'Pleural Effusion'
+    - 'Pneumothorax'
+    - 'No Finding'
 
 # Cấu hình mô hình
 MODEL:
@@ -30,7 +30,7 @@ MODEL:
 # Cấu hình huấn luyện
 TRAINING:
   DEVICE: "cuda"
-  EPOCHS: 20
+  EPOCHS: 5
   BATCH_SIZE: 32
   LEARNING_RATE: 0.001
 
