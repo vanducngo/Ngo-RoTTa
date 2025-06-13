@@ -30,7 +30,7 @@ MODEL:
 # Cấu hình huấn luyện
 TRAINING:
   DEVICE: "cuda"
-  EPOCHS: 10
+  EPOCHS: 20
   BATCH_SIZE: 32
   LEARNING_RATE: 0.001
 
