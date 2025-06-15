@@ -12,7 +12,7 @@ def fine_tune(cfg, model, train_loader, device):
     
     # Dùng Binary Cross Entropy cho bài toán đa nhãn
     criterion = nn.BCELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=cfg.TRAINING.LEARNING_RATE)
+    optimizer = torch.optim.Adam(model.parameters(), lr=cfg.TRAINING.LEARNING_RATE, weight_decay=cfg.TRAINING.WEIGHT_DECAY)
     
     for epoch in range(cfg.TRAINING.EPOCHS):
         running_loss = 0.0

@@ -21,6 +21,7 @@ def get_model(cfg):
     # để phù hợp với số lớp bệnh của chúng ta.
     num_ftrs = model.fc.in_features
     model.fc = nn.Sequential(
+        nn.Dropout(p=0.5), # Tỷ lệ dropout, 0.5 là giá trị phổ biến
         nn.Linear(num_ftrs, cfg.MODEL.NUM_CLASSES),
         nn.Sigmoid() # Dùng Sigmoid cho bài toán đa nhãn (multi-label)
     )
