@@ -24,15 +24,24 @@ COMMON_DISEASES:
 
 # Cấu hình mô hình
 MODEL:
-  ARCH: "resnet50"           # Kiến trúc mô hình
+  ARCH: "resnet18"           # Kiến trúc mô hình
   NUM_CLASSES: 6             # Số lớp bệnh chung
 
 # Cấu hình huấn luyện
 TRAINING:
   DEVICE: "cuda"
-  EPOCHS: 10
+  EPOCHS: 50             # Đặt số epoch lớn, early stopping sẽ quyết định
   BATCH_SIZE: 32
-  LEARNING_RATE: 0.001
+  LEARNING_RATE: 0.0001  # Giảm learning rate ban đầu
+  WEIGHT_DECAY: 1e-5     # Thêm weight decay
+  
+  # Cải tiến mới
+  VALIDATION_SPLIT: 0.15 # Tỷ lệ dữ liệu dùng cho validation
+  EARLY_STOPPING_PATIENCE: 5 # Số epoch kiên nhẫn trước khi dừng
+  
+  # Chọn 1 trong 2 hoặc cả hai là False
+  USE_WEIGHTED_LOSS: True     # Dùng trọng số cho hàm loss
+  USE_WEIGHTED_SAMPLER: False # Dùng sampler để cân bằng batch
 
 # Thư mục lưu kết quả
 OUTPUT_DIR: "./results/"
