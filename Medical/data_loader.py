@@ -49,6 +49,7 @@ class MultiSourceDataset(Dataset):
                                     cfg.DATA.CHEXPERT_TRAIN_CSV if mode == 'train' else cfg.DATA.CHEXPERT_TEST_CSV)
             raw_df = pd.read_csv(csv_path)
             self.df = map_chexpert_labels(raw_df)
+            # self.df = pd.read_csv(csv_path)
             self.root_dir = cfg.DATA.CHEXPERT_PATH
             self.image_col = 'Path'
             self.path_prefix = '' # CheXpert đã có đường dẫn đầy đủ
@@ -118,6 +119,7 @@ class MultiSourceDataset(Dataset):
         if self.transform:
             image = self.transform(image)
             
+        # print('VanDucNgo', labels)
         return image, labels
 
 # Hàm helper để bỏ qua các mẫu bị lỗi
@@ -139,7 +141,7 @@ def get_data_loaders(cfg):
     # Nguồn: CheXpert
     train_dataset = MultiSourceDataset(cfg, dataset_name='chexpert', mode='train', transform=transform)
     # Lấy subset để train nhanh hơn
-    train_subset = torch.utils.data.Subset(train_dataset, range(len(train_dataset) // 10))
+    train_subset = torch.utils.data.Subset(train_dataset, range(len(train_dataset)))
     train_loader = DataLoader(train_subset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=True, collate_fn=collate_fn, num_workers=4)
     
     chexpert_test_dataset = MultiSourceDataset(cfg, dataset_name='chexpert', mode='test', transform=transform)
@@ -147,8 +149,9 @@ def get_data_loaders(cfg):
     
     # Đích 1: VinDr-CXR (đánh giá trên tập test)
     # Sử dụng mode='test' để tự động chọn file test từ config
-    vindr_test_dataset = MultiSourceDataset(cfg, dataset_name='vindr', mode='test', transform=transform)
-    vindr_test_loader = DataLoader(vindr_test_dataset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=False, collate_fn=collate_fn, num_workers=4)
+    # vindr_test_dataset = MultiSourceDataset(cfg, dataset_name='vindr', mode='test', transform=transform)
+    # vindr_test_loader = DataLoader(vindr_test_dataset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=False, collate_fn=collate_fn, num_workers=4)
+    vindr_test_loader = None
     
     # Đích 2: ChestX-ray14
     # (Bạn có thể thêm vào đây nếu muốn kiểm tra trên cả 3)

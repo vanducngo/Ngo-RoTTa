@@ -21,12 +21,26 @@ def fine_tune(cfg, model, train_loader, device):
         for images, labels in pbar:
             images, labels = images.to(device), labels.to(device)
             
+            # print ('Label:', labels)
+            # if torch.isnan(images).any() or torch.isinf(images).any():
+            #     print("NaN or Inf found in input images")
+            # if torch.isnan(labels).any() or torch.isinf(labels).any():
+            #     print("NaN or Inf found in labels")
+
             optimizer.zero_grad()
             
             outputs = model(images)
+
+            if torch.isnan(outputs).any() or torch.isinf(outputs).any():
+                print("NaN or Inf found in model outputs")          
+
             loss = criterion(outputs, labels)
             
             loss.backward()
+
+            if torch.isnan(loss).any() or torch.isinf(loss).any():
+                print("NaN or Inf found in loss")
+
             optimizer.step()
             
             running_loss += loss.item()

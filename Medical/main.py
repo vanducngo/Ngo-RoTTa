@@ -49,9 +49,9 @@ def main(cfg):
         print(f"CheXpert Test Mean AUC: {chexpert_auc:.4f}")
     
     # Đánh giá trên tập test của VinDr-CXR (Out-of-Domain Performance)
-    print("\nEvaluating on VinDr-CXR test set (Out-of-Domain)...")
-    vindr_auc = evaluate(model, vindr_test_loader, device)
-    print(f"VinDr-CXR Test Mean AUC: {vindr_auc:.4f}")
+    # print("\nEvaluating on VinDr-CXR test set (Out-of-Domain)...")
+    # vindr_auc = evaluate(model, vindr_test_loader, device)
+    # print(f"VinDr-CXR Test Mean AUC: {vindr_auc:.4f}")
 
     '''
     # Bước 5: So sánh và đánh giá Domain Shift
