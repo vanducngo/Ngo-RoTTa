@@ -47,9 +47,9 @@ class MultiSourceDataset(Dataset):
         if self.dataset_name == 'chexpert':
             csv_path = os.path.join(cfg.DATA.CHEXPERT_PATH, 
                                     cfg.DATA.CHEXPERT_TRAIN_CSV if mode == 'train' else cfg.DATA.CHEXPERT_TEST_CSV)
-            # raw_df = pd.read_csv(csv_path)
-            # self.df = map_chexpert_labels(raw_df)
-            self.df = pd.read_csv(csv_path)
+            raw_df = pd.read_csv(csv_path)
+            self.df = map_chexpert_labels(raw_df)
+            # self.df = pd.read_csv(csv_path)
             self.root_dir = cfg.DATA.CHEXPERT_PATH
             self.image_col = 'Path'
             self.path_prefix = '' # CheXpert đã có đường dẫn đầy đủ
@@ -119,6 +119,7 @@ class MultiSourceDataset(Dataset):
         if self.transform:
             image = self.transform(image)
             
+        # print('VanDucNgo', labels)
         return image, labels
 
 # Hàm helper để bỏ qua các mẫu bị lỗi
