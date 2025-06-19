@@ -14,7 +14,7 @@ from tqdm import tqdm
 # ==============================================================================
 
 # ----- BẠN CẦN THAY ĐỔI CÁC ĐƯỜNG DẪN NÀY -----
-CHEXPERT_PATH = "../datasets/CheXpert-v1.0-small" # Đường dẫn đến bộ dữ liệu gốc
+CHEXPERT_PATH = "./datasets/CheXpert-v1.0-small" # Đường dẫn đến bộ dữ liệu gốc
 TEST_CSV_FILENAME = "valid.csv" # Dùng tập valid gốc để test
 # -----------------------------------------------
 
