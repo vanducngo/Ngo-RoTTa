@@ -34,6 +34,9 @@ TRAINING:
   BATCH_SIZE: 32
   LEARNING_RATE: 0.0001
   WEIGHT_DECAY: 1e-5 # Một giá trị khởi đầu tốt
+  EARLY_STOPPING_PATIENCE: 5 
+  USE_WEIGHTED_LOSS: True
+  USE_WEIGHTED_SAMPLER: False
 
 # Thư mục lưu kết quả
 OUTPUT_DIR: "./results/"
