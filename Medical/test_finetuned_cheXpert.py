@@ -8,6 +8,9 @@ from sklearn.metrics import roc_auc_score
 from PIL import Image
 import os
 from tqdm import tqdm
+from omegaconf import OmegaConf
+
+from models import get_model
 
 # ==============================================================================
 # PHẦN 1: CẤU HÌNH VÀ ĐỊNH NGHĨA
@@ -15,7 +18,7 @@ from tqdm import tqdm
 
 # ----- BẠN CẦN THAY ĐỔI CÁC ĐƯỜNG DẪN NÀY -----
 CHEXPERT_PATH = "./datasets/CheXpert-v1.0-small" # Đường dẫn đến bộ dữ liệu gốc
-FINETUNED_MODEL_PATH = "./results/resnet18_finetuned.pth"
+FINETUNED_MODEL_PATH = "./results/finetuned_model.pth"
 TEST_CSV_FILENAME = "valid.csv" # Dùng tập valid gốc để test
 # -----------------------------------------------
 
@@ -33,23 +36,19 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # ==============================================================================
 
 def get_pretrained_model(num_classes, model_path):
-    """
-    Tải kiến trúc ResNet18, điều chỉnh lớp cuối, và tải trọng số đã fine-tune.
-    """
-    print(f">>> Loading model architecture (ResNet-18)...")
-    # Tải kiến trúc mà không cần trọng số pre-trained vì chúng ta sẽ ghi đè nó
-    model = models.resnet18(weights=None) 
-
-    # Thay thế lớp phân loại cuối cùng cho khớp
-    num_ftrs = model.fc.in_features
-    model.fc = nn.Linear(num_ftrs, num_classes)
-    
     print(f"Loading fine-tuned weights from: {model_path}")
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found at {model_path}. Please run the training script first.")
-        
-    # Tải trọng số đã lưu
-    model.load_state_dict(torch.load(model_path, map_location=DEVICE))
+    
+    print(f"Found fine-tuned model at {model_path}")
+    # Step 1: Load the pre-trained model architecture
+    cfg = OmegaConf.load('configs/base_config.yaml')
+    device = torch.device(cfg.TRAINING.DEVICE if torch.cuda.is_available() else "cpu")
+    model = get_model(cfg)
+    # Load the fine-tuned weights
+    model.load_state_dict(torch.load(model_path))
+    model.to(device)
+    print(f"Loaded fine-tuned model from {model_path}")
     
     print("Fine-tuned model loaded successfully.")
     return model
