@@ -8,6 +8,9 @@ from sklearn.metrics import roc_auc_score
 from PIL import Image
 import os
 from tqdm import tqdm
+from omegaconf import OmegaConf
+
+from models import get_model
 
 # ==============================================================================
 # PHẦN 1: CẤU HÌNH VÀ ĐỊNH NGHĨA
@@ -32,19 +35,11 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # ==============================================================================
 
 def get_pretrained_model(num_classes):
-    """
-    Tải mô hình ResNet18 pre-trained và điều chỉnh lớp cuối cùng.
-    """
-    print(">>> Loading pre-trained ResNet-18 model...")
-    # Tải mô hình với trọng số tốt nhất hiện có trên ImageNet-1K
-    weights = models.ResNet18_Weights.IMAGENET1K_V1
-    model = models.resnet18(weights=weights)
-
-    # Thay thế lớp phân loại cuối cùng
-    num_ftrs = model.fc.in_features
-    model.fc = nn.Linear(num_ftrs, num_classes)
-    
-    print(f"Model adapted for {num_classes} classes.")
+    cfg = OmegaConf.load('configs/base_config.yaml')
+    device = torch.device(cfg.TRAINING.DEVICE if torch.cuda.is_available() else "cpu")
+    model = get_model(cfg)
+    model.to(device)    
+    print("Fine-tuned model loaded successfully.")
     return model
 
 # ==============================================================================

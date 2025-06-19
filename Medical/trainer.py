@@ -7,9 +7,10 @@ import numpy as np
 import copy
 import wandb
 from omegaconf import OmegaConf
+import os
 
 # Giả định data_mapping.py đã được import
-from data_mapping import FINAL_LABEL_SET
+from data_mapping import COMMON_DISEASES as FINAL_LABEL_SET
 
 def evaluate(model, data_loader, device, criterion):
     """
@@ -73,7 +74,7 @@ def fine_tune(cfg, model, train_loader, valid_loader, device, class_weights=None
     # Sử dụng BCEWithLogitsLoss để ổn định hơn
     criterion = nn.BCEWithLogitsLoss(pos_weight=class_weights)
     optimizer = optim.Adam(model.parameters(), lr=cfg.TRAINING.LEARNING_RATE, weight_decay=cfg.TRAINING.WEIGHT_DECAY)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=3, verbose=True)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=3)
     
     best_auc = 0.0
     best_model_state = None

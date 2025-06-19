@@ -18,7 +18,7 @@ from models import get_model
 
 # ----- BẠN CẦN THAY ĐỔI CÁC ĐƯỜNG DẪN NÀY -----
 CHEXPERT_PATH = "./datasets/CheXpert-v1.0-small" # Đường dẫn đến bộ dữ liệu gốc
-FINETUNED_MODEL_PATH = "./results/finetuned_model.pth"
+FINETUNED_MODEL_PATH = "./results/finetuned_model_75.pth"
 TEST_CSV_FILENAME = "valid.csv" # Dùng tập valid gốc để test
 # -----------------------------------------------
 

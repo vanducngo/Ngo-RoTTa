@@ -33,7 +33,7 @@ def main(cfg):
         model = get_model(cfg)
         
         # Bước 2: Fine-tune mô hình trên CheXpert
-        model = fine_tune(cfg, model, train_loader, device)
+        model = fine_tune(cfg, model, train_loader, chexpert_test_loader, device)
         
         # Lưu lại model đã fine-tune
         model_save_path = os.path.join(cfg.OUTPUT_DIR, "finetuned_model.pth")

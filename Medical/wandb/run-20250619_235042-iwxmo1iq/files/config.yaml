@@ -1,0 +1,59 @@
+_wandb:
+    value:
+        cli_version: 0.20.1
+        m: []
+        python_version: 3.9.23
+        t:
+            "1":
+                - 1
+                - 5
+                - 41
+                - 53
+            "2":
+                - 1
+                - 5
+                - 41
+                - 53
+            "3":
+                - 1
+                - 13
+                - 16
+                - 55
+            "4": 3.9.23
+            "5": 0.20.1
+            "12": 0.20.1
+            "13": linux-x86_64
+COMMON_DISEASES:
+    value:
+        - Atelectasis
+        - Cardiomegaly
+        - Consolidation
+        - Pleural Effusion
+        - Pneumothorax
+        - No Finding
+DATA:
+    value:
+        CHESTXRAY14_CSV: Data_Entry_2017.csv
+        CHESTXRAY14_PATH: /path/to/your/chestxray14/
+        CHEXPERT_PATH: ../Medical/datasets/CheXpert-v1.0-small
+        CHEXPERT_TEST_CSV: valid.csv
+        CHEXPERT_TRAIN_CSV: train.csv
+        VINDR_EVAL_CSV: train.csv
+        VINDR_IMAGE_DIR: train
+        VINDR_PATH: ../Medical/datasets/vinbigdata-chest-xray
+MODEL:
+    value:
+        ARCH: resnet50
+        NUM_CLASSES: 6
+OUTPUT_DIR:
+    value: ./results/
+TRAINING:
+    value:
+        BATCH_SIZE: 32
+        DEVICE: cuda
+        EARLY_STOPPING_PATIENCE: 5
+        EPOCHS: 50
+        LEARNING_RATE: 0.0001
+        USE_WEIGHTED_LOSS: true
+        USE_WEIGHTED_SAMPLER: false
+        WEIGHT_DECAY: 1e-05
