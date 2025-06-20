@@ -11,7 +11,7 @@ def set_parameter_requires_grad(model, feature_extracting):
         for param in model.parameters():
             param.requires_grad = False
 
-def get_model(cfg, feature_extract=False):
+def get_model(cfg, feature_extract=False, useWeight = True):
     """
     Tải mô hình và tùy chọn đóng băng các lớp đầu để chỉ fine-tune các lớp cuối.
 
@@ -22,10 +22,10 @@ def get_model(cfg, feature_extract=False):
     model = None
     num_ftrs = 0
     
-    print(f">>> Loading model: {cfg.MODEL.ARCH}")
+    print(f">>> Loading model: {cfg.MODEL.ARCH} -> useWeight: {useWeight}")
     
     if cfg.MODEL.ARCH == 'resnet18':
-        weights = ResNet18_Weights.IMAGENET1K_V1
+        weights = ResNet18_Weights.IMAGENET1K_V1 if useWeight else None
         model = resnet18(weights=weights)
         
         # Đóng băng các lớp nếu cần
@@ -40,7 +40,7 @@ def get_model(cfg, feature_extract=False):
         )
 
     elif cfg.MODEL.ARCH == 'mobilenet_v3_small':
-        weights = MobileNet_V3_Small_Weights.IMAGENET1K_V1
+        weights = MobileNet_V3_Small_Weights.IMAGENET1K_V1 if useWeight else None
         model = mobilenet_v3_small(weights=weights)
         
         set_parameter_requires_grad(model, feature_extract)

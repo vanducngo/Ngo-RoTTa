@@ -18,7 +18,7 @@ from models import get_model
 
 # ----- BẠN CẦN THAY ĐỔI CÁC ĐƯỜNG DẪN NÀY -----
 CHEXPERT_PATH = "./datasets/CheXpert-v1.0-small" # Đường dẫn đến bộ dữ liệu gốc
-FINETUNED_MODEL_PATH = "./results/finetuned_model_75.pth"
+FINETUNED_MODEL_PATH = "./results/finetuned_model.pth"
 TEST_CSV_FILENAME = "valid.csv" # Dùng tập valid gốc để test
 # -----------------------------------------------
 
@@ -44,7 +44,7 @@ def get_pretrained_model(num_classes, model_path):
     # Step 1: Load the pre-trained model architecture
     cfg = OmegaConf.load('configs/base_config.yaml')
     device = torch.device(cfg.TRAINING.DEVICE if torch.cuda.is_available() else "cpu")
-    model = get_model(cfg)
+    model = get_model(cfg, useWeight=False)
     # Load the fine-tuned weights
     model.load_state_dict(torch.load(model_path))
     model.to(device)
