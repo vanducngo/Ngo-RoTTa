@@ -129,3 +129,7 @@ dmypy.json
 .pyre/
 
 ckpt/
+datasets/
+results/
+analysis_results/
+wandb/
