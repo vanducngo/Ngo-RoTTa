@@ -7,6 +7,7 @@ from PIL import Image
 import os
 import pydicom
 from pydicom.pixel_data_handlers.util import apply_voi_lut
+import warnings
 
 # Giả định file data_mapping.py tồn tại và chứa các biến/hàm sau:
 # COMMON_DISEASES: list[str]

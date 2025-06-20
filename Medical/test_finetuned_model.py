@@ -113,11 +113,11 @@ def collate_fn(batch):
 # PHẦN 4: HÀM ĐÁNH GIÁ
 # ==============================================================================
 
-def evaluate_model(model, data_loader, device):
+def evaluate_model(model, data_loader, device, title="X"):
     """
     Chạy đánh giá mô hình trên tập dữ liệu test và tính AUC.
     """
-    print("\n>>> Starting evaluation...")
+    print(f"\n>>> Starting evaluation {title}...")
     model.to(device)
     model.eval() # Chuyển mô hình sang chế độ đánh giá
 
@@ -188,7 +188,8 @@ def main():
     train_loader, chexpert_test_loader, vindr_test_loader = get_data_loaders(cfg)
 
     # 3. Chạy đánh giá
-    evaluate_model(model, chexpert_test_loader, DEVICE)
+    evaluate_model(model, chexpert_test_loader, DEVICE, "CheXpert")
+    evaluate_model(model, vindr_test_loader, DEVICE, "VinData")
 
 if __name__ == "__main__":
     main()

@@ -4,7 +4,7 @@ DATA:
   CHEXPERT_TRAIN_CSV: "train.csv"
   CHEXPERT_TEST_CSV: "valid.csv" # Dùng tập valid của CheXpert làm tập test
 
-  VINDR_PATH: "../Medical/datasets/vinbigdata-chest-xray"
+  VINDR_PATH: "../Medical/datasets/vinbigdata-chest-xray-10-percent"
   VINDR_EVAL_CSV: "train.csv"
   VINDR_IMAGE_DIR: "train" # Thư mục chứa ảnh .dicom
 

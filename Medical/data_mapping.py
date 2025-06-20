@@ -38,8 +38,10 @@ def map_chexpert_labels(df_raw):
             
     return df_mapped
 
-
 def map_vindr_labels(df_raw):
+    return df_raw
+
+def map_vindr_labels_bk(df_raw):
     """
     Ánh xạ nhãn cho VinDr-CXR.
     - Chuyển từ định dạng "dài" sang "rộng".
