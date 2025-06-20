@@ -164,9 +164,9 @@ def get_data_loaders(cfg):
     
     # Đích 1: VinDr-CXR (đánh giá trên tập test)
     # Sử dụng mode='test' để tự động chọn file test từ config
-    # vindr_test_dataset = MultiSourceDataset(cfg, dataset_name='vindr', mode='test', transform=transform)
-    # vindr_test_loader = DataLoader(vindr_test_dataset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=False, collate_fn=collate_fn, num_workers=4)
-    vindr_test_loader = None
+    vindr_test_dataset = MultiSourceDataset(cfg, dataset_name='vindr', mode='test', transform=transform)
+    vindr_test_loader = DataLoader(vindr_test_dataset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=False, collate_fn=collate_fn, num_workers=4)
+    # vindr_test_loader = None
     
     # Đích 2: ChestX-ray14
     # (Bạn có thể thêm vào đây nếu muốn kiểm tra trên cả 3)

@@ -11,6 +11,7 @@ from tqdm import tqdm
 from omegaconf import OmegaConf
 
 from models import get_model
+from data_loader import get_data_loaders
 
 # ==============================================================================
 # PHẦN 1: CẤU HÌNH VÀ ĐỊNH NGHĨA
@@ -35,19 +36,17 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # PHẦN 2: CHUẨN BỊ MÔ HÌNH
 # ==============================================================================
 
-def get_pretrained_model(num_classes, model_path):
+def get_pretrained_model(num_classes, model_path, cfg):
     print(f"Loading fine-tuned weights from: {model_path}")
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found at {model_path}. Please run the training script first.")
     
     print(f"Found fine-tuned model at {model_path}")
     # Step 1: Load the pre-trained model architecture
-    cfg = OmegaConf.load('configs/base_config.yaml')
-    device = torch.device(cfg.TRAINING.DEVICE if torch.cuda.is_available() else "cpu")
     model = get_model(cfg, useWeight=False)
     # Load the fine-tuned weights
     model.load_state_dict(torch.load(model_path))
-    model.to(device)
+    model.to(DEVICE)
     print(f"Loaded fine-tuned model from {model_path}")
     
     print("Fine-tuned model loaded successfully.")
@@ -170,10 +169,12 @@ def evaluate_model(model, data_loader, device):
 
 def main():
     print(f"Using device: {DEVICE}")
+
+    cfg = OmegaConf.load('configs/base_config.yaml')
     
     # 1. Tải mô hình
     model = get_pretrained_model(num_classes=NUM_CLASSES,
-        model_path=FINETUNED_MODEL_PATH)
+        model_path=FINETUNED_MODEL_PATH, cfg=cfg)
     
     # 2. Chuẩn bị DataLoader
     # Định nghĩa các phép biến đổi ảnh cho tập test
@@ -183,23 +184,11 @@ def main():
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
     
-    test_dataset = CheXpertTestDataset(
-        root_path=CHEXPERT_PATH,
-        csv_filename=TEST_CSV_FILENAME,
-        transform=eval_transform
-    )
-    
-    test_loader = DataLoader(
-        test_dataset,
-        batch_size=32, # Có thể tăng batch size khi đánh giá
-        shuffle=False,
-        collate_fn=collate_fn,
-        num_workers=4,
-        pin_memory=True
-    )
+    print("\n>>> Loading datasets...")
+    train_loader, chexpert_test_loader, vindr_test_loader = get_data_loaders(cfg)
 
     # 3. Chạy đánh giá
-    evaluate_model(model, test_loader, DEVICE)
+    evaluate_model(model, chexpert_test_loader, DEVICE)
 
 if __name__ == "__main__":
     main()
