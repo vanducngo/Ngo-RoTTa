@@ -47,8 +47,9 @@ def main(cfg):
         # Đánh giá trên tập test của CheXpert (In-Domain Performance)
         print("Evaluating on CheXpert test set (In-Domain)...")
         criterion = nn.BCEWithLogitsLoss()
-        chexpert_auc = evaluate(model, chexpert_test_loader, device, criterion)
-        print(f"CheXpert Test Mean AUC: {chexpert_auc:.4f}")
+        mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate(model, chexpert_test_loader, device, criterion)
+        print(f"Valid Loss: {epoch_valid_loss:.4f} | Valid AUC: {mean_valid_auc:.4f}")
+        print(f"Per class auc: \n {per_class_auc}")
     
     # Đánh giá trên tập test của VinDr-CXR (Out-of-Domain Performance)
     # print("\nEvaluating on VinDr-CXR test set (Out-of-Domain)...")
