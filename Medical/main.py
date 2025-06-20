@@ -3,6 +3,7 @@ from data_loader import get_data_loaders
 from trainer import evaluate, fine_tune
 from omegaconf import OmegaConf
 import os
+import torch.nn as nn
 
 from models import get_model
 
@@ -45,7 +46,8 @@ def main(cfg):
         
         # Đánh giá trên tập test của CheXpert (In-Domain Performance)
         print("Evaluating on CheXpert test set (In-Domain)...")
-        chexpert_auc = evaluate(model, chexpert_test_loader, device)
+        criterion = nn.BCEWithLogitsLoss()
+        chexpert_auc = evaluate(model, chexpert_test_loader, device, criterion)
         print(f"CheXpert Test Mean AUC: {chexpert_auc:.4f}")
     
     # Đánh giá trên tập test của VinDr-CXR (Out-of-Domain Performance)

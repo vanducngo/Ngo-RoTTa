@@ -24,7 +24,7 @@ COMMON_DISEASES:
 
 # Cấu hình mô hình
 MODEL:
-  ARCH: "resnet50"           # Kiến trúc mô hình
+  ARCH: "mobilenet_v3_small"           # Kiến trúc mô hình
   NUM_CLASSES: 6             # Số lớp bệnh chung
 
 # Cấu hình huấn luyện
@@ -32,8 +32,8 @@ TRAINING:
   DEVICE: "cuda"
   EPOCHS: 50
   BATCH_SIZE: 32
-  LEARNING_RATE: 0.0001
-  WEIGHT_DECAY: 1e-5 # Một giá trị khởi đầu tốt
+  LEARNING_RATE: 1e-5
+  WEIGHT_DECAY: 1e-4
   EARLY_STOPPING_PATIENCE: 5 
   USE_WEIGHTED_LOSS: True
   USE_WEIGHTED_SAMPLER: False

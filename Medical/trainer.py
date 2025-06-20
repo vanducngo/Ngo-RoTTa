@@ -15,7 +15,7 @@ from data_mapping import COMMON_DISEASES as FINAL_LABEL_SET
 def evaluate(model, data_loader, device, criterion):
     """
     Đánh giá mô hình, trả về mean AUC, loss trung bình, và một dict chứa AUC của từng lớp.
-    """
+    """    
     model.eval()  # Chuyển mô hình sang chế độ đánh giá
     
     all_probs = []
@@ -74,7 +74,7 @@ def fine_tune(cfg, model, train_loader, valid_loader, device, class_weights=None
     # Sử dụng BCEWithLogitsLoss để ổn định hơn
     criterion = nn.BCEWithLogitsLoss(pos_weight=class_weights)
     optimizer = optim.Adam(model.parameters(), lr=cfg.TRAINING.LEARNING_RATE, weight_decay=cfg.TRAINING.WEIGHT_DECAY)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=3)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=1)
     
     best_auc = 0.0
     best_model_state = None
@@ -110,6 +110,7 @@ def fine_tune(cfg, model, train_loader, valid_loader, device, class_weights=None
         mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate(model, valid_loader, device, criterion)
         
         print(f"Epoch {epoch+1} | Train Loss: {epoch_train_loss:.4f} | Valid Loss: {epoch_valid_loss:.4f} | Valid AUC: {mean_valid_auc:.4f}")
+        print(f"Per class auc: \n {per_class_auc}")
 
         # Log các chỉ số của epoch lên wandb
         log_metrics = {
