@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from torchvision.models import resnet18, ResNet18_Weights, mobilenet_v3_small, MobileNet_V3_Small_Weights
+from transformers import AutoModelForImageClassification, AutoConfig
 
 def set_parameter_requires_grad(model, feature_extracting):
     """
@@ -50,7 +51,35 @@ def get_model(cfg, feature_extract=False, useWeight = True):
              nn.Dropout(p=0.5),
              nn.Linear(num_ftrs, cfg.MODEL.NUM_CLASSES)
         )
+    elif cfg.MODEL.ARCH == 'cxr_foundation':
+        # Load CXR Foundation model from Hugging Face
+        model_name = "google/cxr-foundation"
+        if useWeight:
+            try:
+                model = AutoModelForImageClassification.from_pretrained(model_name)
+                print(f"Loaded pre-trained CXR Foundation model: {model_name}")
+            except Exception as e:
+                raise ValueError(f"Failed to load CXR Foundation model: {e}")
+        else:
+            # Load model architecture without pre-trained weights
+            config = AutoConfig.from_pretrained(model_name)
+            model = AutoModelForImageClassification(config)
+            print(f"Initialized CXR Foundation model without pre-trained weights: {model_name}")
         
+        # Freeze layers if needed
+        set_parameter_requires_grad(model, feature_extract)
+        
+        # Replace classifier head to match cfg.MODEL.NUM_CLASSES
+        # CXR Foundation model typically uses a ViT or ResNet backbone
+        # We'll assume the classifier is accessible as model.classifier
+        if hasattr(model, 'classifier'):
+            num_ftrs = model.classifier.in_features
+            model.classifier = nn.Sequential(
+                nn.Dropout(p=0.5),
+                nn.Linear(num_ftrs, cfg.MODEL.NUM_CLASSES)
+            )
+        else:
+            raise ValueError("CXR Foundation model does not have a 'classifier' attribute. Check model architecture.")
     else:
         raise ValueError(f"Model architecture {cfg.MODEL.ARCH} not supported.")
 

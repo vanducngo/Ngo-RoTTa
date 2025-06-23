@@ -43,7 +43,7 @@ def get_pretrained_model(num_classes, model_path, cfg):
     
     print(f"Found fine-tuned model at {model_path}")
     # Step 1: Load the pre-trained model architecture
-    model = get_model(cfg, useWeight=False)
+    model = get_model(cfg, useWeight=True)
     # Load the fine-tuned weights
     model.load_state_dict(torch.load(model_path))
     model.to(DEVICE)

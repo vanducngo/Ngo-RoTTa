@@ -155,7 +155,7 @@ def get_data_loaders(cfg):
     ])
     
     # Nguồn: CheXpert
-    train_dataset = MultiSourceDataset(cfg, dataset_name='chexpert', mode='train', transform=transformTrain)
+    train_dataset = MultiSourceDataset(cfg, dataset_name='chexpert', mode='train', transform=transform)
     # Lấy subset để train nhanh hơn
     train_subset = torch.utils.data.Subset(train_dataset, range(len(train_dataset)))
     train_loader = DataLoader(train_subset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=True, collate_fn=collate_fn, num_workers=4)
