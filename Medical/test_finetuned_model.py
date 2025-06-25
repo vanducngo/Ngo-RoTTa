@@ -11,7 +11,7 @@ from tqdm import tqdm
 from omegaconf import OmegaConf
 
 from models import get_model
-from data_loader import get_data_loaders
+from data_loader import get_data_loaders, get_data_loaders_cheXpert, get_data_loaders_nih14, get_data_loaders_vindr
 
 # ==============================================================================
 # PHẦN 1: CẤU HÌNH VÀ ĐỊNH NGHĨA
@@ -19,7 +19,7 @@ from data_loader import get_data_loaders
 
 # ----- BẠN CẦN THAY ĐỔI CÁC ĐƯỜNG DẪN NÀY -----
 CHEXPERT_PATH = "./datasets/CheXpert-v1.0-small" # Đường dẫn đến bộ dữ liệu gốc
-FINETUNED_MODEL_PATH = "./results/finetuned_model.pth"
+FINETUNED_MODEL_PATH = "./results/finetuned_model_mobile_net_lr0001_latest.pth"
 TEST_CSV_FILENAME = "valid.csv" # Dùng tập valid gốc để test
 # -----------------------------------------------
 
@@ -45,7 +45,7 @@ def get_pretrained_model(num_classes, model_path, cfg):
     # Step 1: Load the pre-trained model architecture
     model = get_model(cfg, useWeight=True)
     # Load the fine-tuned weights
-    model.load_state_dict(torch.load(model_path))
+    model.load_state_dict(torch.load(model_path, map_location=DEVICE))
     model.to(DEVICE)
     print(f"Loaded fine-tuned model from {model_path}")
     
@@ -185,11 +185,19 @@ def main():
     ])
     
     print("\n>>> Loading datasets...")
-    train_loader, chexpert_test_loader, vindr_test_loader = get_data_loaders(cfg)
-
     # 3. Chạy đánh giá
-    evaluate_model(model, chexpert_test_loader, DEVICE, "CheXpert")
-    evaluate_model(model, vindr_test_loader, DEVICE, "VinData")
+
+    # Base 
+    # _, chexpert_test_loader =  get_data_loaders_cheXpert(cfg)
+    # evaluate_model(model, chexpert_test_loader, DEVICE, "CheXpert")
+    
+    # VinDr CXR 
+    # vindr_test_loader =  get_data_loaders_vindr(cfg)
+    # evaluate_model(model, vindr_test_loader, DEVICE, "VinData")
+    
+    # NIH 14 dataset
+    nih14_test_loader = get_data_loaders_nih14(cfg)
+    evaluate_model(model, nih14_test_loader, DEVICE, "nih_14")
 
 if __name__ == "__main__":
     main()

@@ -71,15 +71,15 @@ class MultiSourceDataset(Dataset):
             self.path_prefix = '.dicom' # Thêm đuôi file cho ảnh
             self.is_dicom = True # Đánh dấu đây là dữ liệu DICOM
             
-        elif self.dataset_name == 'chestxray14':
+        elif self.dataset_name == 'nih14':
             csv_path = os.path.join(cfg.DATA.CHESTXRAY14_PATH, cfg.DATA.CHESTXRAY14_CSV)
             raw_df = pd.read_csv(csv_path)
-            self.df = map_chestxray14_labels(raw_df)
+            # self.df = map_chestxray14_labels(raw_df)
+            self.df = raw_df
             self.root_dir = os.path.join(cfg.DATA.CHESTXRAY14_PATH, 'images') 
             self.image_col = 'image_id'
             self.path_prefix = '' # ChestXray14 thường là .png và đã có trong tên file
             self.is_dicom = False
-            
         else:
             raise ValueError(f"Unknown dataset: {self.dataset_name}")
             
@@ -175,3 +175,69 @@ def get_data_loaders(cfg):
     # chestxray14_test_loader = ...
 
     return train_loader, chexpert_test_loader, vindr_test_loader
+
+def get_data_loaders_cheXpert(cfg):
+    """Tạo các DataLoader cho việc huấn luyện và kiểm tra."""
+    
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+
+    # transformTrain = transforms.Compose([
+    #     transforms.Resize((224, 224)),
+        
+    #     # Thêm các phép biến đổi hình học mạnh hơn
+    #     transforms.RandomRotation(15),  # Tăng góc xoay từ 10 lên 15 độ
+    #     transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)), # Dịch chuyển ảnh ngẫu nhiên 10%
+    #     transforms.RandomResizedCrop(224, scale=(0.8, 1.0)), # Cắt ngẫu nhiên vẫn giữ nguyên
+    #     transforms.RandomHorizontalFlip(p=0.5), # Lật ngang là một phép rất hiệu quả
+        
+    #     # Thêm các phép biến đổi màu sắc mạnh hơn
+    #     transforms.ColorJitter(brightness=0.3, contrast=0.3), # Tăng độ sáng/tương phản từ 0.1 lên 0.3
+    #     transforms.ToTensor(),
+    #     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    # ])
+    
+    # Nguồn: CheXpert
+    train_dataset = MultiSourceDataset(cfg, dataset_name='chexpert', mode='train', transform=transform)
+    # Lấy subset để train nhanh hơn
+    train_subset = torch.utils.data.Subset(train_dataset, range(len(train_dataset)))
+    train_loader = DataLoader(train_subset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=True, collate_fn=collate_fn, num_workers=4)
+    
+    chexpert_test_dataset = MultiSourceDataset(cfg, dataset_name='chexpert', mode='test', transform=transform)
+    chexpert_test_loader = DataLoader(chexpert_test_dataset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=False, collate_fn=collate_fn, num_workers=4)
+
+    return train_loader, chexpert_test_loader
+
+def get_data_loaders_vindr(cfg):
+    """Tạo các DataLoader cho việc huấn luyện và kiểm tra."""
+    
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+
+    # Sử dụng mode='test' để tự động chọn file test từ config
+    vindr_test_dataset = MultiSourceDataset(cfg, dataset_name='vindr', mode='test', transform=transform)
+    vindr_test_loader = DataLoader(vindr_test_dataset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=False, collate_fn=collate_fn, num_workers=4)
+    # vindr_test_loader = None
+
+    return vindr_test_loader
+
+def get_data_loaders_nih14(cfg):
+    """Tạo các DataLoader cho việc huấn luyện và kiểm tra."""
+    
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+
+    # Đích 2: ChestX-ray14
+    nih14_test_dataset = MultiSourceDataset(cfg, dataset_name='nih14', mode='test', transform=transform)
+    nih14_test_loader = DataLoader(nih14_test_dataset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=False, collate_fn=collate_fn, num_workers=4)
+
+    return nih14_test_loader

@@ -8,7 +8,7 @@ DATA:
   VINDR_EVAL_CSV: "train.csv"
   VINDR_IMAGE_DIR: "train" # Thư mục chứa ảnh .dicom
 
-  CHESTXRAY14_PATH: "/path/to/your/chestxray14/"
+  CHESTXRAY14_PATH: "../Medical/datasets/nih14-10Percent"
   CHESTXRAY14_CSV: "Data_Entry_2017.csv"
 
 

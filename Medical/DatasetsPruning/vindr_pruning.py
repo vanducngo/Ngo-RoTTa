@@ -8,8 +8,8 @@ from tqdm import tqdm
 # ==============================================================================
 
 # Cấu hình đường dẫn (BẠN CẦN THAY ĐỔI CÁC ĐƯỜNG DẪN NÀY)
-VINDR_ROOT_PATH = "/path/to/your/vinbigdata-cxr" # Thư mục gốc chứa train/, test/, train.csv
-OUTPUT_PATH = "/path/to/your/output/RefinedVinDr"
+VINDR_ROOT_PATH = "/Users/admin/Working/Data/vinbigdata-chest-xray" # Thư mục gốc chứa train/, test/, train.csv
+OUTPUT_PATH = "/Users/admin/Working/Data/RefinedVinDr_vinbigdata-chest-xray"
 
 # Định nghĩa bộ nhãn chúng ta muốn giữ lại
 DISEASES_TO_KEEP = [

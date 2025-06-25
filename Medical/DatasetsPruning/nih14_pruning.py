@@ -3,13 +3,14 @@ import os
 import shutil
 from tqdm import tqdm
 
+import glob
 # ==============================================================================
 # ĐỊNH NGHĨA CÁC THAM SỐ VÀ HẰNG SỐ
 # ==============================================================================
 
 # Cấu hình đường dẫn (BẠN CẦN THAY ĐỔI CÁC ĐƯỜNG DẪN NÀY)
-NIH14_ROOT_PATH = "/path/to/your/nih-chest-xrays" # Thư mục gốc chứa images/ và Data_Entry_2017.csv
-OUTPUT_PATH = "/path/to/your/output/RefinedNIH14"
+NIH14_ROOT_PATH = "/Users/admin/Working/Data/nih-14-origin" # Thư mục gốc chứa images/ và Data_Entry_2017.csv
+OUTPUT_PATH = "/Users/admin/Working/Data/nih-14-pruning"
 
 # Định nghĩa bộ nhãn chúng ta muốn giữ lại
 DISEASES_TO_KEEP = [
@@ -34,15 +35,21 @@ def preprocess_and_filter_nih14():
     
     # 1. Tạo đường dẫn
     source_csv_path = os.path.join(NIH14_ROOT_PATH, 'Data_Entry_2017.csv')
-    source_image_dir = os.path.join(NIH14_ROOT_PATH, 'images') # Thư mục chứa tất cả ảnh .png
     
-    if not os.path.exists(source_csv_path) or not os.path.exists(source_image_dir):
-        print(f"Error: Source CSV or image directory not found.")
-        return
+    # Tạo một từ điển để lưu đường dẫn của tất cả các ảnh để tìm kiếm nhanh hơn
+    all_image_paths = {}
+    image_folders = glob.glob(os.path.join(NIH14_ROOT_PATH, 'images*'))
+    for folder in tqdm(image_folders, desc="Scanning image folders"):
+        finalFolder = f'{folder}/images'
+        for img_file in os.listdir(finalFolder):
+            if img_file.endswith('.png'):
+                all_image_paths[img_file] = os.path.join(finalFolder, img_file)
+
+    print(f"Found {len(all_image_paths)} total images. Now copying sampled files...")
 
     target_dir = os.path.join(OUTPUT_PATH)
     target_image_dir = os.path.join(target_dir, 'images') # Tạo thư mục con images
-    target_csv_path = os.path.join(target_dir, 'refined_data_entry.csv')
+    target_csv_path = os.path.join(target_dir, 'Data_Entry_2017.csv')
 
     # Tạo thư mục đầu ra
     os.makedirs(target_image_dir, exist_ok=True)
@@ -80,7 +87,8 @@ def preprocess_and_filter_nih14():
     num_copied = 0
     num_skipped = 0
     for image_id in tqdm(df_final['image_id'], desc="Copying images"):
-        source_image_path = os.path.join(source_image_dir, image_id)
+        # source_image_path = os.path.join(source_image_dir, image_id)
+        source_image_path = all_image_paths[image_id]
         target_image_path = os.path.join(target_image_dir, image_id)
         
         try:
