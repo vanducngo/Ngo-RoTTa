@@ -11,6 +11,9 @@ DATA:
   CHESTXRAY14_PATH: "../Medical/datasets/nih14-10Percent"
   CHESTXRAY14_CSV: "Data_Entry_2017.csv"
 
+  PADCHEST_PATH: "../Medical/datasets/PadChestPruning_10Percent"
+  PADCHEST_CSV: "test.csv"
+
 
 # Các lớp bệnh chung (giả định đã ánh xạ nhãn)
 # Đây là 5 lớp phổ biến có trong cả CheXpert và VinDr-CXR

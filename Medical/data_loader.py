@@ -9,11 +9,6 @@ import pydicom
 from pydicom.pixel_data_handlers.util import apply_voi_lut
 import warnings
 
-# Giả định file data_mapping.py tồn tại và chứa các biến/hàm sau:
-# COMMON_DISEASES: list[str]
-# map_chexpert_labels: function
-# map_vindr_labels: function
-# map_chestxray14_labels: function
 from data_mapping import COMMON_DISEASES, map_chexpert_labels, map_vindr_labels, map_chestxray14_labels
 
 def read_dicom_image(path, voi_lut=True, fix_monochrome=True):
@@ -38,6 +33,7 @@ def read_dicom_image(path, voi_lut=True, fix_monochrome=True):
     return image
 
 class MultiSourceDataset(Dataset):
+    # dataset_name: chexpert, vindr, padchest, nih14
     def __init__(self, cfg, dataset_name, mode='train', transform=None):
         self.cfg = cfg
         self.dataset_name = dataset_name
@@ -79,6 +75,15 @@ class MultiSourceDataset(Dataset):
             self.root_dir = os.path.join(cfg.DATA.CHESTXRAY14_PATH, 'images') 
             self.image_col = 'image_id'
             self.path_prefix = '' # ChestXray14 thường là .png và đã có trong tên file
+            self.is_dicom = False
+        elif self.dataset_name == 'padchest':
+            csv_path = os.path.join(cfg.DATA.PADCHEST_PATH, cfg.DATA.PADCHEST_CSV)
+            raw_df = pd.read_csv(csv_path)
+            # self.df = map_chestxray14_labels(raw_df)
+            self.df = raw_df
+            self.root_dir = os.path.join(cfg.DATA.PADCHEST_PATH, 'images') 
+            self.image_col = 'image_id'
+            self.path_prefix = ''
             self.is_dicom = False
         else:
             raise ValueError(f"Unknown dataset: {self.dataset_name}")
@@ -176,9 +181,7 @@ def get_data_loaders(cfg):
 
     return train_loader, chexpert_test_loader, vindr_test_loader
 
-def get_data_loaders_cheXpert(cfg):
-    """Tạo các DataLoader cho việc huấn luyện và kiểm tra."""
-    
+def get_data_loaders_cheXpert(cfg):   
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
@@ -200,9 +203,7 @@ def get_data_loaders_cheXpert(cfg):
     #     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     # ])
     
-    # Nguồn: CheXpert
     train_dataset = MultiSourceDataset(cfg, dataset_name='chexpert', mode='train', transform=transform)
-    # Lấy subset để train nhanh hơn
     train_subset = torch.utils.data.Subset(train_dataset, range(len(train_dataset)))
     train_loader = DataLoader(train_subset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=True, collate_fn=collate_fn, num_workers=4)
     
@@ -211,19 +212,15 @@ def get_data_loaders_cheXpert(cfg):
 
     return train_loader, chexpert_test_loader
 
-def get_data_loaders_vindr(cfg):
-    """Tạo các DataLoader cho việc huấn luyện và kiểm tra."""
-    
+def get_data_loaders_vindr(cfg):    
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
-    # Sử dụng mode='test' để tự động chọn file test từ config
     vindr_test_dataset = MultiSourceDataset(cfg, dataset_name='vindr', mode='test', transform=transform)
     vindr_test_loader = DataLoader(vindr_test_dataset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=False, collate_fn=collate_fn, num_workers=4)
-    # vindr_test_loader = None
 
     return vindr_test_loader
 
@@ -236,8 +233,19 @@ def get_data_loaders_nih14(cfg):
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
-    # Đích 2: ChestX-ray14
     nih14_test_dataset = MultiSourceDataset(cfg, dataset_name='nih14', mode='test', transform=transform)
     nih14_test_loader = DataLoader(nih14_test_dataset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=False, collate_fn=collate_fn, num_workers=4)
 
     return nih14_test_loader
+
+def get_data_loaders_padchest(cfg):    
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+
+    padchest_test_dataset = MultiSourceDataset(cfg, dataset_name='padchest', mode='test', transform=transform)
+    padchest_test_loader = DataLoader(padchest_test_dataset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=False, collate_fn=collate_fn, num_workers=4)
+
+    return padchest_test_loader

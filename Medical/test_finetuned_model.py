@@ -11,7 +11,7 @@ from tqdm import tqdm
 from omegaconf import OmegaConf
 
 from models import get_model
-from data_loader import get_data_loaders_cheXpert, get_data_loaders_nih14, get_data_loaders_vindr
+from data_loader import get_data_loaders_cheXpert, get_data_loaders_nih14, get_data_loaders_padchest, get_data_loaders_vindr
 
 # ==============================================================================
 # PHẦN 1: CẤU HÌNH VÀ ĐỊNH NGHĨA
@@ -196,8 +196,11 @@ def main():
     # evaluate_model(model, vindr_test_loader, DEVICE, "VinData")
     
     # NIH 14 dataset
-    nih14_test_loader = get_data_loaders_nih14(cfg)
-    evaluate_model(model, nih14_test_loader, DEVICE, "nih_14")
+    # nih14_test_loader = get_data_loaders_nih14(cfg)
+    # evaluate_model(model, nih14_test_loader, DEVICE, "nih_14")
+    
+    padchest_test_loader = get_data_loaders_padchest(cfg)
+    evaluate_model(model, padchest_test_loader, DEVICE, "padchest")
 
 if __name__ == "__main__":
     main()
