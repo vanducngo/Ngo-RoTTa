@@ -1,5 +1,5 @@
 import torch
-from data_loader import get_data_loaders
+from data_loader import get_data_loaders, get_data_loaders_cheXpert
 from trainer import evaluate, fine_tune
 from omegaconf import OmegaConf
 import os
@@ -17,7 +17,7 @@ def main(cfg):
 
     # Tải dữ liệu
     print("\n>>> Loading datasets...")
-    train_loader, chexpert_test_loader, vindr_test_loader = get_data_loaders(cfg)
+    train_loader, chexpert_test_loader = get_data_loaders_cheXpert(cfg)
 
     if os.path.exists(model_save_path):
         print(f"Found fine-tuned model at {model_save_path}")

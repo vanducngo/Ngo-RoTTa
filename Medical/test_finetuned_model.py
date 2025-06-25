@@ -11,7 +11,7 @@ from tqdm import tqdm
 from omegaconf import OmegaConf
 
 from models import get_model
-from data_loader import get_data_loaders, get_data_loaders_cheXpert, get_data_loaders_nih14, get_data_loaders_vindr
+from data_loader import get_data_loaders_cheXpert, get_data_loaders_nih14, get_data_loaders_vindr
 
 # ==============================================================================
 # PHẦN 1: CẤU HÌNH VÀ ĐỊNH NGHĨA
