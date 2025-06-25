@@ -188,20 +188,20 @@ def get_data_loaders_cheXpert(cfg):
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
 
-    # transformTrain = transforms.Compose([
-    #     transforms.Resize((224, 224)),
+    transformTrain = transforms.Compose([
+        transforms.Resize((224, 224)),
         
-    #     # Thêm các phép biến đổi hình học mạnh hơn
-    #     transforms.RandomRotation(15),  # Tăng góc xoay từ 10 lên 15 độ
-    #     transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)), # Dịch chuyển ảnh ngẫu nhiên 10%
-    #     transforms.RandomResizedCrop(224, scale=(0.8, 1.0)), # Cắt ngẫu nhiên vẫn giữ nguyên
-    #     transforms.RandomHorizontalFlip(p=0.5), # Lật ngang là một phép rất hiệu quả
+        # Thêm các phép biến đổi hình học mạnh hơn
+        transforms.RandomRotation(15),  # Tăng góc xoay từ 10 lên 15 độ
+        transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)), # Dịch chuyển ảnh ngẫu nhiên 10%
+        transforms.RandomResizedCrop(224, scale=(0.8, 1.0)), # Cắt ngẫu nhiên vẫn giữ nguyên
+        transforms.RandomHorizontalFlip(p=0.5), # Lật ngang là một phép rất hiệu quả
         
-    #     # Thêm các phép biến đổi màu sắc mạnh hơn
-    #     transforms.ColorJitter(brightness=0.3, contrast=0.3), # Tăng độ sáng/tương phản từ 0.1 lên 0.3
-    #     transforms.ToTensor(),
-    #     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    # ])
+        # Thêm các phép biến đổi màu sắc mạnh hơn
+        transforms.ColorJitter(brightness=0.3, contrast=0.3), # Tăng độ sáng/tương phản từ 0.1 lên 0.3
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
     
     train_dataset = MultiSourceDataset(cfg, dataset_name='chexpert', mode='train', transform=transform)
     train_subset = torch.utils.data.Subset(train_dataset, range(len(train_dataset)))

@@ -74,7 +74,7 @@ def fine_tune(cfg, model, train_loader, valid_loader, device, class_weights=None
     # Sử dụng BCEWithLogitsLoss để ổn định hơn
     criterion = nn.BCEWithLogitsLoss(pos_weight=class_weights)
     optimizer = optim.Adam(model.parameters(), lr=cfg.TRAINING.LEARNING_RATE, weight_decay=cfg.TRAINING.WEIGHT_DECAY)
-    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=1)
+    scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=5)
     
     best_auc = 0.0
     best_model_state = None
@@ -140,6 +140,8 @@ def fine_tune(cfg, model, train_loader, valid_loader, device, class_weights=None
             if early_stop_counter >= patience:
                 print(f"Early stopping triggered after {patience} epochs of no improvement.")
                 break
+        
+        torch.cuda.empty_cache()
     
     # Kết thúc wandb run
     wandb.finish()

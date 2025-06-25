@@ -35,7 +35,7 @@ def get_model(cfg, feature_extract=False, useWeight = True):
         # Thay thế lớp cuối và đảm bảo nó luôn có thể huấn luyện
         num_ftrs = model.fc.in_features
         model.fc = nn.Sequential(
-            nn.Dropout(p=0.5),
+            nn.Dropout(p=0.7),
             nn.Linear(num_ftrs, cfg.MODEL.NUM_CLASSES)
             # Bỏ Sigmoid, BCEWithLogitsLoss sẽ xử lý
         )
@@ -48,7 +48,7 @@ def get_model(cfg, feature_extract=False, useWeight = True):
         
         num_ftrs = model.classifier[-1].in_features
         model.classifier[-1] = nn.Sequential(
-             nn.Dropout(p=0.5),
+             nn.Dropout(p=0.7),
              nn.Linear(num_ftrs, cfg.MODEL.NUM_CLASSES)
         )
     elif cfg.MODEL.ARCH == 'cxr_foundation':
