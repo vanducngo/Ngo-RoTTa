@@ -165,8 +165,8 @@ def main():
     # 3. Chạy đánh giá
 
     # Base 
-    # _, chexpert_test_loader =  get_data_loaders_cheXpert(cfg)
-    # evaluate_model(model, chexpert_test_loader, DEVICE, "CheXpert")
+    _, chexpert_test_loader =  get_data_loaders_cheXpert(cfg)
+    evaluate_model(model, chexpert_test_loader, DEVICE, "CheXpert")
     
     # VinDr CXR 
     # vindr_test_loader =  get_data_loaders_vindr(cfg)
@@ -176,8 +176,9 @@ def main():
     # nih14_test_loader = get_data_loaders_nih14(cfg)
     # evaluate_model(model, nih14_test_loader, DEVICE, "nih_14")
     
-    padchest_test_loader = get_data_loaders_padchest(cfg)
-    evaluate_model(model, padchest_test_loader, DEVICE, "padchest")
+    # PadChest dataset
+    # padchest_test_loader = get_data_loaders_padchest(cfg)
+    # evaluate_model(model, padchest_test_loader, DEVICE, "padchest")
 
 if __name__ == "__main__":
     main()

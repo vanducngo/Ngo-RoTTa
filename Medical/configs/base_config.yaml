@@ -1,6 +1,7 @@
 # Đường dẫn dữ liệu
 DATA:
-  CHEXPERT_PATH: "../Medical/datasets/CheXpert-v1.0-small"
+  # CHEXPERT_PATH: "../Medical/datasets/CheXpert-v1.0-small"
+  CHEXPERT_PATH: "/Users/admin/Working/Data/chexpert_pruning_U_ON"
   CHEXPERT_TRAIN_CSV: "train.csv"
   CHEXPERT_TEST_CSV: "valid.csv" # Dùng tập valid của CheXpert làm tập test
 
@@ -12,6 +13,7 @@ DATA:
   CHESTXRAY14_CSV: "Data_Entry_2017.csv"
 
   PADCHEST_PATH: "../Medical/datasets/PadChestPruning_10Percent"
+  # PADCHEST_PATH: "/Users/admin/Working/Data/PadChestPruning_10Percent"
   PADCHEST_CSV: "test.csv"
 
 
