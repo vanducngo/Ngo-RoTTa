@@ -21,7 +21,7 @@ def main(cfg):
 
     if os.path.exists(model_save_path):
         print(f"Found fine-tuned model at {model_save_path}")
-        # Step 1: Load the pre-trained model architecture
+        # Load the pre-trained model architecture
         model = get_model(cfg)
         # Load the fine-tuned weights
         model.load_state_dict(torch.load(model_save_path))
@@ -30,10 +30,10 @@ def main(cfg):
     else:
         os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
         
-        # Bước 1: Tải Pre-trained model
+        # Tải Pre-trained model
         model = get_model(cfg)
         
-        # Bước 2: Fine-tune mô hình trên CheXpert
+        # Fine-tune mô hình trên CheXpert
         model = fine_tune(cfg, model, train_loader, chexpert_test_loader, device)
         
         # Lưu lại model đã fine-tune
@@ -57,7 +57,7 @@ def main(cfg):
     # print(f"VinDr-CXR Test Mean AUC: {vindr_auc:.4f}")
 
     '''
-    # Bước 5: So sánh và đánh giá Domain Shift
+    # So sánh và đánh giá Domain Shift
     print("\n--- Domain Shift Analysis ---")
     performance_drop = chexpert_auc - vindr_auc
     print(f"In-Domain AUC (CheXpert): {chexpert_auc:.4f}")
