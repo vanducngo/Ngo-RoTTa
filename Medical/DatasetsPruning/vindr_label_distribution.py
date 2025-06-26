@@ -1,13 +1,10 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# --- 1. LOAD DATA ---
-# CSV_PATH = '/Users/admin/Working/Data/vinbigdata-chest-xray/train.csv'
 CSV_PATH = '/Users/admin/Working/Data/vinbigdata-chest-xray-10-percent/train.csv'
 df = pd.read_csv(CSV_PATH)
 print(f"Total rows loaded: {len(df)}")
 
-# --- 2. CALCULATE LABEL DISTRIBUTION ---
 # Define condition columns (excluding 'image_id' and the last column)
 condition_columns = ['No Finding', 'Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
 
@@ -18,7 +15,6 @@ total_samples = len(df)
 # Calculate percentage distribution
 percent_distribution = (label_distribution / total_samples) * 100
 
-# --- 3. VISUALIZE ---
 plt.figure(figsize=(10, 6))
 percent_distribution.plot(kind='bar')
 plt.title('Label Distribution in Dataset')
@@ -32,7 +28,6 @@ for i, v in enumerate(percent_distribution):
 plt.tight_layout()
 plt.show()
 
-# --- 4. PRINT DISTRIBUTION ---
 print("\nLabel Distribution (Count):")
 print(label_distribution)
 print("\nLabel Distribution (Percentage):")

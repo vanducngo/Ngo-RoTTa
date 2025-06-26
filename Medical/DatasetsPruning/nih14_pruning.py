@@ -4,11 +4,7 @@ import shutil
 from tqdm import tqdm
 
 import glob
-# ==============================================================================
-# ĐỊNH NGHĨA CÁC THAM SỐ VÀ HẰNG SỐ
-# ==============================================================================
 
-# Cấu hình đường dẫn (BẠN CẦN THAY ĐỔI CÁC ĐƯỜNG DẪN NÀY)
 NIH14_ROOT_PATH = "/Users/admin/Working/Data/nih-14-origin" # Thư mục gốc chứa images/ và Data_Entry_2017.csv
 OUTPUT_PATH = "/Users/admin/Working/Data/nih-14-pruning"
 
@@ -22,18 +18,12 @@ DISEASES_TO_KEEP = [
 ]
 FINAL_LABEL_SET_MAPPED = ['No Finding', 'Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
 
-
-# ==============================================================================
-# HÀM XỬ LÝ CHÍNH
-# ==============================================================================
-
 def preprocess_and_filter_nih14():
     """
     Lọc và sao chép dữ liệu cho bộ dữ liệu NIH ChestX-ray14.
     """
     print("--- Starting preprocessing for NIH ChestX-ray14 set ---")
     
-    # 1. Tạo đường dẫn
     source_csv_path = os.path.join(NIH14_ROOT_PATH, 'Data_Entry_2017.csv')
     
     # Tạo một từ điển để lưu đường dẫn của tất cả các ảnh để tìm kiếm nhanh hơn

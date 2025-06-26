@@ -3,18 +3,10 @@ import os
 import shutil
 from tqdm import tqdm
 
-# ==============================================================================
-# ĐỊNH NGHĨA CÁC THAM SỐ VÀ HẰNG SỐ
-# ==============================================================================
-
-# Cấu hình đường dẫn (BẠN CẦN THAY ĐỔI CÁC ĐƯỜNG DẪN NÀY)
-# This path should point to the directory containing 'train.csv', 'valid.csv', etc.
 CHEXPERT_ROOT_PATH = "../datasets/CheXpert-v1.0-small"
-# This is where the new, filtered dataset will be created.
+
 OUTPUT_PATH = "../datasets/RefinedCheXpert"
 
-# Định nghĩa bộ nhãn chúng ta muốn giữ lại
-# Đây là các cột bệnh lý cần kiểm tra
 DISEASES_TO_KEEP = [
     'Atelectasis',
     'Cardiomegaly',
@@ -22,13 +14,9 @@ DISEASES_TO_KEEP = [
     'Pleural Effusion',
     'Pneumothorax'
 ]
+
 # Toàn bộ các cột cuối cùng, bao gồm cả 'No Finding'
 FINAL_LABEL_SET = ['No Finding'] + DISEASES_TO_KEEP
-
-
-# ==============================================================================
-# HÀM XỬ LÝ CHÍNH
-# ==============================================================================
 
 def preprocess_and_filter_chexpert(mode='train'):
     """
@@ -75,36 +63,19 @@ def preprocess_and_filter_chexpert(mode='train'):
     # 4. Sao chép các file ảnh đã lọc
     print("Copying filtered image files...")
     
-    # ==========================================================================
-    # START OF FIX (SOLUTION 1)
-    # The paths in the CSV (e.g., "CheXpert-v1.0-small/train/...") are relative
-    # to the PARENT of CHEXPERT_ROOT_PATH. We get that parent directory here.
-    dataset_base_dir = os.path.dirname(CHEXPERT_ROOT_PATH) # This will be "../datasets"
-    # ==========================================================================
+    dataset_base_dir = os.path.dirname(CHEXPERT_ROOT_PATH)
     
     num_copied = 0
     num_skipped = 0
-    
-    # We will collect valid paths to update the dataframe later
     new_paths = []
     indices_to_drop = []
 
     for index, row in tqdm(df_final.iterrows(), total=len(df_final), desc=f"Copying {mode} images"):
         path_from_csv = row['Path']
-        
-        # ==========================================================================
-        # FIX: Construct the full source path correctly to avoid duplication.
-        # os.path.join("../datasets", "CheXpert-v1.0-small/train/...")
-        source_image_path = os.path.join(dataset_base_dir, path_from_csv)
-        # ==========================================================================
 
-        # Create a cleaner relative path for the new dataset structure.
-        # Instead of 'RefinedCheXpert/CheXpert-v1.0-small/train/...', we'll have
-        # 'RefinedCheXpert/train/...'
+        source_image_path = os.path.join(dataset_base_dir, path_from_csv)
         relative_path = os.path.relpath(source_image_path, CHEXPERT_ROOT_PATH)
         target_image_path = os.path.join(target_dir, relative_path)
-        
-        # Create the parent directory (e.g., .../RefinedCheXpert/train/patientXXXXX/studyY)
         os.makedirs(os.path.dirname(target_image_path), exist_ok=True)
         
         if os.path.exists(source_image_path):
@@ -132,21 +103,11 @@ def preprocess_and_filter_chexpert(mode='train'):
 
     # 5. Lưu DataFrame đã lọc
     print(f"Saving new CSV to {target_csv_path}")
-
-    # ==========================================================================
-    # FIX: Update the 'Path' column to the new relative paths
-    # This makes the new CSV self-contained within the OUTPUT_PATH directory.
     df_final['Path'] = new_paths
-    # ==========================================================================
     
     df_final.to_csv(target_csv_path, index=False)
     
     print(f"--- Preprocessing for '{mode}' set completed! ---\n")
-
-
-# ==============================================================================
-# HÀM MAIN ĐỂ CHẠY
-# ==============================================================================
 
 if __name__ == "__main__":
     print("===== Starting CheXpert Dataset Refinement Process =====")

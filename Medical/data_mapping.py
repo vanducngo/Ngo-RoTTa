@@ -1,8 +1,5 @@
 import pandas as pd
 
-# ==============================================================================
-# BƯỚC 1: ĐỊNH NGHĨA BỘ NHÃN CHUNG
-# ==============================================================================
 # Chọn 5 bệnh lý phổ biến và nhất quán nhất
 COMMON_DISEASES = [
     'No Finding',
@@ -12,11 +9,6 @@ COMMON_DISEASES = [
     'Pleural Effusion',
     'Pneumothorax'
 ]
-
-
-# ==============================================================================
-# BƯỚC 2: VIẾT HÀM MAPPING CHO TỪNG BỘ DỮ LIỆU
-# ==============================================================================
 
 def map_chexpert_labels(df_raw):
     """
@@ -53,7 +45,7 @@ def map_vindr_labels_bk(df_raw):
         'Atelectasis': 'Atelectasis',
         'Cardiomegaly': 'Cardiomegaly',
         'Consolidation': 'Consolidation',
-        'Pleural effusion': 'Pleural Effusion', # Chú ý khoảng trắng và chữ thường
+        'Pleural effusion': 'Pleural Effusion',
         'Pneumothorax': 'Pneumothorax'
     }
     df_raw['class_name'] = df_raw['class_name'].replace(vindr_to_common_map)

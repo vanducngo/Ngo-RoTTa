@@ -175,7 +175,6 @@ def get_data_loaders(cfg):
     # vindr_test_loader = None
     
     # Đích 2: ChestX-ray14
-    # (Bạn có thể thêm vào đây nếu muốn kiểm tra trên cả 3)
     # chestxray14_test_dataset = ...
     # chestxray14_test_loader = ...
 
@@ -203,7 +202,7 @@ def get_data_loaders_cheXpert(cfg):
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
     
-    train_dataset = MultiSourceDataset(cfg, dataset_name='chexpert', mode='train', transform=transform)
+    train_dataset = MultiSourceDataset(cfg, dataset_name='chexpert', mode='train', transform=transformTrain)
     train_subset = torch.utils.data.Subset(train_dataset, range(len(train_dataset)))
     train_loader = DataLoader(train_subset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=True, collate_fn=collate_fn, num_workers=4)
     
@@ -224,9 +223,7 @@ def get_data_loaders_vindr(cfg):
 
     return vindr_test_loader
 
-def get_data_loaders_nih14(cfg):
-    """Tạo các DataLoader cho việc huấn luyện và kiểm tra."""
-    
+def get_data_loaders_nih14(cfg):    
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),

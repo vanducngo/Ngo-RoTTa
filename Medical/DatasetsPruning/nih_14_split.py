@@ -5,11 +5,8 @@ from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 import glob
 
-# --- 1. CONFIGURATION ---
-# ----- BẠN CẦN THAY ĐỔI CÁC ĐƯỜNG DẪN NÀY -----
-SOURCE_DATA_DIR = '/Users/admin/Working/Data/nih-14-pruning'  # Thư mục gốc của NIH dataset
+SOURCE_DATA_DIR = '/Users/admin/Working/Data/nih-14-pruning'
 DEST_DATA_DIR = '/Users/admin/Working/Data/cxr-14-10_percent'
-# -----------------------------------------------
 
 SAMPLE_FRACTION = 0.1
 RANDOM_STATE = 42
@@ -17,12 +14,10 @@ RANDOM_STATE = 42
 # Các cột nhãn trong file CSV
 LABEL_COLUMNS = ['No Finding', 'Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
 
-# --- 2. CREATE NEW DIRECTORY ---
 DEST_TEST_IMAGE_DIR = os.path.join(DEST_DATA_DIR, 'images')
 os.makedirs(DEST_TEST_IMAGE_DIR, exist_ok=True)
 print(f"New directory created at: {DEST_DATA_DIR}")
 
-# --- 3. LOAD AND PREPARE DATA ---
 SOURCE_CSV_PATH = os.path.join(SOURCE_DATA_DIR, 'Data_Entry_2017.csv')
 
 print("Loading original Data_Entry_2017.csv...")
@@ -40,7 +35,6 @@ if missing_labels:
 # Tạo cột stratify_key để phân tầng dựa trên tổ hợp nhãn
 df_original['stratify_key'] = df_original[LABEL_COLUMNS].apply(lambda x: ''.join(x.astype(str)), axis=1)
 
-# --- 4. FILTER RARE LABEL COMBINATIONS ---
 print("Filtering out rare label combinations (fewer than 2 instances)...")
 # Đếm số lần xuất hiện của mỗi stratify_key
 key_counts = df_original['stratify_key'].value_counts()
@@ -49,7 +43,6 @@ valid_keys = key_counts[key_counts >= 2].index
 df_filtered = df_original[df_original['stratify_key'].isin(valid_keys)]
 print(f"Rows after filtering rare combinations: {len(df_filtered)} (removed {len(df_original) - len(df_filtered)} rows)")
 
-# --- 5. STRATIFIED SAMPLING ---
 print(f"Performing stratified sampling for {SAMPLE_FRACTION*100}% of filtered data...")
 # Phân tầng dựa trên stratify_key để duy trì phân phối nhãn
 _, df_sampled = train_test_split(
@@ -65,14 +58,11 @@ df_sampled = df_sampled.drop(columns=['stratify_key'])
 sampled_image_ids = df_sampled['image_id'].unique()
 print(f"Number of unique images selected: {len(sampled_image_ids)}")
 
-# --- 6. CREATE NEW TEST.CSV ---
-# Lưu file CSV mới, giữ nguyên tất cả các cột của file gốc
 DEST_TEST_CSV_PATH = os.path.join(DEST_DATA_DIR, 'test.csv')
 df_sampled.to_csv(DEST_TEST_CSV_PATH, index=False)
 print(f"New test.csv created at: {DEST_TEST_CSV_PATH}")
 print(f"New test.csv rows: {len(df_sampled)}")
 
-# --- 7. FIND AND COPY IMAGE FILES ---
 print(f"\nFinding paths for {len(sampled_image_ids)} PNG files...")
 # Tạo một từ điển để lưu đường dẫn của tất cả các ảnh để tìm kiếm nhanh hơn
 all_image_paths = {}
@@ -98,7 +88,7 @@ for image_id in tqdm(sampled_image_ids, desc="Copying images"):
 
 print(f"Copying completed. Copied: {copied_count}, Not Found: {not_found_count}")
 
-# --- 8. COMPARE DISTRIBUTIONS ---
+# COMPARE DISTRIBUTIONS ---
 print("\n--- DISTRIBUTION COMPARISON ---")
 print("Original data distribution (per label):")
 original_dist = df_original[LABEL_COLUMNS].mean().round(4)  # Tỷ lệ trung bình của mỗi nhãn

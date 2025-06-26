@@ -12,13 +12,8 @@ from omegaconf import OmegaConf
 
 from models import get_model
 
-# ==============================================================================
-# PHẦN 1: CẤU HÌNH VÀ ĐỊNH NGHĨA
-# ==============================================================================
-
-# ----- BẠN CẦN THAY ĐỔI CÁC ĐƯỜNG DẪN NÀY -----
-CHEXPERT_PATH = "./datasets/CheXpert-v1.0-small" # Đường dẫn đến bộ dữ liệu gốc
-TEST_CSV_FILENAME = "valid.csv" # Dùng tập valid gốc để test
+CHEXPERT_PATH = "./datasets/CheXpert-v1.0-small"
+TEST_CSV_FILENAME = "valid.csv"
 # -----------------------------------------------
 
 # Định nghĩa các lớp bệnh để đánh giá
@@ -30,10 +25,6 @@ FINAL_LABEL_SET = ['No Finding'] + DISEASES
 NUM_CLASSES = len(FINAL_LABEL_SET)
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# ==============================================================================
-# PHẦN 2: CHUẨN BỊ MÔ HÌNH
-# ==============================================================================
-
 def get_pretrained_model(num_classes):
     cfg = OmegaConf.load('configs/base_config.yaml')
     device = torch.device(cfg.TRAINING.DEVICE if torch.cuda.is_available() else "cpu")
@@ -41,10 +32,6 @@ def get_pretrained_model(num_classes):
     model.to(device)    
     print("Fine-tuned model loaded successfully.")
     return model
-
-# ==============================================================================
-# PHẦN 3: CHUẨN BỊ DỮ LIỆU
-# ==============================================================================
 
 def map_chexpert_labels(df_raw):
     """
@@ -98,11 +85,6 @@ def collate_fn(batch):
         return torch.empty(0), torch.empty(0)
     return torch.utils.data.dataloader.default_collate(batch)
 
-
-# ==============================================================================
-# PHẦN 4: HÀM ĐÁNH GIÁ
-# ==============================================================================
-
 def evaluate_model(model, data_loader, device):
     """
     Chạy đánh giá mô hình trên tập dữ liệu test và tính AUC.
@@ -151,11 +133,6 @@ def evaluate_model(model, data_loader, device):
     print("---------------------------------")
     
     return mean_auc
-
-
-# ==============================================================================
-# PHẦN 5: HÀM MAIN ĐỂ CHẠY
-# ==============================================================================
 
 def main():
     print(f"Using device: {DEVICE}")

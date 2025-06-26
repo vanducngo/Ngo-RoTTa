@@ -4,7 +4,6 @@ import shutil
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
-# --- 1. CONFIGURATION ---
 SOURCE_DATA_DIR = '/Users/admin/Working/Data/vinbigdata-chest-xray'
 DEST_DATA_DIR = '/Users/admin/Working/Data/vinbigdata-chest-xray-10-percent'
 SAMPLE_FRACTION = 0.1
@@ -13,12 +12,10 @@ RANDOM_STATE = 42
 # Define condition columns for stratification (excluding 'image_id' and the last column)
 CONDITION_COLUMNS = ['No Finding', 'Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
 
-# --- 2. CREATE NEW DIRECTORY ---
 DEST_TRAIN_IMAGE_DIR = os.path.join(DEST_DATA_DIR, 'train')
 os.makedirs(DEST_TRAIN_IMAGE_DIR, exist_ok=True)
 print(f"New directory created at: {DEST_DATA_DIR}")
 
-# --- 3. LOAD AND FILTER DATA ---
 SOURCE_TRAIN_CSV_PATH = os.path.join(SOURCE_DATA_DIR, 'train.csv')
 SOURCE_TRAIN_IMAGE_DIR = os.path.join(SOURCE_DATA_DIR, 'train')
 
@@ -29,7 +26,6 @@ print(f"Original data rows: {len(df_original)}")
 # Create a 'condition_present' column for stratification (1 if any condition is 1, 0 if only 'No Finding' is 1)
 df_original['condition_present'] = df_original[CONDITION_COLUMNS].apply(lambda row: 1 if row.sum() > 1 or (row['No Finding'] == 0 and row.sum() == 1) else 0, axis=1)
 
-# --- 4. STRATIFIED SAMPLING ---
 print(f"Performing stratified sampling for {SAMPLE_FRACTION*100}% of data...")
 df_sampled_rows, _ = train_test_split(
     df_original,
@@ -42,7 +38,6 @@ df_sampled_rows, _ = train_test_split(
 sampled_image_ids = df_sampled_rows['image_id'].unique()
 print(f"Number of unique images selected: {len(sampled_image_ids)}")
 
-# --- 5. CREATE NEW TRAIN.CSV ---
 # Filter to include all annotations for sampled image_ids
 df_final_csv = df_original[df_original['image_id'].isin(sampled_image_ids)]
 
@@ -52,7 +47,6 @@ df_final_csv.to_csv(DEST_TRAIN_CSV_PATH, index=False)
 print(f"New train.csv created at: {DEST_TRAIN_CSV_PATH}")
 print(f"New train.csv rows: {len(df_final_csv)}")
 
-# --- 6. COPY IMAGE FILES ---
 print(f"\nCopying {len(sampled_image_ids)} DICOM files...")
 for image_id in tqdm(sampled_image_ids, desc="Copying images"):
     source_path = os.path.join(SOURCE_TRAIN_IMAGE_DIR, f"{image_id}.dicom")
@@ -62,7 +56,6 @@ for image_id in tqdm(sampled_image_ids, desc="Copying images"):
     else:
         print(f"Warning: Source file not found: {source_path}")
 
-# --- 7. COMPARE DISTRIBUTIONS ---
 print("\n--- DISTRIBUTION COMPARISON ---")
 print("Original data distribution (condition_present):")
 print(df_original['condition_present'].value_counts(normalize=True).round(4))

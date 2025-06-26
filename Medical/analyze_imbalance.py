@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 
-# Giả định file data_mapping.py nằm cùng thư mục hoặc định nghĩa lại ở đây
 try:
     from data_mapping import FINAL_LABEL_SET, map_chexpert_labels
 except ImportError:
@@ -22,19 +21,10 @@ except ImportError:
                 df_mapped[col] = df_mapped[col].replace(-1.0, 1.0)
         return df_mapped
 
-# ==============================================================================
-# CẤU HÌNH
-# ==============================================================================
-
 CHEXPERT_PATH = "./datasets/CheXpert-v1.0-small" # Đường dẫn đến bộ dữ liệu gốc
 TRAIN_CSV_FILENAME = "train.csv"
 OUTPUT_DIR = "./analysis_results"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-
-# ==============================================================================
-# HÀM CHÍNH ĐỂ PHÂN TÍCH (ĐÃ CẬP NHẬT)
-# ==============================================================================
 
 def analyze_chexpert_imbalance():
     """
@@ -42,7 +32,7 @@ def analyze_chexpert_imbalance():
     """
     print("--- Starting CheXpert Data Imbalance Analysis ---")
     
-    # 1. Tải và xử lý dữ liệu
+    # Tải và xử lý dữ liệu
     csv_path = os.path.join(CHEXPERT_PATH, TRAIN_CSV_FILENAME)
     if not os.path.exists(csv_path):
         print(f"Error: CSV file not found at {csv_path}")
@@ -55,7 +45,7 @@ def analyze_chexpert_imbalance():
     label_df = df[FINAL_LABEL_SET]
     total_samples = len(label_df)
 
-    # 2. Tính toán tần suất và tỷ lệ phần trăm
+    # Tính toán tần suất và tỷ lệ phần trăm
     print("\n--- Class Frequency and Percentage ---")
     class_counts = label_df.sum()
     class_percentages = (class_counts / total_samples) * 100
@@ -68,7 +58,7 @@ def analyze_chexpert_imbalance():
     
     print(summary_df)
 
-    # 3. Trực quan hóa tần suất lớp (ĐÃ CẬP NHẬT)
+    # Trực quan hóa tần suất lớp (ĐÃ CẬP NHẬT)
     plt.figure(figsize=(14, 8))
     # Sử dụng dữ liệu đã sắp xếp từ summary_df
     ax = sns.barplot(x=summary_df.index, y=summary_df['Count'], palette="viridis")
@@ -80,7 +70,6 @@ def analyze_chexpert_imbalance():
     plt.yticks(fontsize=12)
     plt.tight_layout()
     
-    # --- PHẦN THÊM VÀO ĐỂ HIỂN THỊ SỐ LƯỢNG VÀ TỶ LỆ ---
     for i, p in enumerate(ax.patches):
         # Lấy chiều cao của cột (số lượng)
         count = int(p.get_height())
@@ -100,7 +89,6 @@ def analyze_chexpert_imbalance():
                     xytext=(0, 9), 
                     textcoords='offset points',
                     fontsize=11, color='black')
-    # --------------------------------------------------------
 
     # Lưu biểu đồ
     save_path_bar = os.path.join(OUTPUT_DIR, "chexpert_class_distribution_detailed.png")
@@ -108,7 +96,7 @@ def analyze_chexpert_imbalance():
     print(f"\nClass distribution bar chart saved to: {save_path_bar}")
     plt.show()
 
-    # 4. Phân tích ma trận đồng xuất hiện (giữ nguyên)
+    # Phân tích ma trận đồng xuất hiện (giữ nguyên)
     disease_df = label_df.drop(columns=['No Finding'])
     diseases_list = disease_df.columns.tolist()
     

@@ -3,12 +3,7 @@ import os
 import shutil
 from tqdm import tqdm
 
-# ==============================================================================
-# ĐỊNH NGHĨA CÁC THAM SỐ VÀ HẰNG SỐ
-# ==============================================================================
-
-# Cấu hình đường dẫn (BẠN CẦN THAY ĐỔI CÁC ĐƯỜNG DẪN NÀY)
-VINDR_ROOT_PATH = "/Users/admin/Working/Data/vinbigdata-chest-xray" # Thư mục gốc chứa train/, test/, train.csv
+VINDR_ROOT_PATH = "/Users/admin/Working/Data/vinbigdata-chest-xray"
 OUTPUT_PATH = "/Users/admin/Working/Data/RefinedVinDr_vinbigdata-chest-xray"
 
 # Định nghĩa bộ nhãn chúng ta muốn giữ lại
@@ -31,10 +26,6 @@ VINDR_TO_COMMON_MAP = {
     'Pneumothorax': 'Pneumothorax'
 }
 
-# ==============================================================================
-# HÀM XỬ LÝ CHÍNH
-# ==============================================================================
-
 def preprocess_and_filter_vindr():
     """
     Lọc và sao chép dữ liệu cho tập train của VinDr-CXR.
@@ -56,14 +47,14 @@ def preprocess_and_filter_vindr():
     # Tạo thư mục đầu ra
     os.makedirs(target_image_dir, exist_ok=True)
 
-    # 2. Đọc và ánh xạ DataFrame gốc
+    # Đọc và ánh xạ DataFrame gốc
     print("Reading and mapping original train.csv...")
     df_raw = pd.read_csv(source_csv_path)
     
     # Ánh xạ tên bệnh về tên chung
     df_raw['class_name'] = df_raw['class_name'].replace(VINDR_TO_COMMON_MAP)
     
-    # 3. Lọc ra các image_id cần giữ lại
+    # Lọc ra các image_id cần giữ lại
     # Một image_id được giữ lại nếu:
     # - Hoặc nó có ít nhất một bệnh trong DISEASES_TO_KEEP.
     # - Hoặc nó là một ảnh 'No Finding'.
@@ -80,7 +71,7 @@ def preprocess_and_filter_vindr():
     print(f"Original number of unique images: {df_raw['image_id'].nunique()}")
     print(f"Number of unique images to keep: {len(ids_to_keep)}")
 
-    # 4. Tạo DataFrame mới đã được định dạng lại (pivoted)
+    # Tạo DataFrame mới đã được định dạng lại (pivoted)
     print("Creating new refined CSV file...")
     # Lọc DataFrame gốc chỉ giữ lại các hàng có image_id cần thiết
     df_filtered_raw = df_raw[df_raw['image_id'].isin(ids_to_keep)].copy()
@@ -102,7 +93,7 @@ def preprocess_and_filter_vindr():
             
     df_final = df_wide[['image_id'] + FINAL_LABEL_SET]
 
-    # 5. Sao chép các file ảnh đã lọc
+    # Sao chép các file ảnh đã lọc
     print("Copying filtered image files...")
     num_copied = 0
     num_skipped = 0
@@ -122,15 +113,11 @@ def preprocess_and_filter_vindr():
             
     print(f"Finished copying. Copied: {num_copied}, Skipped: {num_skipped}")
 
-    # 6. Lưu DataFrame đã lọc
+    # Lưu DataFrame đã lọc
     print(f"Saving new CSV to {target_csv_path}")
     df_final.to_csv(target_csv_path, index=False)
     
     print(f"--- Preprocessing for VinDr-CXR train set completed! ---\n")
-
-# ==============================================================================
-# HÀM MAIN ĐỂ CHẠY
-# ==============================================================================
 
 if __name__ == "__main__":
     print("===== Starting VinDr-CXR Dataset Refinement Process =====")

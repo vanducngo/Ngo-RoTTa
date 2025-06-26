@@ -1,5 +1,5 @@
 import torch
-from data_loader import get_data_loaders, get_data_loaders_cheXpert
+from data_loader import get_data_loaders_cheXpert
 from trainer import evaluate, fine_tune
 from omegaconf import OmegaConf
 import os

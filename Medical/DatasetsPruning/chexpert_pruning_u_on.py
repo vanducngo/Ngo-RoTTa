@@ -3,18 +3,9 @@ import os
 import shutil
 from tqdm import tqdm
 
-# ==============================================================================
-# ĐỊNH NGHĨA CÁC THAM SỐ VÀ HẰNG SỐ
-# ==============================================================================
-
-# Cấu hình đường dẫn (BẠN CẦN THAY ĐỔI CÁC ĐƯỜNG DẪN NÀY)
-# This path should point to the directory containing 'train.csv', 'valid.csv', etc.
 CHEXPERT_ROOT_PATH = "/Users/admin/Working/Data/CheXpert-v1.0-small"
-# This is where the new, filtered dataset will be created.
 OUTPUT_PATH = "/Users/admin/Working/Data/chexpert_pruning_U_ON"
 
-# Định nghĩa bộ nhãn chúng ta muốn giữ lại
-# Đây là các cột bệnh lý cần kiểm tra
 DISEASES_TO_KEEP = [
     'Atelectasis',
     'Cardiomegaly',
@@ -22,12 +13,9 @@ DISEASES_TO_KEEP = [
     'Pleural Effusion',
     'Pneumothorax'
 ]
+
 # Toàn bộ các cột cuối cùng, bao gồm cả 'No Finding'
 FINAL_LABEL_SET = ['No Finding'] + DISEASES_TO_KEEP
-
-# ==============================================================================
-# HÀM XỬ LÝ CHÍNH
-# ==============================================================================
 
 def preprocess_and_filter_chexpert(mode='train'):
     """
@@ -38,7 +26,6 @@ def preprocess_and_filter_chexpert(mode='train'):
     """
     print(f"--- Starting preprocessing for '{mode}' set ---")
     
-    # 1. Tạo đường dẫn
     source_csv_path = os.path.join(CHEXPERT_ROOT_PATH, f'{mode}.csv')
     if not os.path.exists(source_csv_path):
         print(f"Error: Source CSV not found at {source_csv_path}")
@@ -133,11 +120,6 @@ def preprocess_and_filter_chexpert(mode='train'):
     df_final.to_csv(target_csv_path, index=False)
     
     print(f"--- Preprocessing for '{mode}' set completed! ---\n")
-
-
-# ==============================================================================
-# HÀM MAIN ĐỂ CHẠY
-# ==============================================================================
 
 if __name__ == "__main__":
     print("===== Starting CheXpert Dataset Refinement Process =====")

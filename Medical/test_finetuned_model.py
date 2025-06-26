@@ -13,14 +13,9 @@ from omegaconf import OmegaConf
 from models import get_model
 from data_loader import get_data_loaders_cheXpert, get_data_loaders_nih14, get_data_loaders_padchest, get_data_loaders_vindr
 
-# ==============================================================================
-# PHẦN 1: CẤU HÌNH VÀ ĐỊNH NGHĨA
-# ==============================================================================
-
-# ----- BẠN CẦN THAY ĐỔI CÁC ĐƯỜNG DẪN NÀY -----
-CHEXPERT_PATH = "./datasets/CheXpert-v1.0-small" # Đường dẫn đến bộ dữ liệu gốc
 FINETUNED_MODEL_PATH = "./results/finetuned_model_mobile_net_lr0001_latest.pth"
-TEST_CSV_FILENAME = "valid.csv" # Dùng tập valid gốc để test
+CHEXPERT_PATH = "./datasets/CheXpert-v1.0-small"
+TEST_CSV_FILENAME = "valid.csv"
 # -----------------------------------------------
 
 # Định nghĩa các lớp bệnh để đánh giá
@@ -32,17 +27,13 @@ FINAL_LABEL_SET = ['No Finding'] + DISEASES
 NUM_CLASSES = len(FINAL_LABEL_SET)
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# ==============================================================================
-# PHẦN 2: CHUẨN BỊ MÔ HÌNH
-# ==============================================================================
-
 def get_pretrained_model(num_classes, model_path, cfg):
     print(f"Loading fine-tuned weights from: {model_path}")
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found at {model_path}. Please run the training script first.")
     
     print(f"Found fine-tuned model at {model_path}")
-    # Step 1: Load the pre-trained model architecture
+    # Load the pre-trained model architecture
     model = get_model(cfg, useWeight=True)
     # Load the fine-tuned weights
     model.load_state_dict(torch.load(model_path, map_location=DEVICE))
@@ -51,10 +42,6 @@ def get_pretrained_model(num_classes, model_path, cfg):
     
     print("Fine-tuned model loaded successfully.")
     return model
-
-# ==============================================================================
-# PHẦN 3: CHUẨN BỊ DỮ LIỆU
-# ==============================================================================
 
 def map_chexpert_labels(df_raw):
     """
@@ -108,11 +95,6 @@ def collate_fn(batch):
         return torch.empty(0), torch.empty(0)
     return torch.utils.data.dataloader.default_collate(batch)
 
-
-# ==============================================================================
-# PHẦN 4: HÀM ĐÁNH GIÁ
-# ==============================================================================
-
 def evaluate_model(model, data_loader, device, title="X"):
     """
     Chạy đánh giá mô hình trên tập dữ liệu test và tính AUC.
@@ -161,11 +143,6 @@ def evaluate_model(model, data_loader, device, title="X"):
     print("---------------------------------")
     
     return mean_auc
-
-
-# ==============================================================================
-# PHẦN 5: HÀM MAIN ĐỂ CHẠY
-# ==============================================================================
 
 def main():
     print(f"Using device: {DEVICE}")
