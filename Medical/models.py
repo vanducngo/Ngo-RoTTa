@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from torchvision.models import resnet18, ResNet18_Weights, mobilenet_v3_small, MobileNet_V3_Small_Weights
+from torchvision.models import resnet18, ResNet18_Weights, mobilenet_v3_small, MobileNet_V3_Small_Weights, densenet121, DenseNet121_Weights
 from transformers import AutoModelForImageClassification, AutoConfig
 
 def set_parameter_requires_grad(model, feature_extracting):
@@ -50,6 +50,18 @@ def get_model(cfg, feature_extract=False, useWeight = True):
         model.classifier[-1] = nn.Sequential(
              nn.Dropout(p=0.7),
              nn.Linear(num_ftrs, cfg.MODEL.NUM_CLASSES)
+        )
+    elif cfg.MODEL.ARCH == 'densenet121':
+        weights = DenseNet121_Weights.IMAGENET1K_V1 if useWeight else None
+        model = densenet121(weights=weights)
+        
+        set_parameter_requires_grad(model, feature_extract)
+        
+        # Lớp cuối của DenseNet có tên là 'classifier'
+        num_ftrs = model.classifier.in_features
+        model.classifier = nn.Sequential(
+            nn.Dropout(p=0.5),
+            nn.Linear(num_ftrs, cfg.MODEL.NUM_CLASSES)
         )
     elif cfg.MODEL.ARCH == 'cxr_foundation':
         # Load CXR Foundation model from Hugging Face
@@ -119,29 +131,25 @@ def unfreeze_specific_layers(model, layers_to_unfreeze=['layer4', 'fc']):
 if __name__ == '__main__':
     from omegaconf import OmegaConf
     
-    # Giả định có file config.yaml
-    cfg = OmegaConf.create({
-        "MODEL": {
-            "ARCH": "resnet18",
-            "NUM_CLASSES": 6
-        }
-    })
+    # Tạo một config giả để test
+    def create_test_config(arch_name):
+        return OmegaConf.create({
+            "MODEL": { "ARCH": arch_name, "NUM_CLASSES": 6 }
+        })
 
-    print("\n--- TEST 1: FINE-TUNING MODE (DEFAULT) ---")
-    model_ft = get_model(cfg, feature_extract=False)
-    # In ra để xem tất cả các tham số đều có requires_grad = True
-    # for name, param in model_ft.named_parameters():
-    #     print(f"{name}: requires_grad={param.requires_grad}")
+    print("\n--- TESTING ResNet18 ---")
+    cfg_resnet = create_test_config('resnet18')
+    model_resnet = get_model(cfg_resnet)
+    print(model_resnet.fc)
 
-    print("\n--- TEST 2: FEATURE EXTRACTING MODE ---")
-    model_fe = get_model(cfg, feature_extract=True)
-    # In ra để xem chỉ lớp cuối có requires_grad = True
-    # print("Trainable parameters in feature extracting mode:")
-    # for name, param in model_fe.named_parameters():
-    #     if param.requires_grad:
-    #         print(name)
-            
-    print("\n--- TEST 3: UNFREEZING layer4 and fc ---")
-    # Bắt đầu với mô hình bị đóng băng hoàn toàn
-    model_unfrozen = get_model(cfg, feature_extract=True)
-    unfreeze_specific_layers(model_unfrozen, layers_to_unfreeze=['layer4', 'fc'])
+    print("\n" + "="*40)
+    print("\n--- TESTING MobileNetV3-Small ---")
+    cfg_mobile = create_test_config('mobilenet_v3_small')
+    model_mobile = get_model(cfg_mobile)
+    print(model_mobile.classifier)
+
+    print("\n" + "="*40)
+    print("\n--- TESTING DenseNet121 ---")
+    cfg_dense = create_test_config('densenet121')
+    model_dense = get_model(cfg_dense)
+    print(model_dense.classifier)
