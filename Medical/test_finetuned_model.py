@@ -10,6 +10,7 @@ import os
 from tqdm import tqdm
 from omegaconf import OmegaConf
 
+from continual_data_loader import ContinualDomainLoader
 from models import get_model
 from data_loader import get_data_loaders_cheXpert, get_data_loaders_nih14, get_data_loaders_padchest, get_data_loaders_vindr
 
@@ -165,8 +166,8 @@ def main():
     # 3. Chạy đánh giá
 
     # Base 
-    _, chexpert_test_loader =  get_data_loaders_cheXpert(cfg)
-    evaluate_model(model, chexpert_test_loader, DEVICE, "CheXpert")
+    # _, chexpert_test_loader =  get_data_loaders_cheXpert(cfg)
+    # evaluate_model(model, chexpert_test_loader, DEVICE, "CheXpert")
     
     # VinDr CXR 
     # vindr_test_loader =  get_data_loaders_vindr(cfg)
@@ -179,6 +180,25 @@ def main():
     # PadChest dataset
     # padchest_test_loader = get_data_loaders_padchest(cfg)
     # evaluate_model(model, padchest_test_loader, DEVICE, "padchest")
+
+    # 3. Tạo luồng dữ liệu liên tục
+    eval_transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+    
+    # Chuỗi các domain thay đổi theo từng batch
+    # Ví dụ: 100 batch, luân phiên
+    domain_sequence = ['vindr', 'nih14', 'padchest'] * 33 + ['vindr'] 
+    
+    continual_loader = ContinualDomainLoader(
+        cfg, 
+        domain_sequence=domain_sequence, 
+        batch_size=cfg.ADAPTER.BATCH_SIZE, 
+        transform=eval_transform
+    )
+    evaluate_model(model, continual_loader, DEVICE, "honhop")
 
 if __name__ == "__main__":
     main()

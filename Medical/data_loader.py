@@ -31,12 +31,12 @@ class MultiSourceDataset(Dataset):
         elif self.dataset_name == 'nih14':
             csv_path = os.path.join(cfg.DATA.CHESTXRAY14_PATH, cfg.DATA.CHESTXRAY14_CSV)
             self.df = pd.read_csv(csv_path)
-            self.root_dir = os.path.join(cfg.DATA.CHESTXRAY14_PATH, 'images') 
+            self.root_dir = os.path.join(cfg.DATA.CHESTXRAY14_PATH, cfg.DATA.CHESTXRAY14_IMAGE_DIR) 
             self.image_col = 'image_id'
         elif self.dataset_name == 'padchest':
             csv_path = os.path.join(cfg.DATA.PADCHEST_PATH, cfg.DATA.PADCHEST_CSV)
             self.df = pd.read_csv(csv_path)
-            self.root_dir = os.path.join(cfg.DATA.PADCHEST_PATH, 'images') 
+            self.root_dir = os.path.join(cfg.DATA.PADCHEST_PATH, cfg.DATA.PADCHEST_IMAGE_DIR) 
             self.image_col = 'image_id'
         else:
             raise ValueError(f"Unknown dataset: {self.dataset_name}")
@@ -50,7 +50,9 @@ class MultiSourceDataset(Dataset):
     def __getitem__(self, idx):
         # Lấy tên file/đường dẫn ảnh từ dataframe
         img_name = self.df.iloc[idx][self.image_col]
-        img_path = os.path.join(self.root_dir, img_name)
+
+        path_prefix = '' if img_name.endswith('.png') else '.png'
+        img_path = os.path.join(self.root_dir, img_name + path_prefix)
             
         try:
             image = Image.open(img_path).convert('RGB')
