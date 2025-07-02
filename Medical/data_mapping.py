@@ -1,5 +1,24 @@
 import pandas as pd
 
+CHEXPERT_14_LABELS = [
+    'No Finding',
+    'Enlarged Cardiomediastinum',
+    'Cardiomegaly',
+    'Lung Opacity',
+    'Lung Lesion',
+    'Edema',
+    'Consolidation',
+    'Pneumonia',
+    'Atelectasis',
+    'Pneumothorax',
+    'Pleural Effusion',
+    'Pleural Other',
+    'Fracture',
+    'Support Devices'
+]
+
+TRAINING_LABEL_SET = CHEXPERT_14_LABELS
+
 # Chọn 5 bệnh lý phổ biến và nhất quán nhất
 COMMON_DISEASES = [
     'No Finding',
@@ -9,6 +28,22 @@ COMMON_DISEASES = [
     'Pleural Effusion',
     'Pneumothorax'
 ]
+
+def map_chexpert_labels_14(df_raw):
+    """
+    Ánh xạ cho toàn bộ 14 lớp của CheXpert.
+    """
+    # Chỉ giữ lại các cột cần thiết
+    df_mapped = df_raw[['Path'] + TRAINING_LABEL_SET].copy()
+    df_mapped = df_mapped.fillna(0)
+    
+    # Xử lý các giá trị không chắc chắn (-1)
+    for col in TRAINING_LABEL_SET:
+        if col in df_mapped.columns:
+            # Coi "không chắc chắn" là "dương tính"
+            df_mapped[col] = df_mapped[col].replace(-1.0, 1.0)
+            
+    return df_mapped
 
 def map_chexpert_labels(df_raw):
     """
