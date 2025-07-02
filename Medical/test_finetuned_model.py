@@ -10,11 +10,12 @@ import os
 from tqdm import tqdm
 from omegaconf import OmegaConf
 
-from continual_data_loader import ContinualDomainLoader
+from medical_continual_data_loader import ContinualDomainLoader
 from models import get_model
 from data_loader import get_data_loaders_cheXpert, get_data_loaders_nih14, get_data_loaders_padchest, get_data_loaders_vindr
 
-FINETUNED_MODEL_PATH = "./results/finetuned_model_mobile_net_lr0001_latest.pth"
+# FINETUNED_MODEL_PATH = "./results/finetuned_model_mobile_net_lr0001_latest.pth"
+FINETUNED_MODEL_PATH = "./Medical/results/finetuned_model_resnet_jun25_22h40.pth"
 CHEXPERT_PATH = "./datasets/CheXpert-v1.0-small"
 TEST_CSV_FILENAME = "valid.csv"
 # -----------------------------------------------
@@ -195,7 +196,7 @@ def main():
     continual_loader = ContinualDomainLoader(
         cfg, 
         domain_sequence=domain_sequence, 
-        batch_size=cfg.ADAPTER.BATCH_SIZE, 
+        batch_size=cfg.TRAINING.BATCH_SIZE, 
         transform=eval_transform
     )
     evaluate_model(model, continual_loader, DEVICE, "honhop")

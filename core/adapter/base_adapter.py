@@ -3,7 +3,6 @@ import torch
 import torch.nn as nn
 import logging
 
-
 class BaseAdapter(nn.Module):
     def __init__(self, cfg, model, optimizer):
         super().__init__()

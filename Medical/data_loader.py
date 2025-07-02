@@ -24,7 +24,7 @@ class MultiSourceDataset(Dataset):
             self.root_dir = cfg.DATA.CHEXPERT_PATH
             self.image_col = 'Path'
         elif self.dataset_name == 'vindr':
-            csv_path = os.path.join(cfg.DATA.VINDR_PATH, cfg.DATA.VINDR_EVAL_CSV)
+            csv_path = os.path.join(cfg.DATA.VINDR_PATH, cfg.DATA.VINDR_CSV)
             self.df = pd.read_csv(csv_path)
             self.root_dir = os.path.join(cfg.DATA.VINDR_PATH, cfg.DATA.VINDR_IMAGE_DIR)
             self.image_col = 'image_id'

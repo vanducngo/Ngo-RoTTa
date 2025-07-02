@@ -54,7 +54,7 @@
             
 #         elif self.dataset_name == 'vindr':
 #             image_dir_name = cfg.DATA.VINDR_IMAGE_DIR
-#             csv_file_name = cfg.DATA.VINDR_EVAL_CSV
+#             csv_file_name = cfg.DATA.VINDR_CSV
 
 #             csv_path = os.path.join(cfg.DATA.VINDR_PATH, csv_file_name)
 #             raw_df = pd.read_csv(csv_path)

@@ -4,7 +4,7 @@ DATA:
   CHEXPERT_TEST_CSV: "valid.csv"
 
   VINDR_PATH: "/Users/admin/Working/Data/MixData/vinbigdata_structured"
-  VINDR_EVAL_CSV: "validate.csv"
+  VINDR_CSV: "validate.csv"
   VINDR_IMAGE_DIR: "images"
 
   CHESTXRAY14_PATH: "/Users/admin/Working/Data/MixData/nih_14_structured"
@@ -26,7 +26,7 @@ COMMON_DISEASES:
 
 # Cấu hình mô hình
 MODEL:
-  ARCH: "mobilenet_v3_small"           # Kiến trúc mô hình > resnet18, mobilenet_v3_small
+  ARCH: "resnet18"           # Kiến trúc mô hình > resnet18, mobilenet_v3_small
   NUM_CLASSES: 6                       # Số lớp bệnh chung
 
 # Cấu hình huấn luyện
@@ -39,5 +39,24 @@ TRAINING:
   EARLY_STOPPING_PATIENCE: 15 
   USE_WEIGHTED_LOSS: True
   USE_WEIGHTED_SAMPLER: False
+
+OPTIM:
+  METHOD: Adam
+  STEPS: 1
+  BETA: 0.9
+  LR: 1e-3
+  WD: 0.
+
+ADAPTER: # Cấu hình riêng cho RoTTA
+  NAME: "SimpleRoTTA"
+  LR: 1e-5
+  MEMORY_SIZE: 64
+  BATCH_SIZE: 16
+  EMA_DECAY: 0.99
+  UNCERTAINTY_THRESHOLD: 0.7 # Chỉ chấp nhận mẫu có uncertainty < 0.7
+  AGE_WEIGHT: 0.01 # Trọng số của tuổi trong điểm heuristic
+
+INPUT:
+  SIZE: (224, 224)
 
 OUTPUT_DIR: "./results/"

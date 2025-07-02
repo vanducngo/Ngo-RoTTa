@@ -5,8 +5,8 @@ import pandas as pd
 import os
 from PIL import Image
 
-from data_mapping import map_vindr_labels, map_chestxray14_labels, map_padchest_labels
-from data_mapping import COMMON_DISEASES
+from Medical.data_mapping import map_vindr_labels, map_chestxray14_labels, map_padchest_labels
+from Medical.data_mapping import COMMON_DISEASES
 
 class SingleDomainDataset(Dataset):
     def __init__(self, root_path, csv_path, domain_name, label_mapper, transform=None):
@@ -56,8 +56,8 @@ class ContinualDomainLoader:
                 csv = cfg.DATA.VINDR_CSV
                 mapper = map_vindr_labels
             elif domain_name == 'nih14':
-                root = cfg.DATA.NIH14_PATH
-                csv = cfg.DATA.NIH14_CSV
+                root = cfg.DATA.CHESTXRAY14_PATH
+                csv = cfg.DATA.CHESTXRAY14_CSV
                 mapper = map_chestxray14_labels
             elif domain_name == 'padchest':
                 root = cfg.DATA.PADCHEST_PATH
