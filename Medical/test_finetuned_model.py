@@ -12,9 +12,10 @@ from omegaconf import OmegaConf
 
 from models import get_model, get_model_chexpert_14
 from data_loader import get_data_loaders_cheXpert, get_data_loaders_nih14, get_data_loaders_padchest, get_data_loaders_vindr
+from data_mapping import TRAINING_LABEL_SET
 
 # FINETUNED_MODEL_PATH = "./results/finetuned_model_mobile_net_lr0001_latest.pth"
-FINETUNED_MODEL_PATH = "./Medical/results/finetuned_model_14label_dense_net_july3_11h50.pth"
+FINETUNED_MODEL_PATH = "./Medical/results/mobile_net_14class_jul3_22h41.pth"
 CHEXPERT_PATH = "./datasets/CheXpert-v1.0-small"
 TEST_CSV_FILENAME = "valid.csv"
 # -----------------------------------------------
@@ -96,54 +97,97 @@ def collate_fn(batch):
         return torch.empty(0), torch.empty(0)
     return torch.utils.data.dataloader.default_collate(batch)
 
-def evaluate_model(model, data_loader, device, title="X"):
-    """
-    Chạy đánh giá mô hình trên tập dữ liệu test và tính AUC.
-    """
-    print(f"\n>>> Starting evaluation {title}...")
-    model.to(device)
-    model.eval() # Chuyển mô hình sang chế độ đánh giá
+# def evaluate_model(model, data_loader, device, title="X"):
+#     """
+#     Chạy đánh giá mô hình trên tập dữ liệu test và tính AUC.
+#     """
+#     print(f"\n>>> Starting evaluation {title}...")
+#     model.to(device)
+#     model.eval() # Chuyển mô hình sang chế độ đánh giá
 
+#     all_probs = []
+#     all_labels = []
+    
+#     with torch.no_grad(): # Không cần tính gradient khi đánh giá
+#         for images, labels in tqdm(data_loader, desc="Evaluating"):
+#             if images.numel() == 0: continue
+            
+#             images = images.to(device)
+            
+#             outputs = model(images) # Lấy logits từ mô hình
+#             probs = torch.sigmoid(outputs) # Chuyển logits thành xác suất
+            
+#             all_probs.append(probs.cpu().numpy())
+#             all_labels.append(labels.numpy())
+            
+#     # Gộp kết quả từ tất cả các batch
+#     all_probs = np.concatenate(all_probs, axis=0)
+#     all_labels = np.concatenate(all_labels, axis=0)
+    
+#     # Tính toán AUC cho từng lớp và AUC trung bình
+#     print("\n--- AUC Scores per Class ---")
+#     auc_scores = []
+#     for i, class_name in enumerate(FINAL_LABEL_SET):
+#         # Chỉ tính AUC nếu có cả nhãn dương và âm
+#         if len(np.unique(all_labels[:, i])) > 1:
+#             try:
+#                 auc = roc_auc_score(all_labels[:, i], all_probs[:, i])
+#                 auc_scores.append(auc)
+#                 print(f"{class_name:<20}: {auc:.4f}")
+#             except ValueError:
+#                 print(f"Warning: AUC undefined for class {class_name}, skipping.")
+#         else:
+#             print(f"Warning: Only one class present for {class_name}, skipping AUC calculation.")
+
+#     mean_auc = np.mean(auc_scores) if auc_scores else 0.0
+#     print("---------------------------------")
+#     print(f"Mean AUC: {mean_auc:.4f}")
+#     print("---------------------------------")
+    
+#     return mean_auc
+
+def evaluate(model, data_loader, device, criterion):
+    """
+    Đánh giá mô hình, trả về mean AUC, loss trung bình, và một dict chứa AUC của từng lớp.
+    """    
+    model.eval()  # Chuyển mô hình sang chế độ đánh giá
+    
     all_probs = []
     all_labels = []
+    total_loss = 0.0
     
-    with torch.no_grad(): # Không cần tính gradient khi đánh giá
+    with torch.no_grad():
         for images, labels in tqdm(data_loader, desc="Evaluating"):
             if images.numel() == 0: continue
+            images, labels = images.to(device), labels.to(device)
             
-            images = images.to(device)
+            outputs = model(images)  # Logits
+            loss = criterion(outputs, labels)
+            total_loss += loss.item() * images.size(0)
             
-            outputs = model(images) # Lấy logits từ mô hình
-            probs = torch.sigmoid(outputs) # Chuyển logits thành xác suất
-            
+            probs = torch.sigmoid(outputs)  # Chuyển logits thành xác suất
             all_probs.append(probs.cpu().numpy())
-            all_labels.append(labels.numpy())
+            all_labels.append(labels.cpu().numpy())
             
-    # Gộp kết quả từ tất cả các batch
     all_probs = np.concatenate(all_probs, axis=0)
     all_labels = np.concatenate(all_labels, axis=0)
     
-    # Tính toán AUC cho từng lớp và AUC trung bình
-    print("\n--- AUC Scores per Class ---")
-    auc_scores = []
-    for i, class_name in enumerate(FINAL_LABEL_SET):
-        # Chỉ tính AUC nếu có cả nhãn dương và âm
+    # Tính toán AUC
+    auc_scores = {}
+    valid_aucs = []
+    for i, class_name in enumerate(TRAINING_LABEL_SET):
         if len(np.unique(all_labels[:, i])) > 1:
             try:
                 auc = roc_auc_score(all_labels[:, i], all_probs[:, i])
-                auc_scores.append(auc)
-                print(f"{class_name:<20}: {auc:.4f}")
+                auc_scores[f"auc/{class_name}"] = auc # Tên key phù hợp cho wandb
+                valid_aucs.append(auc)
             except ValueError:
-                print(f"Warning: AUC undefined for class {class_name}, skipping.")
-        else:
-            print(f"Warning: Only one class present for {class_name}, skipping AUC calculation.")
-
-    mean_auc = np.mean(auc_scores) if auc_scores else 0.0
-    print("---------------------------------")
-    print(f"Mean AUC: {mean_auc:.4f}")
-    print("---------------------------------")
+                pass
+                
+    mean_auc = np.mean(valid_aucs) if valid_aucs else 0.0
+    avg_loss = total_loss / len(data_loader.dataset)
     
-    return mean_auc
+    return mean_auc, avg_loss, auc_scores
 
 def main():
     print(f"Using device: {DEVICE}")
@@ -164,10 +208,14 @@ def main():
     
     print("\n>>> Loading datasets...")
     # 3. Chạy đánh giá
-
+    
+    criterion = nn.BCEWithLogitsLoss(pos_weight=None)
     # Base 
     _, chexpert_test_loader =  get_data_loaders_cheXpert(cfg)
-    evaluate_model(model, chexpert_test_loader, DEVICE, "CheXpert")
+    mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate(model, chexpert_test_loader, DEVICE, criterion)
+    print(f"Mean AUC: {mean_valid_auc}")
+    print(f"per_class_auc: {per_class_auc}")
+    # evaluate_model(model, chexpert_test_loader, DEVICE, "CheXpert")
     
     # VinDr CXR 
     # vindr_test_loader =  get_data_loaders_vindr(cfg)

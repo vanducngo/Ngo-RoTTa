@@ -17,7 +17,7 @@ class CheXpertFullLabelDataset(Dataset):
         
         raw_df = pd.read_csv(csv_path)
         # Gọi hàm map mới
-        self.df = map_chexpert_labels_14(raw_df)
+        self.df = raw_df # map_chexpert_labels_14(raw_df)
         self.root_dir = cfg.DATA.CHEXPERT_PATH_ROOT_PATH
         print(f"Loaded CheXpert {mode} dataset with {len(self.df)} samples for {len(TRAINING_LABEL_SET)} classes.")
 
@@ -25,7 +25,7 @@ class CheXpertFullLabelDataset(Dataset):
         return len(self.df)
 
     def __getitem__(self, idx):
-        img_path = os.path.join(self.root_dir, self.df.iloc[idx]['Path'])
+        img_path = os.path.join(self.root_dir, self.df.iloc[idx]['image_id'])
         try:
             image = Image.open(img_path).convert('RGB')
         except Exception as e:
@@ -55,7 +55,7 @@ class MultiSourceDataset(Dataset):
                                     cfg.DATA.CHEXPERT_TRAIN_CSV if mode == 'train' else cfg.DATA.CHEXPERT_TEST_CSV)
             raw_df = pd.read_csv(csv_path)
             self.df = map_chexpert_labels(raw_df)
-            self.root_dir = cfg.DATA.CHEXPERT_PATH
+            self.root_dir = cfg.DATA.CHEXPERT_PATH_ROOT_PATH
             self.image_col = 'Path'
         elif self.dataset_name == 'vindr':
             csv_path = os.path.join(cfg.DATA.VINDR_PATH, cfg.DATA.VINDR_CSV)
