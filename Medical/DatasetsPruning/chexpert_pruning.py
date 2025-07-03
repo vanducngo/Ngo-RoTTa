@@ -3,9 +3,9 @@ import os
 import shutil
 from tqdm import tqdm
 
-CHEXPERT_ROOT_PATH = "../datasets/CheXpert-v1.0-small"
+CHEXPERT_ROOT_PATH = "/Users/admin/Working/Data/CheXpert-v1.0-small"
 
-OUTPUT_PATH = "../datasets/RefinedCheXpert"
+OUTPUT_PATH = "/Users/admin/Working/Data/RefinedCheXpert"
 
 DISEASES_TO_KEEP = [
     'Atelectasis',

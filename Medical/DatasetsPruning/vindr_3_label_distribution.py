@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-CSV_PATH = '/Users/admin/Working/Data/vinbigdata-chest-xray-10-percent/train.csv'
+CSV_PATH = '/Users/admin/Working/Data/vinbigdata-chest-xray-30-percent/train.csv'
 df = pd.read_csv(CSV_PATH)
 print(f"Total rows loaded: {len(df)}")
 

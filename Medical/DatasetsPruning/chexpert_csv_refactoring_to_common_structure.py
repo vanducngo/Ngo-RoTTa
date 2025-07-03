@@ -56,12 +56,12 @@ def process_chexpert_data(input_csv_path, output_csv_path):
 
 # Giả sử bạn có file 'train.csv' và 'valid.csv' trong cùng thư mục với file script
 # Đường dẫn file đầu vào
-train_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/train.csv'
-valid_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/valid.csv'
+train_file = '/Users/admin/Working/Data/CheXpert-v1.0-small/train.csv'
+valid_file = '/Users/admin/Working/Data/CheXpert-v1.0-small/valid.csv'
 
 # Đường dẫn file đầu ra (tên file mới)
-fixed_train_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/train_fixed.csv'
-fixed_valid_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/valid_fixed.csv'
+fixed_train_file = '/Users/admin/Working/Data/CheXpert-v1.0-small/train_fixed.csv'
+fixed_valid_file = '/Users/admin/Working/Data/CheXpert-v1.0-small/valid_fixed.csv'
 
 # Chạy hàm để xử lý file train.csv
 process_chexpert_data(train_file, fixed_train_file)

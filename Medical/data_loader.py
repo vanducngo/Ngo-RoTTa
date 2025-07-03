@@ -55,7 +55,7 @@ class MultiSourceDataset(Dataset):
                                     cfg.DATA.CHEXPERT_TRAIN_CSV if mode == 'train' else cfg.DATA.CHEXPERT_TEST_CSV)
             raw_df = pd.read_csv(csv_path)
             self.df = map_chexpert_labels(raw_df)
-            self.root_dir = cfg.DATA.CHEXPERT_PATH_ROOT_PATH
+            self.root_dir = cfg.DATA.CHEXPERT_PATH
             self.image_col = 'Path'
         elif self.dataset_name == 'vindr':
             csv_path = os.path.join(cfg.DATA.VINDR_PATH, cfg.DATA.VINDR_CSV)
@@ -85,7 +85,7 @@ class MultiSourceDataset(Dataset):
         # Lấy tên file/đường dẫn ảnh từ dataframe
         img_name = self.df.iloc[idx][self.image_col]
 
-        path_prefix = '' if img_name.endswith('.png') else '.png'
+        path_prefix = '' if (img_name.endswith('.png') or img_name.endswith('.jpg')) else '.png'
         img_path = os.path.join(self.root_dir, img_name + path_prefix)
             
         try:

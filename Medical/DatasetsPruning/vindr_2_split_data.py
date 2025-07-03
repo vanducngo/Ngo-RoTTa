@@ -5,8 +5,8 @@ from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 
 SOURCE_DATA_DIR = '/Users/admin/Working/Data/vinbigdata-chest-xray'
-DEST_DATA_DIR = '/Users/admin/Working/Data/vinbigdata-chest-xray-10-percent'
-SAMPLE_FRACTION = 0.1
+DEST_DATA_DIR = '/Users/admin/Working/Data/vinbigdata-chest-xray-30-percent'
+SAMPLE_FRACTION = 0.3
 RANDOM_STATE = 42
 
 # Define condition columns for stratification (excluding 'image_id' and the last column)
@@ -16,8 +16,8 @@ DEST_TRAIN_IMAGE_DIR = os.path.join(DEST_DATA_DIR, 'train')
 os.makedirs(DEST_TRAIN_IMAGE_DIR, exist_ok=True)
 print(f"New directory created at: {DEST_DATA_DIR}")
 
-SOURCE_TRAIN_CSV_PATH = os.path.join(SOURCE_DATA_DIR, 'train.csv')
-SOURCE_TRAIN_IMAGE_DIR = os.path.join(SOURCE_DATA_DIR, 'train')
+SOURCE_TRAIN_CSV_PATH = os.path.join(SOURCE_DATA_DIR, 'validate.csv')
+SOURCE_TRAIN_IMAGE_DIR = os.path.join(SOURCE_DATA_DIR, 'images')
 
 print("Loading original train.csv...")
 df_original = pd.read_csv(SOURCE_TRAIN_CSV_PATH)

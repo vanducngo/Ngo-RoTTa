@@ -6,9 +6,9 @@ from tqdm import tqdm
 import glob
 
 SOURCE_DATA_DIR = '/Users/admin/Working/Data/nih-14-pruning'
-DEST_DATA_DIR = '/Users/admin/Working/Data/cxr-14-10_percent'
+DEST_DATA_DIR = '/Users/admin/Working/Data/cxr-14-30_percent'
 
-SAMPLE_FRACTION = 0.1
+SAMPLE_FRACTION = 0.3
 RANDOM_STATE = 42
 
 # Các cột nhãn trong file CSV

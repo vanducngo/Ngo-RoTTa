@@ -72,9 +72,7 @@ def fine_tune(cfg, model, train_loader, valid_loader, device, class_weights=None
     model.to(device)
     
     # Sử dụng BCEWithLogitsLoss để ổn định hơn
-    # criterion = nn.BCEWithLogitsLoss(pos_weight=class_weights)
-
-    criterion = nn.BCELoss()
+    criterion = nn.BCEWithLogitsLoss(pos_weight=class_weights)
     optimizer = optim.Adam(model.parameters(), lr=cfg.TRAINING.LEARNING_RATE, weight_decay=cfg.TRAINING.WEIGHT_DECAY)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', factor=0.1, patience=5)
     

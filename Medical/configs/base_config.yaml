@@ -1,6 +1,6 @@
 DATA:
-  CHEXPERT_PATH_ROOT_PATH: "/home/ngo/Working/Data"
-  CHEXPERT_PATH: "/home/ngo/Working/Data/CheXpert-v1.0-small"
+  CHEXPERT_PATH_ROOT_PATH: "/Users/admin/Working/Data/MixData"
+  CHEXPERT_PATH: "/Users/admin/Working/Data/MixData/CheXpert-v1.0-small"
   CHEXPERT_TRAIN_CSV: "train.csv"
   CHEXPERT_TEST_CSV: "valid.csv"
 
@@ -27,7 +27,7 @@ COMMON_DISEASES:
 
 # Cấu hình mô hình
 MODEL:
-  ARCH: "mobilenet_v3_small"           # Kiến trúc mô hình > resnet18, resnet50, mobilenet_v3_small, densenet121
+  ARCH: "densenet121"           # Kiến trúc mô hình > resnet18, resnet50, mobilenet_v3_small, densenet121
   NUM_CLASSES: 6                       # Số lớp bệnh chung
 
 # Cấu hình huấn luyện

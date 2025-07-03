@@ -6,12 +6,13 @@ from sklearn.metrics import roc_auc_score
 from torchvision import transforms
 import os
 
-from Medical.models import get_model
+from Medical.models import get_model, loadModelFor6Classes
 from medical_continual_data_loader import ContinualDomainLoader
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # FINETUNED_MODEL_PATH = "./Medical/results/finetuned_model_mobile_net_lr0001_latest.pth"
-FINETUNED_MODEL_PATH = "./Medical/results/finetuned_model_resnet_jun25_22h40.pth"
+# FINETUNED_MODEL_PATH = "./Medical/results/finetuned_model_resnet_jun25_22h40.pth"
+FINETUNED_MODEL_PATH = "./Medical/results/finetuned_model_14label_mobile_net_july3_11h50.pth"
 
 def get_pretrained_model(model_path, cfg):
     print(f"Loading fine-tuned weights from: {model_path}")
@@ -20,10 +21,11 @@ def get_pretrained_model(model_path, cfg):
     
     print(f"Found fine-tuned model at {model_path}")
     # Load the pre-trained model architecture
-    model = get_model(cfg, useWeight=True)
+    # model = get_model(cfg, useWeight=True)
     # Load the fine-tuned weights
-    model.load_state_dict(torch.load(model_path, map_location=DEVICE))
-    model.to(DEVICE)
+    # model.load_state_dict(torch.load(model_path, map_location=DEVICE))
+    # model.to(DEVICE)
+    model = loadModelFor6Classes(cfg, model_path)
     print(f"Loaded fine-tuned model from {model_path}")
     
     print("Fine-tuned model loaded successfully.")

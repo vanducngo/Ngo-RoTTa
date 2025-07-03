@@ -10,12 +10,11 @@ import os
 from tqdm import tqdm
 from omegaconf import OmegaConf
 
-from medical_continual_data_loader import ContinualDomainLoader
-from models import get_model
+from models import get_model, get_model_chexpert_14
 from data_loader import get_data_loaders_cheXpert, get_data_loaders_nih14, get_data_loaders_padchest, get_data_loaders_vindr
 
 # FINETUNED_MODEL_PATH = "./results/finetuned_model_mobile_net_lr0001_latest.pth"
-FINETUNED_MODEL_PATH = "./Medical/results/finetuned_model_resnet_jun25_22h40.pth"
+FINETUNED_MODEL_PATH = "./Medical/results/finetuned_model_14label_dense_net_july3_11h50.pth"
 CHEXPERT_PATH = "./datasets/CheXpert-v1.0-small"
 TEST_CSV_FILENAME = "valid.csv"
 # -----------------------------------------------
@@ -36,7 +35,7 @@ def get_pretrained_model(num_classes, model_path, cfg):
     
     print(f"Found fine-tuned model at {model_path}")
     # Load the pre-trained model architecture
-    model = get_model(cfg, useWeight=True)
+    model = get_model_chexpert_14(cfg)
     # Load the fine-tuned weights
     model.load_state_dict(torch.load(model_path, map_location=DEVICE))
     model.to(DEVICE)
@@ -149,7 +148,7 @@ def evaluate_model(model, data_loader, device, title="X"):
 def main():
     print(f"Using device: {DEVICE}")
 
-    cfg = OmegaConf.load('configs/base_config.yaml')
+    cfg = OmegaConf.load('Medical/configs/base_config.yaml')
     
     # 1. Tải mô hình
     model = get_pretrained_model(num_classes=NUM_CLASSES,
@@ -167,8 +166,8 @@ def main():
     # 3. Chạy đánh giá
 
     # Base 
-    # _, chexpert_test_loader =  get_data_loaders_cheXpert(cfg)
-    # evaluate_model(model, chexpert_test_loader, DEVICE, "CheXpert")
+    _, chexpert_test_loader =  get_data_loaders_cheXpert(cfg)
+    evaluate_model(model, chexpert_test_loader, DEVICE, "CheXpert")
     
     # VinDr CXR 
     # vindr_test_loader =  get_data_loaders_vindr(cfg)
@@ -183,23 +182,23 @@ def main():
     # evaluate_model(model, padchest_test_loader, DEVICE, "padchest")
 
     # 3. Tạo luồng dữ liệu liên tục
-    eval_transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
+    # eval_transform = transforms.Compose([
+    #     transforms.Resize((224, 224)),
+    #     transforms.ToTensor(),
+    #     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    # ])
     
     # Chuỗi các domain thay đổi theo từng batch
     # Ví dụ: 100 batch, luân phiên
-    domain_sequence = ['vindr', 'nih14', 'padchest'] * 33 + ['vindr'] 
+    # domain_sequence = ['vindr', 'nih14', 'padchest'] * 33 + ['vindr'] 
     
-    continual_loader = ContinualDomainLoader(
-        cfg, 
-        domain_sequence=domain_sequence, 
-        batch_size=cfg.TRAINING.BATCH_SIZE, 
-        transform=eval_transform
-    )
-    evaluate_model(model, continual_loader, DEVICE, "honhop")
+    # continual_loader = ContinualDomainLoader(
+    #     cfg, 
+    #     domain_sequence=domain_sequence, 
+    #     batch_size=cfg.TRAINING.BATCH_SIZE, 
+    #     transform=eval_transform
+    # )
+    # evaluate_model(model, continual_loader, DEVICE, "honhop")
 
 if __name__ == "__main__":
     main()

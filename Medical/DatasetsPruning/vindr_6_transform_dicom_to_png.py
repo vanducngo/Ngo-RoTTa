@@ -7,18 +7,18 @@ import pandas as pd
 from tqdm import tqdm
 from PIL import Image
 
-VINDR_ROOT_PATH = "/Users/admin/Working/Data/vinbigdata-chest-xray-10-percent"
+VINDR_ROOT_PATH = "/Users/admin/Working/Data/MixData/vinbigdata-chest-xray-30-percent"
 
 OUTPUT_ROOT_PATH = "/Users/admin/Working/Data/vinbigdata_structured"
 
 SETS_TO_CONVERT = {
-    'train': 'train.csv',
+    'images': 'validate.csv',
     # 'test': 'test.csv' 
 }
 
-TARGET_SIZE = 512
+TARGET_SIZE = 224
 
-def process_dicom_to_png(dicom_path, output_path, target_size=512):
+def process_dicom_to_png(dicom_path, output_path, target_size=224):
     """
     Đọc một file DICOM, xử lý, thay đổi kích thước và lưu thành file PNG.
     
