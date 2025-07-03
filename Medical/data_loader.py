@@ -18,7 +18,7 @@ class CheXpertFullLabelDataset(Dataset):
         raw_df = pd.read_csv(csv_path)
         # Gọi hàm map mới
         self.df = map_chexpert_labels_14(raw_df)
-        self.root_dir = cfg.DATA.CHEXPERT_PATH
+        self.root_dir = cfg.DATA.CHEXPERT_PATH_ROOT_PATH
         print(f"Loaded CheXpert {mode} dataset with {len(self.df)} samples for {len(TRAINING_LABEL_SET)} classes.")
 
     def __len__(self):
@@ -55,7 +55,7 @@ class MultiSourceDataset(Dataset):
                                     cfg.DATA.CHEXPERT_TRAIN_CSV if mode == 'train' else cfg.DATA.CHEXPERT_TEST_CSV)
             raw_df = pd.read_csv(csv_path)
             self.df = map_chexpert_labels(raw_df)
-            self.root_dir = cfg.DATA.CHEXPERT_PATH
+            self.root_dir = cfg.DATA.CHEXPERT_PATH_ROOT_PATH
             self.image_col = 'Path'
         elif self.dataset_name == 'vindr':
             csv_path = os.path.join(cfg.DATA.VINDR_PATH, cfg.DATA.VINDR_CSV)
@@ -176,13 +176,13 @@ def get_chexpert_full_label_loaders(cfg):
         transforms.Resize((224, 224)),
         
         # Thêm các phép biến đổi hình học mạnh hơn
-        transforms.RandomRotation(15),  # Tăng góc xoay từ 10 lên 15 độ
-        transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)), # Dịch chuyển ảnh ngẫu nhiên 10%
-        transforms.RandomResizedCrop(224, scale=(0.8, 1.0)), # Cắt ngẫu nhiên vẫn giữ nguyên
-        transforms.RandomHorizontalFlip(p=0.5), # Lật ngang là một phép rất hiệu quả
+        # transforms.RandomRotation(15),  # Tăng góc xoay từ 10 lên 15 độ
+        # transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)), # Dịch chuyển ảnh ngẫu nhiên 10%
+        # transforms.RandomResizedCrop(224, scale=(0.8, 1.0)), # Cắt ngẫu nhiên vẫn giữ nguyên
+        # transforms.RandomHorizontalFlip(p=0.5), # Lật ngang là một phép rất hiệu quả
         
         # Thêm các phép biến đổi màu sắc mạnh hơn
-        transforms.ColorJitter(brightness=0.3, contrast=0.3), # Tăng độ sáng/tương phản từ 0.1 lên 0.3
+        # transforms.ColorJitter(brightness=0.3, contrast=0.3), # Tăng độ sáng/tương phản từ 0.1 lên 0.3
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])

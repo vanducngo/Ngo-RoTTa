@@ -12,7 +12,10 @@ def set_parameter_requires_grad(model, feature_extracting):
         for param in model.parameters():
             param.requires_grad = False
 
-def get_model(cfg, feature_extract=False, useWeight = True):
+def get_model_chexpert_14(cfg):
+    return get_model(cfg, feature_extract=False, useWeight = True, numclasses=14)
+
+def get_model(cfg, feature_extract=False, useWeight = True, numclasses = 6):
     """
     Tải mô hình và tùy chọn đóng băng các lớp đầu để chỉ fine-tune các lớp cuối.
 
@@ -36,7 +39,7 @@ def get_model(cfg, feature_extract=False, useWeight = True):
         num_ftrs = model.fc.in_features
         model.fc = nn.Sequential(
             nn.Dropout(p=0.7),
-            nn.Linear(num_ftrs, cfg.MODEL.NUM_CLASSES)
+            nn.Linear(num_ftrs, numclasses)
             # Bỏ Sigmoid, BCEWithLogitsLoss sẽ xử lý
         )
 
@@ -49,19 +52,20 @@ def get_model(cfg, feature_extract=False, useWeight = True):
         num_ftrs = model.classifier[-1].in_features
         model.classifier[-1] = nn.Sequential(
              nn.Dropout(p=0.7),
-             nn.Linear(num_ftrs, cfg.MODEL.NUM_CLASSES)
+             nn.Linear(num_ftrs, numclasses)
         )
     elif cfg.MODEL.ARCH == 'densenet121':
         weights = DenseNet121_Weights.IMAGENET1K_V1 if useWeight else None
         model = densenet121(weights=weights)
         
-        set_parameter_requires_grad(model, feature_extract)
+        # set_parameter_requires_grad(model, feature_extract)
         
         # Lớp cuối của DenseNet có tên là 'classifier'
         num_ftrs = model.classifier.in_features
         model.classifier = nn.Sequential(
-            nn.Dropout(p=0.5),
-            nn.Linear(num_ftrs, cfg.MODEL.NUM_CLASSES)
+            # nn.Dropout(p=0.5),
+            nn.Linear(num_ftrs, numclasses),
+            nn.Sigmoid()
         )
     elif cfg.MODEL.ARCH == 'cxr_foundation':
         # Load CXR Foundation model from Hugging Face
@@ -81,14 +85,14 @@ def get_model(cfg, feature_extract=False, useWeight = True):
         # Freeze layers if needed
         set_parameter_requires_grad(model, feature_extract)
         
-        # Replace classifier head to match cfg.MODEL.NUM_CLASSES
+        # Replace classifier head to match numclasses
         # CXR Foundation model typically uses a ViT or ResNet backbone
         # We'll assume the classifier is accessible as model.classifier
         if hasattr(model, 'classifier'):
             num_ftrs = model.classifier.in_features
             model.classifier = nn.Sequential(
                 nn.Dropout(p=0.5),
-                nn.Linear(num_ftrs, cfg.MODEL.NUM_CLASSES)
+                nn.Linear(num_ftrs, numclasses)
             )
         else:
             raise ValueError("CXR Foundation model does not have a 'classifier' attribute. Check model architecture.")
@@ -101,7 +105,7 @@ def get_model(cfg, feature_extract=False, useWeight = True):
     else:
         print("Fine-tuning mode: All layers are trainable.")
         
-    print(f"Model adapted for {cfg.MODEL.NUM_CLASSES} classes.")
+    print(f"Model adapted for {numclasses} classes.")
     
     return model
 
