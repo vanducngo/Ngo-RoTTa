@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from torchvision.models import resnet18, ResNet18_Weights, mobilenet_v3_small, MobileNet_V3_Small_Weights, densenet121, DenseNet121_Weights
+from torchvision.models import resnet18, ResNet18_Weights, resnet50, ResNet50_Weights, mobilenet_v3_small, MobileNet_V3_Small_Weights, densenet121, DenseNet121_Weights
 from transformers import AutoModelForImageClassification, AutoConfig
 
 def set_parameter_requires_grad(model, feature_extracting):
@@ -33,16 +33,29 @@ def get_model(cfg, feature_extract=False, useWeight = True, numclasses = 6):
         model = resnet18(weights=weights)
         
         # Đóng băng các lớp nếu cần
-        set_parameter_requires_grad(model, feature_extract)
+        # set_parameter_requires_grad(model, feature_extract)
         
         # Thay thế lớp cuối và đảm bảo nó luôn có thể huấn luyện
         num_ftrs = model.fc.in_features
         model.fc = nn.Sequential(
-            nn.Dropout(p=0.7),
-            nn.Linear(num_ftrs, numclasses)
-            # Bỏ Sigmoid, BCEWithLogitsLoss sẽ xử lý
+            # nn.Dropout(p=0.5),
+            nn.Linear(num_ftrs, numclasses),
+            nn.Sigmoid()
         )
-
+    elif cfg.MODEL.ARCH == 'resnet50':
+        weights = ResNet50_Weights.IMAGENET1K_V1 if useWeight else None
+        model = resnet50(weights=weights)
+        
+        # Đóng băng các lớp nếu cần
+        # set_parameter_requires_grad(model, feature_extract)
+        
+        # Thay thế lớp cuối và đảm bảo nó luôn có thể huấn luyện
+        num_ftrs = model.fc.in_features
+        model.fc = nn.Sequential(
+            # nn.Dropout(p=0.5),
+            nn.Linear(num_ftrs, numclasses),
+            nn.Sigmoid()
+        )
     elif cfg.MODEL.ARCH == 'mobilenet_v3_small':
         weights = MobileNet_V3_Small_Weights.IMAGENET1K_V1 if useWeight else None
         model = mobilenet_v3_small(weights=weights)
@@ -51,8 +64,9 @@ def get_model(cfg, feature_extract=False, useWeight = True, numclasses = 6):
         
         num_ftrs = model.classifier[-1].in_features
         model.classifier[-1] = nn.Sequential(
-             nn.Dropout(p=0.7),
-             nn.Linear(num_ftrs, numclasses)
+            # nn.Dropout(p=0.5),
+            nn.Linear(num_ftrs, numclasses),
+            nn.Sigmoid()
         )
     elif cfg.MODEL.ARCH == 'densenet121':
         weights = DenseNet121_Weights.IMAGENET1K_V1 if useWeight else None

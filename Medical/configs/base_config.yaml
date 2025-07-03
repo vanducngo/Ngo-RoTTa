@@ -27,7 +27,7 @@ COMMON_DISEASES:
 
 # Cấu hình mô hình
 MODEL:
-  ARCH: "densenet121"           # Kiến trúc mô hình > resnet18, mobilenet_v3_small, densenet121
+  ARCH: "mobilenet_v3_small"           # Kiến trúc mô hình > resnet18, resnet50, mobilenet_v3_small, densenet121
   NUM_CLASSES: 6                       # Số lớp bệnh chung
 
 # Cấu hình huấn luyện
@@ -35,7 +35,7 @@ TRAINING:
   DEVICE: "cuda"
   EPOCHS: 50
   BATCH_SIZE: 64
-  LEARNING_RATE: 0.00001   # LR: Resnet 0.001  mobilenet_v3_small: 1e-5, densnet121: 0.0001
+  LEARNING_RATE: 1e-5   # LR: Resnet 0.001  mobilenet_v3_small: 1e-5, densnet121: 0.0001
   WEIGHT_DECAY: 1e-4
   EARLY_STOPPING_PATIENCE: 15 
   USE_WEIGHTED_LOSS: True
