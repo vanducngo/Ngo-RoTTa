@@ -1,22 +1,17 @@
 import torch
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
-from torchvision import models, transforms
-import pandas as pd
+from torchvision import transforms
 import numpy as np
 from sklearn.metrics import roc_auc_score
-from PIL import Image
 import os
 from tqdm import tqdm
 from omegaconf import OmegaConf
 
-from models import get_model, get_model_chexpert_14
-from data_loader import get_data_loaders_cheXpert, get_data_loaders_nih14, get_data_loaders_padchest, get_data_loaders_vindr
+from data_mapping import TRAINING_LABEL_SET
+from models import get_model_chexpert_14
+from data_loader import get_chexpert_full_label_loaders
 
-# FINETUNED_MODEL_PATH = "./results/finetuned_model_mobile_net_lr0001_latest.pth"
-FINETUNED_MODEL_PATH = "./Medical/results/finetuned_model_14label_dense_net_july3_11h50.pth"
-CHEXPERT_PATH = "./datasets/CheXpert-v1.0-small"
-TEST_CSV_FILENAME = "valid.csv"
+FINETUNED_MODEL_PATH = "./Medical/results/mobile_net_14class_jul3_23h59.pth"
 # -----------------------------------------------
 
 # Định nghĩa các lớp bệnh để đánh giá
@@ -44,57 +39,116 @@ def get_pretrained_model(num_classes, model_path, cfg):
     print("Fine-tuned model loaded successfully.")
     return model
 
-def map_chexpert_labels(df_raw):
-    """
-    Ánh xạ nhãn cho CheXpert, xử lý giá trị không chắc chắn (-1).
-    """
-    df_mapped = df_raw[['Path'] + FINAL_LABEL_SET].copy()
-    df_mapped = df_mapped.fillna(0)
-    for col in FINAL_LABEL_SET:
-        if col in df_mapped.columns:
-            # Coi giá trị không chắc chắn là dương tính
-            df_mapped[col] = df_mapped[col].replace(-1.0, 1.0)
-    return df_mapped
+# def map_chexpert_labels(df_raw):
+#     """
+#     Ánh xạ nhãn cho CheXpert, xử lý giá trị không chắc chắn (-1).
+#     """
+#     df_mapped = df_raw[['Path'] + FINAL_LABEL_SET].copy()
+#     df_mapped = df_mapped.fillna(0)
+#     for col in FINAL_LABEL_SET:
+#         if col in df_mapped.columns:
+#             # Coi giá trị không chắc chắn là dương tính
+#             df_mapped[col] = df_mapped[col].replace(-1.0, 1.0)
+#     return df_mapped
 
-class CheXpertTestDataset(Dataset):
-    def __init__(self, root_path, csv_filename, transform=None):
-        self.root_path = root_path
-        self.transform = transform
+# class CheXpertTestDataset(Dataset):
+#     def __init__(self, root_path, csv_filename, transform=None):
+#         self.root_path = root_path
+#         self.transform = transform
         
-        csv_path = os.path.join(root_path, csv_filename)
-        if not os.path.exists(csv_path):
-            raise FileNotFoundError(f"CSV file not found at: {csv_path}")
+#         csv_path = os.path.join(root_path, csv_filename)
+#         if not os.path.exists(csv_path):
+#             raise FileNotFoundError(f"CSV file not found at: {csv_path}")
             
-        print(f">>> Loading and mapping data from {csv_path}...")
-        raw_df = pd.read_csv(csv_path)
-        self.df = map_chexpert_labels(raw_df)
-        print(f"Loaded {len(self.df)} samples for testing.")
+#         print(f">>> Loading and mapping data from {csv_path}...")
+#         raw_df = pd.read_csv(csv_path)
+#         # self.df = map_chexpert_labels(raw_df)
+#         self.df = raw_df
+#         print(f"Loaded {len(self.df)} samples for testing.")
 
-    def __len__(self):
-        return len(self.df)
+#     def __len__(self):
+#         return len(self.df)
 
-    def __getitem__(self, idx):
-        img_path = os.path.join(self.root_path, self.df.iloc[idx]['Path'])
-        try:
-            image = Image.open(img_path).convert('RGB')
-        except FileNotFoundError:
-            print(f"Warning: Image not found at {img_path}, skipping.")
-            return None # Sẽ được lọc ra bởi collate_fn
+#     def __getitem__(self, idx):
+#         img_path = os.path.join(self.root_path, self.df.iloc[idx]['image_id'])
+#         try:
+#             image = Image.open(img_path).convert('RGB')
+#         except FileNotFoundError:
+#             print(f"Warning: Image not found at {img_path}, skipping.")
+#             return None # Sẽ được lọc ra bởi collate_fn
 
-        labels = self.df.iloc[idx][FINAL_LABEL_SET].values.astype('float')
-        labels = torch.tensor(labels, dtype=torch.float32)
+#         labels = self.df.iloc[idx][FINAL_LABEL_SET].values.astype('float')
+#         labels = torch.tensor(labels, dtype=torch.float32)
         
-        if self.transform:
-            image = self.transform(image)
+#         if self.transform:
+#             image = self.transform(image)
             
-        return image, labels
+#         return image, labels
 
-def collate_fn(batch):
-    """Bỏ qua các mẫu bị lỗi (None) trong batch."""
-    batch = list(filter(lambda x: x is not None, batch))
-    if not batch:
-        return torch.empty(0), torch.empty(0)
-    return torch.utils.data.dataloader.default_collate(batch)
+# def collate_fn(batch):
+#     """Bỏ qua các mẫu bị lỗi (None) trong batch."""
+#     batch = list(filter(lambda x: x is not None, batch))
+#     if not batch:
+#         return torch.empty(0), torch.empty(0)
+#     return torch.utils.data.dataloader.default_collate(batch)
+
+def print_selected_auc_stats(per_class_auc):
+    # Lấy AUC của các bệnh được chọn
+    selected_auc = {f'auc/{disease}': per_class_auc[f'auc/{disease}'] for disease in FINAL_LABEL_SET}
+    
+    # Tính AUC trung bình
+    auc_mean = sum(selected_auc.values()) / len(selected_auc)
+    
+    # In AUC trung bình
+    print(f"AUC trung bình: {auc_mean:.4f}")
+    
+    # In danh sách AUC của các bệnh
+    print("\nDanh sách AUC của các bệnh:")
+    for disease, auc in selected_auc.items():
+        print(f"{disease}: {auc:.4f}")
+
+def evaluate(model, data_loader, device, criterion):
+    """
+    Đánh giá mô hình, trả về mean AUC, loss trung bình, và một dict chứa AUC của từng lớp.
+    """    
+    model.eval()  # Chuyển mô hình sang chế độ đánh giá
+    
+    all_probs = []
+    all_labels = []
+    total_loss = 0.0
+    
+    with torch.no_grad():
+        for images, labels in tqdm(data_loader, desc="Evaluating"):
+            if images.numel() == 0: continue
+            images, labels = images.to(device), labels.to(device)
+            
+            outputs = model(images)  # Logits
+            loss = criterion(outputs, labels)
+            total_loss += loss.item() * images.size(0)
+            
+            probs = torch.sigmoid(outputs)  # Chuyển logits thành xác suất
+            all_probs.append(probs.cpu().numpy())
+            all_labels.append(labels.cpu().numpy())
+            
+    all_probs = np.concatenate(all_probs, axis=0)
+    all_labels = np.concatenate(all_labels, axis=0)
+    
+    # Tính toán AUC
+    auc_scores = {}
+    valid_aucs = []
+    for i, class_name in enumerate(TRAINING_LABEL_SET):
+        if len(np.unique(all_labels[:, i])) > 1:
+            try:
+                auc = roc_auc_score(all_labels[:, i], all_probs[:, i])
+                auc_scores[f"auc/{class_name}"] = auc # Tên key phù hợp cho wandb
+                valid_aucs.append(auc)
+            except ValueError:
+                pass
+                
+    mean_auc = np.mean(valid_aucs) if valid_aucs else 0.0
+    avg_loss = total_loss / len(data_loader.dataset)
+    
+    return mean_auc, avg_loss, auc_scores
 
 def evaluate_model(model, data_loader, device, title="X"):
     """
@@ -164,10 +218,14 @@ def main():
     
     print("\n>>> Loading datasets...")
     # 3. Chạy đánh giá
-
+    criterion = nn.BCEWithLogitsLoss(pos_weight=None)
     # Base 
-    _, chexpert_test_loader =  get_data_loaders_cheXpert(cfg)
-    evaluate_model(model, chexpert_test_loader, DEVICE, "CheXpert")
+    _, chexpert_test_loader =  get_chexpert_full_label_loaders(cfg)
+    mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate(model, chexpert_test_loader, DEVICE, criterion)
+    print_selected_auc_stats(per_class_auc)
+    # print(mean_valid_auc)
+    # print(epoch_valid_loss)
+    # print(per_class_auc)
     
     # VinDr CXR 
     # vindr_test_loader =  get_data_loaders_vindr(cfg)

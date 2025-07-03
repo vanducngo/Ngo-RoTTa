@@ -54,7 +54,7 @@ def map_chexpert_labels(df_raw):
     # CheXpert đã có sẵn tất cả các cột cần thiết với tên chuẩn
     # Chỉ cần xử lý các giá trị không chắc chắn (-1.0)
     
-    df_mapped = df_raw[['Path'] + COMMON_DISEASES].copy()
+    df_mapped = df_raw[['image_id'] + COMMON_DISEASES].copy()
     df_mapped = df_mapped.fillna(0) # Coi NaN là 0
 
     for col in COMMON_DISEASES:
