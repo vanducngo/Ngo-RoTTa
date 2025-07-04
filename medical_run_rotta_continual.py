@@ -4,17 +4,20 @@ from tqdm import tqdm
 import numpy as np
 from sklearn.metrics import roc_auc_score
 from torchvision import transforms
+import torch.optim as optim
 
 # Import các thành phần đã tạo
+from Medical.constants import COMMON_FINAL_LABEL_SET
+from Medical.utils import print_selected_auc_stats
 from core.optim import build_optimizer
 from medical_continual_data_loader import ContinualDomainLoader # Đã có từ câu trả lời trước
-from Medical.models import get_model, loadModelFor6Classes
+from Medical.models import get_model_chexpert_14
 from core.adapter.rotta_multilabel_adapter import RoTTAMultiLabel
 import os
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # FINETUNED_MODEL_PATH = "./Medical/results/finetuned_model_mobile_net_lr0001_latest.pth"
-FINETUNED_MODEL_PATH = "./Medical/results/finetuned_model_resnet_jun25_22h40.pth"
+FINETUNED_MODEL_PATH = "./Medical/results/mobile_net_14class_jul3_23h59.pth"
 
 # def get_pretrained_model(model_path, cfg):
 #     print(f"Loading fine-tuned weights from: {model_path}")
@@ -39,11 +42,10 @@ def get_pretrained_model(model_path, cfg):
     
     print(f"Found fine-tuned model at {model_path}")
     # Load the pre-trained model architecture
-    # model = get_model(cfg, useWeight=True)
+    model = get_model_chexpert_14(cfg)
     # Load the fine-tuned weights
-    # model.load_state_dict(torch.load(model_path, map_location=DEVICE))
-    # model.to(DEVICE)
-    model = loadModelFor6Classes(cfg, model_path)
+    model.load_state_dict(torch.load(model_path, map_location=DEVICE))
+    model.to(DEVICE)
     print(f"Loaded fine-tuned model from {model_path}")
     
     print("Fine-tuned model loaded successfully.")
@@ -58,7 +60,9 @@ def main(cfg):
     
     # 2. Khởi tạo RoTTA adapter
     optimizer = build_optimizer(cfg)
-    tta_model = RoTTAMultiLabel(cfg, model).to(device)
+    optimizer_func = lambda params: optim.Adam(params, lr=cfg.ADAPTER.LR, weight_decay=cfg.OPTIM.WD)
+
+    tta_model = RoTTAMultiLabel(cfg, model, optimizer_func).to(device)
 
     print('get_occupancy->get_occupancy', tta_model.mem.get_list_class_name())
     # 3. Tạo luồng dữ liệu liên tục
@@ -105,17 +109,31 @@ def main(cfg):
     for domain_name in all_preds.keys():
         if not all_preds[domain_name]: continue
         
-        preds = np.concatenate(all_preds[domain_name], axis=0)
+        all_probs = np.concatenate(all_preds[domain_name], axis=0)
         labels = np.concatenate(all_labels[domain_name], axis=0)
         
-        auc_scores = []
-        for i in range(labels.shape[1]):
-            if len(np.unique(labels[:, i])) > 1:
-                auc = roc_auc_score(labels[:, i], preds[:, i])
-                auc_scores.append(auc)
+        # auc_scores = []
+        # for i in range(labels.shape[1]):
+        #     if len(np.unique(labels[:, i])) > 1:
+        #         auc = roc_auc_score(labels[:, i], preds[:, i])
+        #         auc_scores.append(auc)
         
-        mean_auc = np.mean(auc_scores) if auc_scores else 0.0
-        print(f"Mean AUC on {domain_name}: {mean_auc:.4f}")
+        # mean_auc = np.mean(auc_scores) if auc_scores else 0.0
+        # print(f"Mean AUC on {domain_name}: {mean_auc:.4f}")
+
+        auc_scores = {}
+        valid_aucs = []
+        for i, class_name in enumerate(COMMON_FINAL_LABEL_SET):
+            if len(np.unique(labels[:, i])) > 1:  # Use concatenated labels
+                try:
+                    auc = roc_auc_score(labels[:, i], all_probs[:, i])
+                    auc_scores[f"auc/{class_name}"] = auc  # Tên key phù hợp cho wandb
+                    valid_aucs.append(auc)
+                except ValueError:
+                    pass
+        
+        print(f"auc_scores: {auc_scores}")
+        print_selected_auc_stats(auc_scores, domain_name)
 
 if __name__ == "__main__":
     cfg = OmegaConf.load("Medical/configs/base_config.yaml")

@@ -79,7 +79,7 @@ class AdvancedMultiLabelMemory:
                     if new_heuristic_score < max_heuristic_score:
                         class_memory[worst_idx] = new_sample
 
-    def get_memory_batch(self):
+    def get_memory(self):
         """
         Lấy một batch cân bằng từ memory.
         Chiến lược: Lấy một vài mẫu từ mỗi "ngăn" (mỗi lớp).
@@ -109,4 +109,5 @@ class AdvancedMultiLabelMemory:
     
     def get_list_class_name(self):
         """Trả về số lượng mẫu trong mỗi ngăn."""
-        return [name for name in self.class_names]
+        # return [name for name in self.class_names]
+        return ''

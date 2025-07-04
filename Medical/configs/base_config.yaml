@@ -14,7 +14,7 @@ DATA:
   CHESTXRAY14_CSV: "validate.csv"
   CHESTXRAY14_IMAGE_DIR: "images"
 
-  PADCHEST_PATH: "/Users/admin/Working/Data/MixData/PadChestPruning_structured"
+  PADCHEST_PATH: "/Users/admin/Working/Data/MixData/padchest_structured"
   PADCHEST_CSV: "validate.csv"
   PADCHEST_IMAGE_DIR: "images"
 
@@ -31,6 +31,9 @@ COMMON_DISEASES:
 MODEL:
   ARCH: "mobilenet_v3_small"           # Kiến trúc mô hình > resnet18, resnet50, mobilenet_v3_small, densenet121
   NUM_CLASSES: 6                       # Số lớp bệnh chung
+  NUM_CLASSES_SOURCE: 14 # Số lớp của mô hình gốc
+  NUM_CLASSES_TTA: 6     # Số lớp mục tiêu cho adaptation
+  CHECKPOINT_PATH: "./Medical/results/mobile_net_14class_jul3_23h59.pth"
 
 # Cấu hình huấn luyện
 TRAINING:
@@ -51,13 +54,15 @@ OPTIM:
   WD: 0.
 
 ADAPTER: # Cấu hình riêng cho RoTTA
-  NAME: "SimpleRoTTA"
+  NAME: "RoTTAMultiLabel"
   LR: 1e-5
   MEMORY_SIZE: 64
   BATCH_SIZE: 16
   EMA_DECAY: 0.99
   UNCERTAINTY_THRESHOLD: 0.7 # Chỉ chấp nhận mẫu có uncertainty < 0.7
   AGE_WEIGHT: 0.01 # Trọng số của tuổi trong điểm heuristic
+  LAMBDA_T: 1
+  LAMBDA_U: 1
 
 INPUT:
   SIZE: (224, 224)

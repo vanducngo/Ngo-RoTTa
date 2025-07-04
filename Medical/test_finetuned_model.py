@@ -9,7 +9,7 @@ from omegaconf import OmegaConf
 
 from data_mapping import TRAINING_LABEL_SET
 from models import get_model_chexpert_14
-from data_loader import get_chexpert_full_label_loaders
+from data_loader import get_chexpert_full_label_loaders, get_data_loaders_nih14, get_data_loaders_padchest, get_data_loaders_vindr
 
 FINETUNED_MODEL_PATH = "./Medical/results/mobile_net_14class_jul3_23h59.pth"
 # -----------------------------------------------
@@ -23,7 +23,7 @@ FINAL_LABEL_SET = ['No Finding'] + DISEASES
 NUM_CLASSES = len(FINAL_LABEL_SET)
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def get_pretrained_model(num_classes, model_path, cfg):
+def get_pretrained_model(model_path, cfg):
     print(f"Loading fine-tuned weights from: {model_path}")
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found at {model_path}. Please run the training script first.")
@@ -92,7 +92,7 @@ def get_pretrained_model(num_classes, model_path, cfg):
 #         return torch.empty(0), torch.empty(0)
 #     return torch.utils.data.dataloader.default_collate(batch)
 
-def print_selected_auc_stats(per_class_auc):
+def print_selected_auc_stats(per_class_auc, domain = 'X'):
     # Lấy AUC của các bệnh được chọn
     selected_auc = {f'auc/{disease}': per_class_auc[f'auc/{disease}'] for disease in FINAL_LABEL_SET}
     
@@ -100,14 +100,14 @@ def print_selected_auc_stats(per_class_auc):
     auc_mean = sum(selected_auc.values()) / len(selected_auc)
     
     # In AUC trung bình
-    print(f"AUC trung bình: {auc_mean:.4f}")
+    print(f"Domain {domain} - AUC trung bình: {auc_mean:.4f}")
     
     # In danh sách AUC của các bệnh
-    print("\nDanh sách AUC của các bệnh:")
+    print(f"\nDomain {domain} - Danh sách AUC của các bệnh:")
     for disease, auc in selected_auc.items():
         print(f"{disease}: {auc:.4f}")
 
-def evaluate(model, data_loader, device, criterion):
+def evaluate(model, data_loader, device, label_set = TRAINING_LABEL_SET):
     """
     Đánh giá mô hình, trả về mean AUC, loss trung bình, và một dict chứa AUC của từng lớp.
     """    
@@ -123,8 +123,8 @@ def evaluate(model, data_loader, device, criterion):
             images, labels = images.to(device), labels.to(device)
             
             outputs = model(images)  # Logits
-            loss = criterion(outputs, labels)
-            total_loss += loss.item() * images.size(0)
+            # loss = criterion(outputs, labels)
+            # total_loss += loss.item() * images.size(0)
             
             probs = torch.sigmoid(outputs)  # Chuyển logits thành xác suất
             all_probs.append(probs.cpu().numpy())
@@ -136,7 +136,7 @@ def evaluate(model, data_loader, device, criterion):
     # Tính toán AUC
     auc_scores = {}
     valid_aucs = []
-    for i, class_name in enumerate(TRAINING_LABEL_SET):
+    for i, class_name in enumerate(label_set):
         if len(np.unique(all_labels[:, i])) > 1:
             try:
                 auc = roc_auc_score(all_labels[:, i], all_probs[:, i])
@@ -205,8 +205,7 @@ def main():
     cfg = OmegaConf.load('Medical/configs/base_config.yaml')
     
     # 1. Tải mô hình
-    model = get_pretrained_model(num_classes=NUM_CLASSES,
-        model_path=FINETUNED_MODEL_PATH, cfg=cfg)
+    model = get_pretrained_model(model_path=FINETUNED_MODEL_PATH, cfg=cfg)
     
     # 2. Chuẩn bị DataLoader
     # Định nghĩa các phép biến đổi ảnh cho tập test
@@ -218,25 +217,28 @@ def main():
     
     print("\n>>> Loading datasets...")
     # 3. Chạy đánh giá
-    criterion = nn.BCEWithLogitsLoss(pos_weight=None)
+    
     # Base 
-    _, chexpert_test_loader =  get_chexpert_full_label_loaders(cfg)
-    mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate(model, chexpert_test_loader, DEVICE, criterion)
-    print_selected_auc_stats(per_class_auc)
-    # print(mean_valid_auc)
-    # print(epoch_valid_loss)
-    # print(per_class_auc)
+    # _, chexpert_test_loader =  get_chexpert_full_label_loaders(cfg)
+    # mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate(model, chexpert_test_loader, DEVICE, criterion)
+    # print_selected_auc_stats(per_class_auc)
     
     # VinDr CXR 
     # vindr_test_loader =  get_data_loaders_vindr(cfg)
-    # evaluate_model(model, vindr_test_loader, DEVICE, "VinData")
+    # mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate(model, vindr_test_loader, DEVICE, FINAL_LABEL_SET)
+    # print_selected_auc_stats(per_class_auc, 'VinDr')
+    # # evaluate_model(model, vindr_test_loader, DEVICE, "VinData")
     
     # NIH 14 dataset
     # nih14_test_loader = get_data_loaders_nih14(cfg)
-    # evaluate_model(model, nih14_test_loader, DEVICE, "nih_14")
+    # mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate(model, nih14_test_loader, DEVICE, FINAL_LABEL_SET)
+    # print_selected_auc_stats(per_class_auc, "nih-14")
+    # # evaluate_model(model, nih14_test_loader, DEVICE, "nih_14")
     
     # PadChest dataset
-    # padchest_test_loader = get_data_loaders_padchest(cfg)
+    padchest_test_loader = get_data_loaders_padchest(cfg)
+    mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate(model, padchest_test_loader, DEVICE, FINAL_LABEL_SET)
+    print_selected_auc_stats(per_class_auc, "padchest")
     # evaluate_model(model, padchest_test_loader, DEVICE, "padchest")
 
     # 3. Tạo luồng dữ liệu liên tục

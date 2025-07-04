@@ -6,10 +6,10 @@ from tqdm import tqdm
 import glob
 
 SOURCE_DATA_DIR = '/Users/admin/Working/Data/PadChestPruning'
-DEST_DATA_DIR = '/Users/admin/Working/Data/PadChestPruning_10Percent'
+DEST_DATA_DIR = '/Users/admin/Working/Data/PadChestPruning_30Percent'
 # -----------------------------------------------
 
-SAMPLE_FRACTION = 0.1
+SAMPLE_FRACTION = 0.3
 RANDOM_STATE = 42
 
 # Các cột nhãn trong file CSV
@@ -60,7 +60,7 @@ sampled_image_ids = df_sampled['image_id'].unique()
 print(f"Number of unique images selected: {len(sampled_image_ids)}")
 
 # Lưu file CSV mới, giữ nguyên tất cả các cột của file gốc
-DEST_TEST_CSV_PATH = os.path.join(DEST_DATA_DIR, 'test.csv')
+DEST_TEST_CSV_PATH = os.path.join(DEST_DATA_DIR, 'validate.csv')
 df_sampled.to_csv(DEST_TEST_CSV_PATH, index=False)
 print(f"New test.csv created at: {DEST_TEST_CSV_PATH}")
 print(f"New test.csv rows: {len(df_sampled)}")

@@ -20,3 +20,18 @@ def calculate_auc(all_preds, all_labels):
             
     mean_auc = np.mean(auc_scores)
     return mean_auc
+
+def print_selected_auc_stats(per_class_auc, domain='X'):
+    # Lấy AUC của các bệnh được chọn
+    selected_auc = {disease: auc for disease, auc in per_class_auc.items()}
+    
+    # Tính AUC trung bình
+    auc_mean = sum(selected_auc.values()) / len(selected_auc) if selected_auc else 0.0
+    
+    # In AUC trung bình
+    print(f"Domain {domain} - AUC trung bình: {auc_mean:.4f}")
+    
+    # In danh sách AUC của các bệnh
+    print(f"\nDomain {domain} - Danh sách AUC của các bệnh:")
+    for disease, auc in selected_auc.items():
+        print(f"{disease}: {auc:.4f}")

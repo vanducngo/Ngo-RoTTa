@@ -6,13 +6,15 @@ from sklearn.metrics import roc_auc_score
 from torchvision import transforms
 import os
 
-from Medical.models import get_model, loadModelFor6Classes
+from Medical.constants import COMMON_FINAL_LABEL_SET
+from Medical.models import get_model_chexpert_14
+from Medical.utils import print_selected_auc_stats
 from medical_continual_data_loader import ContinualDomainLoader
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # FINETUNED_MODEL_PATH = "./Medical/results/finetuned_model_mobile_net_lr0001_latest.pth"
 # FINETUNED_MODEL_PATH = "./Medical/results/finetuned_model_resnet_jun25_22h40.pth"
-FINETUNED_MODEL_PATH = "./Medical/results/finetuned_model_14label_mobile_net_july3_11h50.pth"
+FINETUNED_MODEL_PATH = "./Medical/results/mobile_net_14class_jul3_23h59.pth"
 
 def get_pretrained_model(model_path, cfg):
     print(f"Loading fine-tuned weights from: {model_path}")
@@ -21,17 +23,16 @@ def get_pretrained_model(model_path, cfg):
     
     print(f"Found fine-tuned model at {model_path}")
     # Load the pre-trained model architecture
-    # model = get_model(cfg, useWeight=True)
+    model = get_model_chexpert_14(cfg)
     # Load the fine-tuned weights
-    # model.load_state_dict(torch.load(model_path, map_location=DEVICE))
-    # model.to(DEVICE)
-    model = loadModelFor6Classes(cfg, model_path)
+    model.load_state_dict(torch.load(model_path, map_location=DEVICE))
+    model.to(DEVICE)
     print(f"Loaded fine-tuned model from {model_path}")
     
     print("Fine-tuned model loaded successfully.")
     return model
 
-def evaluate_continual_zero_shot(cfg, model, continual_loader, device):
+def evaluate_continual_zero_shot_bak(cfg, model, continual_loader, device):
     """
     Đánh giá mô hình trên một luồng dữ liệu liên tục mà không có DA.
     Hàm này sẽ lặp qua loader, thu thập dự đoán và nhãn cho từng domain.
@@ -72,25 +73,90 @@ def evaluate_continual_zero_shot(cfg, model, continual_loader, device):
             print(f"No samples evaluated for domain: {domain_name}")
             continue
         
-        preds = np.concatenate(all_preds[domain_name], axis=0)
+        all_probs = np.concatenate(all_preds[domain_name], axis=0)
         labels = np.concatenate(all_labels[domain_name], axis=0)
         
-        auc_scores = []
-        for i in range(labels.shape[1]):
-            # Chỉ tính AUC nếu có cả nhãn dương và âm
-            if len(np.unique(labels[:, i])) > 1:
+        auc_scores = {}
+        valid_aucs = []
+        for i, class_name in enumerate(COMMON_FINAL_LABEL_SET):
+            if len(np.unique(all_labels[current_domain][:, i])) > 1:
                 try:
-                    auc = roc_auc_score(labels[:, i], preds[:, i])
-                    auc_scores.append(auc)
+                    auc = roc_auc_score(all_labels[current_domain][:, i], all_probs[:, i])
+                    auc_scores[f"{class_name}"] = auc # Tên key phù hợp cho wandb
+                    valid_aucs.append(auc)
                 except ValueError:
                     pass
-        
-        mean_auc = np.mean(auc_scores) if auc_scores else 0.0
-        final_results[domain_name] = mean_auc
-        print(f"Mean AUC on {domain_name}: {mean_auc:.4f}")
+                    
+        print_selected_auc_stats(auc_scores, domain_name)
+        # mean_auc = np.mean(auc_scores) if auc_scores else 0.0
+        # final_results[domain_name] = mean_auc
+        # print(f"Mean AUC on {domain_name}: {mean_auc:.4f}")
         
     return final_results
 
+def evaluate_continual_zero_shot(cfg, model, continual_loader, device):
+    """
+    Đánh giá mô hình trên một luồng dữ liệu liên tục mà không có DA.
+    Hàm này sẽ lặp qua loader, thu thập dự đoán và nhãn cho từng domain.
+    """
+    model.to(device)
+    model.eval()
+
+    all_preds = {name: [] for name in continual_loader.datasets.keys()}
+    all_labels = {name: [] for name in continual_loader.datasets.keys()}
+    
+    print("\n>>> Starting Zero-Shot Continual Domain Evaluation (No Adaptation)...")
+    pbar = tqdm(continual_loader, total=len(continual_loader), desc="Evaluating across domains")
+    
+    with torch.no_grad():  # Không cần tính gradient
+        for data_package in pbar:
+            if data_package['image'].numel() == 0:
+                continue
+            
+            images, labels, domains = data_package['image'], data_package['label'], data_package['domain']
+            images = images.to(device)
+            
+            # Chỉ thực hiện forward pass, không có bước adapt
+            outputs = model(images)
+            
+            # Thu thập kết quả
+            current_domain = domains[0]
+            probs = torch.sigmoid(outputs).detach().cpu().numpy()
+            all_preds[current_domain].append(probs)
+            all_labels[current_domain].append(labels.numpy())
+            
+            pbar.set_postfix(domain=current_domain)
+            
+    # Tính toán và in kết quả cuối cùng
+    print("\n--- Zero-Shot Performance (AUC) per Domain ---")
+    final_results = {}
+    for domain_name in all_preds.keys():
+        if not all_preds[domain_name]:
+            print(f"No samples evaluated for domain: {domain_name}")
+            continue
+        
+        # Concatenate predictions and labels into single NumPy arrays
+        all_probs = np.concatenate(all_preds[domain_name], axis=0)
+        labels = np.concatenate(all_labels[domain_name], axis=0)
+        
+        auc_scores = {}
+        valid_aucs = []
+        for i, class_name in enumerate(COMMON_FINAL_LABEL_SET):
+            if len(np.unique(labels[:, i])) > 1:  # Use concatenated labels
+                try:
+                    auc = roc_auc_score(labels[:, i], all_probs[:, i])
+                    auc_scores[f"auc/{class_name}"] = auc  # Tên key phù hợp cho wandb
+                    valid_aucs.append(auc)
+                except ValueError:
+                    pass
+        
+        print(f"auc_scores: {auc_scores}")
+        print_selected_auc_stats(auc_scores, domain_name)
+        # mean_auc = np.mean(valid_aucs) if valid_aucs else 0.0
+        # final_results[domain_name] = mean_auc
+        # print(f"Mean AUC on {domain_name}: {mean_auc:.4f}")
+        
+    return final_results
 
 def main(cfg):
     device = torch.device(cfg.TRAINING.DEVICE if torch.cuda.is_available() else "cpu")
@@ -109,6 +175,7 @@ def main(cfg):
     
     # domain_sequence = (['vindr', 'nih14', 'padchest'] * 34)[:100] # Tạo chuỗi 100 batch luân phiên
     domain_sequence = ['vindr', 'nih14'] * 50
+    # domain_sequence = ['vindr'] * 100
     
     continual_loader = ContinualDomainLoader(
         cfg, 
