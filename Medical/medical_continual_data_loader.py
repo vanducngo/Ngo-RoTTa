@@ -4,8 +4,8 @@ import pandas as pd
 import os
 from PIL import Image
 
-from Medical.constants import COMMON_FINAL_LABEL_SET
-from Medical.data_mapping import map_vindr_labels, map_chestxray14_labels, map_padchest_labels
+from constants import COMMON_FINAL_LABEL_SET
+from data_mapping import map_vindr_labels, map_chestxray14_labels, map_padchest_labels
 
 class SingleDomainDataset(Dataset):
     def __init__(self, root_path, csv_path, domain_name, label_mapper, transform=None):

@@ -5,8 +5,8 @@ import numpy as np
 from sklearn.metrics import roc_auc_score
 from torchvision import transforms
 
-from Medical.constants import COMMON_FINAL_LABEL_SET
-from Medical.utils import get_pretrained_model, print_selected_auc_stats
+from constants import COMMON_FINAL_LABEL_SET
+from utils import get_pretrained_model, print_selected_auc_stats
 from medical_continual_data_loader import ContinualDomainLoader
 
 def evaluate_continual_zero_shot(model, continual_loader, device):
@@ -101,8 +101,8 @@ def main(cfg):
 
 if __name__ == "__main__":
     try:
-        cfg = OmegaConf.load("Medical/configs/base_config.yaml")
+        cfg = OmegaConf.load("configs/base_config.yaml")
         main(cfg)
-    except FileNotFoundError:
-        print("Error: `configs yaml` not found.")
+    except FileNotFoundError as e:
+        print(f"Error: `configs yaml` not found. {e}")
         print("Please create a configuration file for the continual adaptation experiment.")

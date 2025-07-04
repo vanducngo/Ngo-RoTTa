@@ -69,7 +69,7 @@ def evaluate(model, data_loader, device, label_set = TRAINING_LABEL_SET):
 def main():
     print(f"Using device: {DEVICE}")
 
-    cfg = OmegaConf.load('Medical/configs/base_config.yaml')
+    cfg = OmegaConf.load('configs/base_config.yaml')
     
     # 1. Tải mô hình
     model = get_pretrained_model(cfg=cfg)

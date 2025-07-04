@@ -7,10 +7,10 @@ from torchvision import transforms
 import torch.optim as optim
 
 # Import các thành phần đã tạo
-from Medical.constants import COMMON_FINAL_LABEL_SET
-from Medical.utils import get_pretrained_model, print_selected_auc_stats
+from constants import COMMON_FINAL_LABEL_SET
+from utils import get_pretrained_model, print_selected_auc_stats
 from medical_continual_data_loader import ContinualDomainLoader # Đã có từ câu trả lời trước
-from core.adapter.rotta_multilabel_adapter import RoTTAMultiLabelSelective
+from core.rotta_multilabel_adapter import RoTTAMultiLabelSelective
 
 def main(cfg):
     device = torch.device(cfg.TRAINING.DEVICE if torch.cuda.is_available() else "cpu")
@@ -85,5 +85,5 @@ def main(cfg):
         print_selected_auc_stats(auc_scores, domain_name)
 
 if __name__ == "__main__":
-    cfg = OmegaConf.load("Medical/configs/base_config.yaml")
+    cfg = OmegaConf.load("configs/base_config.yaml")
     main(cfg)
