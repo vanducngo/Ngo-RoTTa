@@ -5,12 +5,12 @@ from tqdm import tqdm
 from sklearn.metrics import roc_auc_score
 import numpy as np
 import copy
+from constants import TRAINING_LABEL_SET
 import wandb
 from omegaconf import OmegaConf
 import os
 
 # Giả định data_mapping.py đã được import
-from data_mapping import TRAINING_LABEL_SET
 
 def evaluate(model, data_loader, device, criterion):
     """

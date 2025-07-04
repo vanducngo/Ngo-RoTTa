@@ -5,12 +5,12 @@ from tqdm import tqdm
 from sklearn.metrics import roc_auc_score
 import numpy as np
 import copy
+from constants import COMMON_FINAL_LABEL_SET
 import wandb
 from omegaconf import OmegaConf
 import os
 
 # Giả định data_mapping.py đã được import
-from data_mapping import COMMON_DISEASES as FINAL_LABEL_SET
 
 def evaluate(model, data_loader, device, criterion):
     """
@@ -41,7 +41,7 @@ def evaluate(model, data_loader, device, criterion):
     # Tính toán AUC
     auc_scores = {}
     valid_aucs = []
-    for i, class_name in enumerate(FINAL_LABEL_SET):
+    for i, class_name in enumerate(COMMON_FINAL_LABEL_SET):
         if len(np.unique(all_labels[:, i])) > 1:
             try:
                 auc = roc_auc_score(all_labels[:, i], all_probs[:, i])

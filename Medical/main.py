@@ -29,13 +29,10 @@ def main(cfg):
         print(f"Loaded fine-tuned model from {model_save_path}")
     else:
         os.makedirs(cfg.OUTPUT_DIR, exist_ok=True)
-        
         # Tải Pre-trained model
         model = get_model_chexpert_14(cfg)
-        
         # Fine-tune mô hình trên CheXpert
         model = fine_tune(cfg, model, train_loader, chexpert_test_loader, device)
-        
         # Lưu lại model đã fine-tune
         model_save_path = os.path.join(cfg.OUTPUT_DIR, "finetuned_model.pth")
         torch.save(model.state_dict(), model_save_path)
@@ -43,7 +40,6 @@ def main(cfg):
 
         # Bước 3: Kiểm tra hiệu suất
         print("\n--- Performance Evaluation ---")
-        
         # Đánh giá trên tập test của CheXpert (In-Domain Performance)
         print("Evaluating on CheXpert test set (In-Domain)...")
         criterion = nn.BCEWithLogitsLoss()

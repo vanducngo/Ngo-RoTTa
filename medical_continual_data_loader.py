@@ -1,21 +1,18 @@
 import torch
-from torch.utils.data import Dataset, DataLoader
-from torchvision import transforms
+from torch.utils.data import Dataset
 import pandas as pd
 import os
 from PIL import Image
 
+from Medical.constants import COMMON_FINAL_LABEL_SET
 from Medical.data_mapping import map_vindr_labels, map_chestxray14_labels, map_padchest_labels
-from Medical.data_mapping import COMMON_DISEASES
 
 class SingleDomainDataset(Dataset):
     def __init__(self, root_path, csv_path, domain_name, label_mapper, transform=None):
         self.root_dir = os.path.join(root_path, 'images')
         self.transform = transform
         self.domain_name = domain_name
-        
-        # raw_df = pd.read_csv(os.path.join(root_path, csv_path))
-        # self.df = label_mapper(raw_df)
+    
         self.df = pd.read_csv(os.path.join(root_path, csv_path))
         
         self.image_col = 'image_id'
@@ -36,7 +33,7 @@ class SingleDomainDataset(Dataset):
         except FileNotFoundError:
             return None
             
-        labels = torch.tensor(row[COMMON_DISEASES].values.astype('float'), dtype=torch.float32)
+        labels = torch.tensor(row[COMMON_FINAL_LABEL_SET].values.astype('float'), dtype=torch.float32)
         
         if self.transform:
             image = self.transform(image)

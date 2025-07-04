@@ -1,33 +1,6 @@
 import pandas as pd
 
-CHEXPERT_14_LABELS = [
-    'No Finding',
-    'Enlarged Cardiomediastinum',
-    'Cardiomegaly',
-    'Lung Opacity',
-    'Lung Lesion',
-    'Edema',
-    'Consolidation',
-    'Pneumonia',
-    'Atelectasis',
-    'Pneumothorax',
-    'Pleural Effusion',
-    'Pleural Other',
-    'Fracture',
-    'Support Devices'
-]
-
-TRAINING_LABEL_SET = CHEXPERT_14_LABELS
-
-# Chọn 5 bệnh lý phổ biến và nhất quán nhất
-COMMON_DISEASES = [
-    'No Finding',
-    'Atelectasis',
-    'Cardiomegaly',
-    'Consolidation',
-    'Pleural Effusion',
-    'Pneumothorax'
-]
+from constants import TRAINING_LABEL_SET, COMMON_FINAL_LABEL_SET
 
 def map_chexpert_labels_14(df_raw):
     """
@@ -54,10 +27,10 @@ def map_chexpert_labels(df_raw):
     # CheXpert đã có sẵn tất cả các cột cần thiết với tên chuẩn
     # Chỉ cần xử lý các giá trị không chắc chắn (-1.0)
     
-    df_mapped = df_raw[['image_id'] + COMMON_DISEASES].copy()
+    df_mapped = df_raw[['image_id'] + COMMON_FINAL_LABEL_SET].copy()
     df_mapped = df_mapped.fillna(0) # Coi NaN là 0
 
-    for col in COMMON_DISEASES:
+    for col in COMMON_FINAL_LABEL_SET:
         if col in df_mapped.columns:
             # Chiến lược phổ biến: Coi "không chắc chắn" là "dương tính" để không bỏ lỡ bệnh
             # Hoặc bạn có thể coi là 0: df_mapped[col] = df_mapped[col].replace(-1.0, 0)
@@ -86,7 +59,7 @@ def map_vindr_labels_bk(df_raw):
     df_raw['class_name'] = df_raw['class_name'].replace(vindr_to_common_map)
 
     # Lọc ra các hàng có bệnh mà chúng ta quan tâm
-    df_findings = df_raw[df_raw['class_name'].isin(COMMON_DISEASES)].copy()
+    df_findings = df_raw[df_raw['class_name'].isin(COMMON_FINAL_LABEL_SET)].copy()
 
     # Pivot để tạo ma trận nhãn đa lớp
     df_pivot = df_findings.pivot_table(
@@ -103,15 +76,15 @@ def map_vindr_labels_bk(df_raw):
 
     # Tạo cột 'No Finding'
     # Một ảnh là 'No Finding' nếu tổng các bệnh trong COMMON_DISEASES bằng 0
-    df_wide['No Finding'] = (df_wide[COMMON_DISEASES].sum(axis=1) == 0).astype(int)
+    df_wide['No Finding'] = (df_wide[COMMON_FINAL_LABEL_SET].sum(axis=1) == 0).astype(int)
     
     # Đảm bảo tất cả các cột trong COMMON_DISEASES đều tồn tại
-    for label in COMMON_DISEASES:
+    for label in COMMON_FINAL_LABEL_SET:
         if label not in df_wide.columns:
             df_wide[label] = 0
 
     # Giữ lại các cột cần thiết theo đúng thứ tự
-    df_mapped = df_wide[['image_id'] + COMMON_DISEASES].copy()
+    df_mapped = df_wide[['image_id'] + COMMON_FINAL_LABEL_SET].copy()
     
     return df_mapped
 
@@ -126,7 +99,7 @@ def map_chestxray14_labels(df_raw):
     df_raw.rename(columns={'Finding Labels': 'labels'}, inplace=True)
     
     # Tạo các cột nhị phân cho mỗi bệnh trong bộ nhãn chung
-    for disease in COMMON_DISEASES:
+    for disease in COMMON_FINAL_LABEL_SET:
         # Xử lý trường hợp đặc biệt của Pleural Effusion
         if disease == 'Pleural Effusion':
             df_raw[disease] = df_raw['labels'].apply(lambda x: 1 if 'Effusion' in x else 0)
@@ -137,7 +110,7 @@ def map_chestxray14_labels(df_raw):
     df_raw['No Finding'] = df_raw['labels'].apply(lambda x: 1 if 'No Finding' in x else 0)
     
     # Giữ lại các cột cần thiết
-    df_mapped = df_raw[['Image Index'] + COMMON_DISEASES].copy()
+    df_mapped = df_raw[['Image Index'] + COMMON_FINAL_LABEL_SET].copy()
     # Đổi tên cột 'Image Index' thành 'image_id' cho nhất quán
     df_mapped.rename(columns={'Image Index': 'image_id'}, inplace=True)
     
@@ -151,7 +124,7 @@ def map_padchest_labels(df_raw):
     - Pivot và xử lý 'No Finding'.
     """
     # Chuẩn hóa tên cột nhãn trong PadChest (chữ thường)
-    padchest_common_diseases = [d.lower() for d in COMMON_DISEASES]
+    padchest_common_diseases = [d.lower() for d in COMMON_FINAL_LABEL_SET]
     
     # Lọc các hàng có nhãn liên quan
     # 'Labels' là cột chứa một list các string
@@ -164,7 +137,7 @@ def map_padchest_labels(df_raw):
     df_filtered = df_raw[df_raw['Labels'].apply(filter_labels)].copy()
     
     # Tạo các cột nhị phân cho mỗi bệnh
-    for disease_common, disease_padchest in zip(COMMON_DISEASES, padchest_common_diseases):
+    for disease_common, disease_padchest in zip(COMMON_FINAL_LABEL_SET, padchest_common_diseases):
         def has_disease(label_list):
             if isinstance(label_list, str):
                 label_list = eval(label_list)
@@ -183,12 +156,12 @@ def map_padchest_labels(df_raw):
     
     # Gộp thông tin
     df_wide = pd.merge(df_raw[['ImageID', 'No Finding']], 
-                       df_filtered[['ImageID'] + COMMON_DISEASES], 
+                       df_filtered[['ImageID'] + COMMON_FINAL_LABEL_SET], 
                        on='ImageID', 
                        how='left').fillna(0)
     df_wide = df_wide.drop_duplicates(subset=['ImageID'])
                        
-    df_mapped = df_wide[['ImageID'] + COMMON_DISEASES].copy()
+    df_mapped = df_wide[['ImageID'] + COMMON_FINAL_LABEL_SET].copy()
     df_mapped.rename(columns={'ImageID': 'image_id'}, inplace=True)
 
     return df_mapped

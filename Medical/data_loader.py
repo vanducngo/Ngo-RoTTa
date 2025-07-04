@@ -5,7 +5,7 @@ from torchvision import transforms
 from PIL import Image
 import os
 
-from data_mapping import COMMON_DISEASES, TRAINING_LABEL_SET, map_chexpert_labels, map_chexpert_labels_14
+from constants import COMMON_FINAL_LABEL_SET, TRAINING_LABEL_SET
 
 class CheXpertFullLabelDataset(Dataset):
     def __init__(self, cfg, mode='train', transform=None):
@@ -78,7 +78,7 @@ class MultiSourceDataset(Dataset):
             raise ValueError(f"Unknown dataset: {self.dataset_name}")
             
         print(f"Loaded and mapped {self.dataset_name} ({mode}) with {len(self.df)} samples.")
-        print(f"Common diseases being used: {COMMON_DISEASES}")
+        print(f"Common diseases being used: {COMMON_FINAL_LABEL_SET}")
 
     def __len__(self):
         return len(self.df)
@@ -100,7 +100,7 @@ class MultiSourceDataset(Dataset):
             return torch.empty(0), torch.empty(0)
 
         # Lấy nhãn từ các cột bệnh chung
-        labels = self.df.iloc[idx][COMMON_DISEASES].values.astype('float')
+        labels = self.df.iloc[idx][COMMON_FINAL_LABEL_SET].values.astype('float')
         labels = torch.tensor(labels, dtype=torch.float32)
         
         if self.transform:
@@ -114,37 +114,6 @@ def collate_fn(batch):
     if not batch:
         return torch.empty(0), torch.empty(0)
     return torch.utils.data.dataloader.default_collate(batch)
-
-def get_data_loaders_cheXpert(cfg):   
-    transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
-
-    transformTrain = transforms.Compose([
-        transforms.Resize((224, 224)),
-        
-        # Thêm các phép biến đổi hình học mạnh hơn
-        transforms.RandomRotation(15),  # Tăng góc xoay từ 10 lên 15 độ
-        transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)), # Dịch chuyển ảnh ngẫu nhiên 10%
-        transforms.RandomResizedCrop(224, scale=(0.8, 1.0)), # Cắt ngẫu nhiên vẫn giữ nguyên
-        transforms.RandomHorizontalFlip(p=0.5), # Lật ngang là một phép rất hiệu quả
-        
-        # Thêm các phép biến đổi màu sắc mạnh hơn
-        transforms.ColorJitter(brightness=0.3, contrast=0.3), # Tăng độ sáng/tương phản từ 0.1 lên 0.3
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
-    
-    train_dataset = MultiSourceDataset(cfg, dataset_name='chexpert', mode='train', transform=transformTrain)
-    train_subset = torch.utils.data.Subset(train_dataset, range(len(train_dataset)))
-    train_loader = DataLoader(train_subset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=True, collate_fn=collate_fn, num_workers=4)
-    
-    chexpert_test_dataset = MultiSourceDataset(cfg, dataset_name='chexpert', mode='test', transform=transform)
-    chexpert_test_loader = DataLoader(chexpert_test_dataset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=False, collate_fn=collate_fn, num_workers=4)
-
-    return train_loader, chexpert_test_loader
 
 def get_data_loaders_vindr(cfg):
     return get_data_loaders_structed(cfg, 'vindr')
