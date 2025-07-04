@@ -56,13 +56,12 @@ OPTIM:
 ADAPTER: # Cấu hình riêng cho RoTTA
   NAME: "RoTTAMultiLabel"
   LR: 1e-5
-  MEMORY_SIZE: 64
-  BATCH_SIZE: 16
-  EMA_DECAY: 0.99
-  UNCERTAINTY_THRESHOLD: 0.7 # Chỉ chấp nhận mẫu có uncertainty < 0.7
-  AGE_WEIGHT: 0.01 # Trọng số của tuổi trong điểm heuristic
-  LAMBDA_T: 1
-  LAMBDA_U: 1
+  MEMORY_SIZE: 128
+  BATCH_SIZE: 32  # Batch size để học từ memory
+  EMA_DECAY: 0.999 
+  UPDATE_FREQUENCY: 64 # Cập nhật model sau mỗi 64 mẫu
+  LAMBDA_T: 1.0 # Trọng số cho tuổi
+  LAMBDA_U: 1.0 # Trọng số cho uncertainty
 
 INPUT:
   SIZE: (224, 224)

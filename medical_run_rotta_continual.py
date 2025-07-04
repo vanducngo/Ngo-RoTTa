@@ -12,7 +12,7 @@ from Medical.utils import print_selected_auc_stats
 from core.optim import build_optimizer
 from medical_continual_data_loader import ContinualDomainLoader # Đã có từ câu trả lời trước
 from Medical.models import get_model_chexpert_14
-from core.adapter.rotta_multilabel_adapter import RoTTAMultiLabel
+from core.adapter.rotta_multilabel_adapter import RoTTAMultiLabel, RoTTAMultiLabelSelective
 import os
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -62,9 +62,9 @@ def main(cfg):
     optimizer = build_optimizer(cfg)
     optimizer_func = lambda params: optim.Adam(params, lr=cfg.ADAPTER.LR, weight_decay=cfg.OPTIM.WD)
 
-    tta_model = RoTTAMultiLabel(cfg, model, optimizer_func).to(device)
+    tta_model = RoTTAMultiLabelSelective(cfg, model, optimizer_func).to(device)
 
-    print('get_occupancy->get_occupancy', tta_model.mem.get_list_class_name())
+    # print('get_occupancy->get_occupancy', tta_model.mem.get_list_class_name())
     # 3. Tạo luồng dữ liệu liên tục
     eval_transform = transforms.Compose([
         transforms.Resize((224, 224)),
