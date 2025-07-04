@@ -33,7 +33,6 @@ MODEL:
   NUM_CLASSES: 6                       # Số lớp bệnh chung
   NUM_CLASSES_SOURCE: 14 # Số lớp của mô hình gốc
   NUM_CLASSES_TTA: 6     # Số lớp mục tiêu cho adaptation
-  CHECKPOINT_PATH: "./Medical/results/mobile_net_14class_jul3_23h59.pth"
 
 # Cấu hình huấn luyện
 TRAINING:
