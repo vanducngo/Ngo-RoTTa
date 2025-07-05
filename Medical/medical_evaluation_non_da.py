@@ -57,13 +57,14 @@ def evaluate_continual_zero_shot(model, continual_loader, device):
         auc_scores = {}
         valid_aucs = []
         for i, class_name in enumerate(TRAINING_LABEL_SET):
-            if len(np.unique(labels[:, i])) > 1:  # Use concatenated labels
-                try:
-                    auc = roc_auc_score(labels[:, i], all_probs[:, i])
-                    auc_scores[f"auc/{class_name}"] = auc  # Tên key phù hợp cho wandb
-                    valid_aucs.append(auc)
-                except ValueError:
-                    pass
+            if class_name in COMMON_FINAL_LABEL_SET:
+                if len(np.unique(labels[:, i])) > 1:  # Use concatenated labels
+                    try:
+                        auc = roc_auc_score(labels[:, i], all_probs[:, i])
+                        auc_scores[f"auc/{class_name}"] = auc  # Tên key phù hợp cho wandb
+                        valid_aucs.append(auc)
+                    except ValueError:
+                        pass
         
         print(f"auc_scores: {auc_scores}")
         print_selected_auc_stats(auc_scores, domain_name)
