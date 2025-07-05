@@ -4,12 +4,12 @@ from sklearn.metrics import roc_auc_score
 import numpy as np
 from tqdm import tqdm
 
-from constants import COMMON_FINAL_LABEL_SET
+from constants import COMMON_FINAL_LABEL_SET, TRAINING_LABEL_SET
 from models import get_model_chexpert_14
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-def evaluate_model(model, data_loader, device, criterion = None):
+def evaluate_model(model, data_loader, criterion = None):
     """
     Đánh giá mô hình, trả về mean AUC, loss trung bình, và một dict chứa AUC của từng lớp.
     """    
@@ -22,12 +22,10 @@ def evaluate_model(model, data_loader, device, criterion = None):
     with torch.no_grad():
         for images, labels in tqdm(data_loader, desc="Evaluating"):
             if images.numel() == 0: continue
-            images, labels = images.to(device), labels.to(device)
+            images, labels = images.to(DEVICE), labels.to(DEVICE)
             
             outputs = model(images)  # Logits
 
-            loss = 0
-            total_loss = 0
             if criterion is not None:
                 loss = criterion(outputs, labels)
                 total_loss += loss.item() * images.size(0)
@@ -42,7 +40,7 @@ def evaluate_model(model, data_loader, device, criterion = None):
     # Tính toán AUC
     auc_scores = {}
     valid_aucs = []
-    for i, class_name in enumerate(COMMON_FINAL_LABEL_SET):
+    for i, class_name in enumerate(TRAINING_LABEL_SET):
         if len(np.unique(all_labels[:, i])) > 1:
             try:
                 auc = roc_auc_score(all_labels[:, i], all_probs[:, i])
@@ -54,9 +52,56 @@ def evaluate_model(model, data_loader, device, criterion = None):
     mean_auc = np.mean(valid_aucs) if valid_aucs else 0.0
     avg_loss = total_loss / len(data_loader.dataset)
     
-    print(f'mean_auc: {mean_auc}')
-    print(f'all auc: {auc_scores}')
     return mean_auc, avg_loss, auc_scores
+
+# def evaluate_model(model, data_loader, device, criterion = None):
+#     """
+#     Đánh giá mô hình, trả về mean AUC, loss trung bình, và một dict chứa AUC của từng lớp.
+#     """    
+#     model.eval()  # Chuyển mô hình sang chế độ đánh giá
+    
+#     all_probs = []
+#     all_labels = []
+#     total_loss = 0.0
+    
+#     with torch.no_grad():
+#         for images, labels in tqdm(data_loader, desc="Evaluating"):
+#             if images.numel() == 0: continue
+#             images, labels = images.to(device), labels.to(device)
+            
+#             outputs = model(images)  # Logits
+
+#             loss = 0
+#             total_loss = 0
+#             if criterion is not None:
+#                 loss = criterion(outputs, labels)
+#                 total_loss += loss.item() * images.size(0)
+            
+#             probs = torch.sigmoid(outputs)  # Chuyển logits thành xác suất
+#             all_probs.append(probs.cpu().numpy())
+#             all_labels.append(labels.cpu().numpy())
+            
+#     all_probs = np.concatenate(all_probs, axis=0)
+#     all_labels = np.concatenate(all_labels, axis=0)
+    
+#     # Tính toán AUC
+#     auc_scores = {}
+#     valid_aucs = []
+#     for i, class_name in enumerate(COMMON_FINAL_LABEL_SET):
+#         if len(np.unique(all_labels[:, i])) > 1:
+#             try:
+#                 auc = roc_auc_score(all_labels[:, i], all_probs[:, i])
+#                 auc_scores[f"auc/{class_name}"] = auc # Tên key phù hợp cho wandb
+#                 valid_aucs.append(auc)
+#             except ValueError:
+#                 pass
+                
+#     mean_auc = np.mean(valid_aucs) if valid_aucs else 0.0
+#     avg_loss = total_loss / len(data_loader.dataset)
+    
+#     print(f'mean_auc: {mean_auc}')
+#     print(f'all auc: {auc_scores}')
+#     return mean_auc, avg_loss, auc_scores
 
 def calculate_auc(all_preds, all_labels):
     """

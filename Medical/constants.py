@@ -6,20 +6,36 @@ COMMON_FINAL_LABEL_SET = ['No Finding'] + COMMON_DISEASES
 
 TRAINING_LABEL_SET = [
     'No Finding',
-    'Enlarged Cardiomediastinum',
+    'Atelectasis',
     'Cardiomegaly',
+    'Consolidation',
+    'Pleural Effusion',
+    'Pneumothorax',
+    'Enlarged Cardiomediastinum',
     'Lung Opacity',
     'Lung Lesion',
     'Edema',
-    'Consolidation',
     'Pneumonia',
-    'Atelectasis',
-    'Pneumothorax',
-    'Pleural Effusion',
     'Pleural Other',
     'Fracture',
     'Support Devices'
 ]
+# TRAINING_LABEL_SET = [
+#     'No Finding',
+#     'Enlarged Cardiomediastinum',
+#     'Cardiomegaly',
+#     'Lung Opacity',
+#     'Lung Lesion',
+#     'Edema',
+#     'Consolidation',
+#     'Pneumonia',
+#     'Atelectasis',
+#     'Pneumothorax',
+#     'Pleural Effusion',
+#     'Pleural Other',
+#     'Fracture',
+#     'Support Devices'
+# ]
 
 TARGET_TO_FULL_MAP = {
     target_idx: TRAINING_LABEL_SET.index(class_name)

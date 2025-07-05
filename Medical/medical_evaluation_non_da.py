@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.metrics import roc_auc_score
 from torchvision import transforms
 
-from constants import COMMON_FINAL_LABEL_SET
+from constants import COMMON_FINAL_LABEL_SET, TRAINING_LABEL_SET
 from utils import get_pretrained_model, print_selected_auc_stats
 from medical_continual_data_loader import ContinualDomainLoader
 
@@ -56,7 +56,7 @@ def evaluate_continual_zero_shot(model, continual_loader, device):
         
         auc_scores = {}
         valid_aucs = []
-        for i, class_name in enumerate(COMMON_FINAL_LABEL_SET):
+        for i, class_name in enumerate(TRAINING_LABEL_SET):
             if len(np.unique(labels[:, i])) > 1:  # Use concatenated labels
                 try:
                     auc = roc_auc_score(labels[:, i], all_probs[:, i])
