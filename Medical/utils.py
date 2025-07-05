@@ -41,13 +41,14 @@ def evaluate_model(model, data_loader, criterion = None):
     auc_scores = {}
     valid_aucs = []
     for i, class_name in enumerate(TRAINING_LABEL_SET):
-        if len(np.unique(all_labels[:, i])) > 1:
-            try:
-                auc = roc_auc_score(all_labels[:, i], all_probs[:, i])
-                auc_scores[f"auc/{class_name}"] = auc # Tên key phù hợp cho wandb
-                valid_aucs.append(auc)
-            except ValueError:
-                pass
+        if class_name in COMMON_FINAL_LABEL_SET:
+            if len(np.unique(all_labels[:, i])) > 1:
+                try:
+                    auc = roc_auc_score(all_labels[:, i], all_probs[:, i])
+                    auc_scores[f"auc/{class_name}"] = auc # Tên key phù hợp cho wandb
+                    valid_aucs.append(auc)
+                except ValueError:
+                    pass
                 
     mean_auc = np.mean(valid_aucs) if valid_aucs else 0.0
     avg_loss = total_loss / len(data_loader.dataset)
@@ -138,7 +139,7 @@ def print_selected_auc_stats(per_class_auc, domain='X'):
         print(f"{disease}: {auc:.4f}")
 
 def get_pretrained_model(cfg):
-    model_path = "./results/mobile_net_14class_jul4_00h59.pth"
+    model_path = "./results/best_model_jul5_11h30.pth"
     print(f"Loading fine-tuned weights from: {model_path}")
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found at {model_path}. Please run the training script first.")

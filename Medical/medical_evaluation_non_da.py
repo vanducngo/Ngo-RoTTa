@@ -56,7 +56,7 @@ def evaluate_continual_zero_shot(model, continual_loader, device):
         
         auc_scores = {}
         valid_aucs = []
-        for i, class_name in enumerate(TRAINING_LABEL_SET):
+        for i, class_name in enumerate(COMMON_FINAL_LABEL_SET):
             if class_name in COMMON_FINAL_LABEL_SET:
                 if len(np.unique(labels[:, i])) > 1:  # Use concatenated labels
                     try:

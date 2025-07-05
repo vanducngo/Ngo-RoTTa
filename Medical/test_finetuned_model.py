@@ -84,17 +84,17 @@ def main():
     mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate_model(model, chexpert_test_loader)
     print_selected_auc_stats(per_class_auc, "CheXpert")
     
-    # # VinDr CXR 
-    # vindr_test_loader =  get_data_loaders_vindr(cfg)
-    # mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate_model(model, vindr_test_loader)
-    # print_selected_auc_stats(per_class_auc, 'VinDr')
+    # VinDr CXR 
+    vindr_test_loader =  get_data_loaders_vindr(cfg)
+    mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate_model(model, vindr_test_loader)
+    print_selected_auc_stats(per_class_auc, 'VinDr')
     
-    # # NIH 14 dataset
-    # nih14_test_loader = get_data_loaders_nih14(cfg)
-    # mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate_model(model, nih14_test_loader)
-    # print_selected_auc_stats(per_class_auc, "nih-14")
+    # NIH 14 dataset
+    nih14_test_loader = get_data_loaders_nih14(cfg)
+    mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate_model(model, nih14_test_loader)
+    print_selected_auc_stats(per_class_auc, "nih-14")
     
-    # # PadChest dataset
+    # PadChest dataset
     # padchest_test_loader = get_data_loaders_padchest(cfg)
     # mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate_model(model, padchest_test_loader)
     # print_selected_auc_stats(per_class_auc, "padchest")
