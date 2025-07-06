@@ -1,6 +1,7 @@
 import pandas as pd
 import torch
 from torch.utils.data import Dataset, DataLoader
+from sklearn.model_selection import train_test_split
 from torchvision import transforms
 from PIL import Image
 import os
@@ -124,6 +125,9 @@ def get_data_loaders_nih14(cfg):
 def get_data_loaders_padchest(cfg):    
     return get_data_loaders_structed(cfg, 'padchest')
 
+def get_data_loaders_padchest_for_fine_tune(cfg):    
+    return get_train_test_data_loaders_structed(cfg, 'padchest')
+
 def get_data_loaders_structed(cfg, dataset_name="None", mode = 'test'):    
     transform = transforms.Compose([
         transforms.Resize((224, 224)),
@@ -135,6 +139,49 @@ def get_data_loaders_structed(cfg, dataset_name="None", mode = 'test'):
     dataLoader = DataLoader(dataset, batch_size=cfg.TRAINING.BATCH_SIZE, shuffle=False, collate_fn=collate_fn, num_workers=4)
 
     return dataLoader
+
+def get_train_test_data_loaders_structed(cfg, dataset_name="None", train_ratio=0.7, random_state=42):
+    # Define transform
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ])
+
+    # Create full dataset
+    full_dataset = MultiSourceDataset(cfg, dataset_name=dataset_name, mode='all', transform=transform)
+    
+    # Get indices for train-test split
+    indices = list(range(len(full_dataset)))
+    train_indices, test_indices = train_test_split(
+        indices,
+        test_size=1 - train_ratio,  # e.g., 0.3 for 30% test set
+        stratify=[full_dataset[i][1] for i in indices],  # Assuming dataset[i][1] is the label for stratification
+        random_state=random_state
+    )
+    
+    # Create Subset datasets for train and test
+    train_dataset = torch.utils.data.Subset(full_dataset, train_indices)
+    test_dataset = torch.utils.data.Subset(full_dataset, test_indices)
+    
+    # Create data loaders
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=cfg.TRAINING.BATCH_SIZE,
+        shuffle=True,  # Shuffle for training
+        collate_fn=collate_fn,
+        num_workers=4
+    )
+    
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=cfg.TRAINING.BATCH_SIZE,
+        shuffle=False,  # No shuffle for testing
+        collate_fn=collate_fn,
+        num_workers=4
+    )
+    
+    return train_loader, test_loader
 
 def get_chexpert_full_label_loaders(cfg):   
     transform = transforms.Compose([

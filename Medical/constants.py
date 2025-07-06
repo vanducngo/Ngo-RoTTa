@@ -11,14 +11,14 @@ TRAINING_LABEL_SET = [
     'Consolidation',
     'Pleural Effusion',
     'Pneumothorax',
-    'Enlarged Cardiomediastinum',
-    'Lung Opacity',
-    'Lung Lesion',
-    'Edema',
-    'Pneumonia',
-    'Pleural Other',
-    'Fracture',
-    'Support Devices'
+    # 'Enlarged Cardiomediastinum',
+    # 'Lung Opacity',
+    # 'Lung Lesion',
+    # 'Edema',
+    # 'Pneumonia',
+    # 'Pleural Other',
+    # 'Fracture',
+    # 'Support Devices'
 ]
 # TRAINING_LABEL_SET = [
 #     'No Finding',

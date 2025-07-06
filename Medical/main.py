@@ -1,5 +1,5 @@
 import torch
-from data_loader import get_chexpert_full_label_loaders
+from data_loader import get_chexpert_full_label_loaders, get_data_loaders_padchest_for_fine_tune
 from train_chexpert_14_labels import evaluate, fine_tune
 from omegaconf import OmegaConf
 import os
@@ -17,8 +17,11 @@ def main(cfg):
 
     # Tải dữ liệu
     print("\n>>> Loading datasets...")
-    train_loader, chexpert_test_loader = get_chexpert_full_label_loaders(cfg)
+    # train_loader, test_loader = get_chexpert_full_label_loaders(cfg)
+    train_loader, test_loader  = get_data_loaders_padchest_for_fine_tune(cfg)
+    # print(f"Returned: {type(result)}, {len(result) if isinstance(result, (list, tuple)) else result}")
 
+    print(f"Loader result: {train_loader} - {test_loader}")
     if os.path.exists(model_save_path):
         print(f"Found fine-tuned model at {model_save_path}")
         # Load the pre-trained model architecture
@@ -32,7 +35,7 @@ def main(cfg):
         # Tải Pre-trained model
         model = get_model_chexpert_14(cfg)
         # Fine-tune mô hình trên CheXpert
-        model = fine_tune(cfg, model, train_loader, chexpert_test_loader, device)
+        model = fine_tune(cfg, model, train_loader, test_loader, device)
         # Lưu lại model đã fine-tune
         model_save_path = os.path.join(cfg.OUTPUT_DIR, "finetuned_model.pth")
         torch.save(model.state_dict(), model_save_path)
@@ -43,7 +46,7 @@ def main(cfg):
         # Đánh giá trên tập test của CheXpert (In-Domain Performance)
         print("Evaluating on CheXpert test set (In-Domain)...")
         criterion = nn.BCEWithLogitsLoss()
-        mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate(model, chexpert_test_loader, device, criterion)
+        mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate(model, test_loader, device, criterion)
         print(f"Valid Loss: {epoch_valid_loss:.4f} | Valid AUC: {mean_valid_auc:.4f}")
         print(f"Per class auc: \n {per_class_auc}")
         
