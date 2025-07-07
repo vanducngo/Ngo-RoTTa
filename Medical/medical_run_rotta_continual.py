@@ -10,7 +10,7 @@ import torch.optim as optim
 from constants import COMMON_FINAL_LABEL_SET, TRAINING_LABEL_SET
 from utils import get_pretrained_model, print_selected_auc_stats
 from medical_continual_data_loader import ContinualDomainLoader # Đã có từ câu trả lời trước
-from core.rotta_multilabel_adapter import RoTTAMultiLabelSelective
+from core.rotta_multilabel_adapter import RoTTAMultiLabelConsistent
 
 def main(cfg):
     device = torch.device(cfg.TRAINING.DEVICE if torch.cuda.is_available() else "cpu")
@@ -21,18 +21,23 @@ def main(cfg):
     
     # 2. Khởi tạo RoTTA adapter
     optimizer_func = lambda params: optim.Adam(params, lr=cfg.ADAPTER.LR, weight_decay=cfg.OPTIM.WD)
-    tta_model = RoTTAMultiLabelSelective(cfg, model, optimizer_func).to(device)
+    tta_model = RoTTAMultiLabelConsistent(cfg, model, optimizer_func).to(device)
 
     # 3. Tạo luồng dữ liệu liên tục
+    BLUR_KERNEL_SIZE = 3     # Kích thước kernel cho GaussianBlur
+    BLUR_SIGMA = (0.1, 1.0)  # Độ lệch chuẩn cho GaussianBlur
     eval_transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
+        transforms.ColorJitter(brightness=0.2, contrast=0.2),
+        transforms.GaussianBlur(kernel_size=BLUR_KERNEL_SIZE, sigma=BLUR_SIGMA),
+        transforms.Lambda(lambda x: torch.clamp(x + 0.005 * torch.randn_like(x), 0, 1)),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
     
     # Chuỗi các domain thay đổi theo từng batch
     # domain_sequence = ['vindr', 'nih14', 'padchest'] * 33 + ['vindr'] 
-    domain_sequence = ['vindr', 'nih14'] * 50
+    domain_sequence = ['vindr', 'nih14'] * 500
 
     continual_loader = ContinualDomainLoader(
         cfg, 

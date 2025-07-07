@@ -3,23 +3,23 @@ COMMON_DISEASES = [
     'Pleural Effusion', 'Pneumothorax'
 ]
 COMMON_FINAL_LABEL_SET = ['No Finding'] + COMMON_DISEASES
-
-TRAINING_LABEL_SET = [
-    'No Finding',
-    'Atelectasis',
-    'Cardiomegaly',
-    'Consolidation',
-    'Pleural Effusion',
-    'Pneumothorax',
-    'Enlarged Cardiomediastinum',
-    'Lung Opacity',
-    'Lung Lesion',
-    'Edema',
-    'Pneumonia',
-    'Pleural Other',
-    'Fracture',
-    'Support Devices'
-]
+TRAINING_LABEL_SET = COMMON_FINAL_LABEL_SET
+# TRAINING_LABEL_SET = [
+#     'No Finding',
+#     'Atelectasis',
+#     'Cardiomegaly',
+#     'Consolidation',
+#     'Pleural Effusion',
+#     'Pneumothorax',
+#     'Enlarged Cardiomediastinum',
+#     'Lung Opacity',
+#     'Lung Lesion',
+#     'Edema',
+#     'Pneumonia',
+#     'Pleural Other',
+#     'Fracture',
+#     'Support Devices'
+# ]
 # TRAINING_LABEL_SET = [
 #     'No Finding',
 #     'Enlarged Cardiomediastinum',

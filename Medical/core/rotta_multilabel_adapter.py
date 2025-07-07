@@ -3,7 +3,10 @@ import torch.nn as nn
 import torch.optim as optim
 import copy
 import logging
+import wandb
+from omegaconf import OmegaConf
 import random
+import numpy as np
 
 from constants import COMMON_FINAL_LABEL_SET, TARGET_INDICES_IN_FULL_LIST
 
@@ -194,15 +197,11 @@ class RoTTAMultiLabelSelective(BaseAdapter): # Đổi tên để phân biệt
     def __init__(self, cfg, model, optimizer_func):
         self.logger = logging.getLogger("TTA.adapter")
         self.cfg = cfg
-        
-        # SỬ DỤNG TRỰC TIẾP MÔ HÌNH 14 LỚP
-        # Không cần build_new_model nữa
         super().__init__(cfg, model, optimizer_func)
 
         self.student = self.model
         self.teacher = self.build_ema(self.student)
         
-        # Memory bank vẫn hoạt động trên không gian 6 lớp
         self.mem = CSTUMultiLabel(
             capacity=cfg.ADAPTER.MEMORY_SIZE,
             num_class=len(COMMON_FINAL_LABEL_SET), # Số lớp là 6
@@ -229,15 +228,18 @@ class RoTTAMultiLabelSelective(BaseAdapter): # Đổi tên để phân biệt
             if isinstance(m, (nn.BatchNorm2d, nn.BatchNorm1d, nn.LayerNorm)):
                 m.requires_grad = True
 
-        # Mở băng cả lớp classifier 14 lớp cuối cùng
-        # Vì chúng ta cần cập nhật trọng số cho cả 14 đầu ra,
-        # ngay cả khi loss chỉ tính trên 6
         if hasattr(model, 'fc'):
             for param in model.fc.parameters():
                 param.requires_grad = True
         elif hasattr(model, 'classifier'):
              for param in model.classifier.parameters():
                 param.requires_grad = True
+
+
+        for name, param in model.named_parameters():
+            if param.requires_grad:
+                print(f"  - Trainable: {name}")
+
         return model
 
     @torch.no_grad()
@@ -282,12 +284,11 @@ class RoTTAMultiLabelSelective(BaseAdapter): # Đổi tên để phân biệt
             batch_images = torch.stack([bank_data[i] for i in indices]).to(x.device)
             batch_labels_6_cls = torch.stack([bank_labels[i] for i in indices]).to(x.device)
             
-            # === PHẦN SỬA LỖI ===
             # Lấy tuổi tương ứng với các mẫu trong batch
             batch_ages_list = [bank_ages[i] for i in indices]
             # ===================
 
-            student_logits_14_cls = model(batch_images)
+            student_logits_14_cls = self.teacher(batch_images)
             
             # Lọc ra 6 logits tương ứng từ đầu ra của student
             student_logits_6_cls = torch.index_select(student_logits_14_cls, 1, self.target_indices)
@@ -318,6 +319,252 @@ class RoTTAMultiLabelSelective(BaseAdapter): # Đổi tên để phân biệt
             
         return final_output_6_cls
     
+    @staticmethod
+    def update_ema_variables(ema_model, model, nu):
+        for ema_param, param in zip(ema_model.parameters(), model.parameters()):
+            ema_param.data.mul_(1.0 - nu).add_(param.data, alpha=nu)
+
+
+class RoTTAMultiLabelConsistent(BaseAdapter):
+    def __init__(self, cfg, model, optimizer_func):
+        self.logger = logging.getLogger("TTA.adapter")
+        self.cfg = cfg
+        super().__init__(cfg, model, optimizer_func)
+
+        # Khởi tạo các thành phần của RoTTA
+        self.student = self.model
+        self.teacher = self.build_ema(self.student)
+        
+        self.mem = CSTUMultiLabel(
+            capacity=self.cfg.ADAPTER.MEMORY_SIZE,
+            num_class=len(COMMON_FINAL_LABEL_SET),
+            lambda_t=self.cfg.ADAPTER.LAMBDA_T,
+            lambda_u=self.cfg.ADAPTER.LAMBDA_U
+        )
+        
+        self.transform = nn.Identity() # Tạm thời chưa dùng strong augmentation
+        self.nu = 1.0 - self.cfg.ADAPTER.EMA_DECAY
+        # Dùng BCEWithLogitsLoss để so sánh logits của student và soft-labels (xác suất) của teacher
+        self.criterion = nn.BCEWithLogitsLoss(reduction='none')
+        self.update_frequency = self.cfg.ADAPTER.UPDATE_FREQUENCY
+        self.instance_counter = 0
+
+        # Lưu lại các chỉ số của 6 lớp mục tiêu để lọc
+        device = next(self.student.parameters()).device # Lấy device từ chính model
+        self.target_indices = torch.tensor(TARGET_INDICES_IN_FULL_LIST, device=device)
+
+        # Khởi tạo wandb run
+        wandb.init(
+            project="chexpert-rotta",
+            config=OmegaConf.to_container(cfg, resolve=True), # Log toàn bộ config
+            name=f"{cfg.MODEL.ARCH}-lr{cfg.TRAINING.LEARNING_RATE}-bs{cfg.TRAINING.BATCH_SIZE}"
+        )
+        wandb.watch(model, log="all", log_freq=100)
+
+    def configure_model(self, model: nn.Module):
+        model.requires_grad_(False)
+        
+        self.logger.info("Configuring model: Making BatchNorm layers and final classifier trainable.")
+        trainable_param_names = []
+
+        # Mở băng các lớp BatchNorm
+        for name, m in model.named_modules():
+            if isinstance(m, (nn.BatchNorm2d, nn.BatchNorm1d, nn.LayerNorm)):
+                # Mở băng toàn bộ lớp BN để an toàn
+                for param in m.parameters():
+                    param.requires_grad = True
+                trainable_param_names.append(name)
+        
+        # Mở băng lớp classifier cuối cùng
+        # Logic này cần phải mạnh mẽ để xử lý các kiến trúc khác nhau
+        classifier = None
+        if hasattr(model, 'fc'):
+            classifier = model.fc
+        elif hasattr(model, 'classifier'):
+            classifier = model.classifier
+        
+        if classifier is not None:
+            for param in classifier.parameters():
+                param.requires_grad = True
+            # Lấy tên của các tham số có thể huấn luyện trong classifier
+            for name, _ in classifier.named_parameters():
+                trainable_param_names.append(f"classifier.{name}") # Giả định tên
+        
+        self.logger.info(f"Trainable modules/layers set: {list(set(trainable_param_names))}")
+        return model
+
+    @torch.no_grad()
+    def get_teacher_output_selective(self, x):
+        """
+        Lấy đầu ra từ teacher, lọc ra 6 lớp để tạo nhãn giả và uncertainty.
+        """
+        self.teacher.eval()
+        teacher_logits_14_cls = self.teacher(x)
+        
+        teacher_logits_6_cls = torch.index_select(teacher_logits_14_cls, 1, self.target_indices)
+
+        probs = torch.sigmoid(teacher_logits_6_cls)
+        pseudo_labels_hard = (probs > 0.5).float()
+        
+        uncertainties = torch.mean(1 - torch.abs(probs - 0.5) * 2, dim=1)
+        return pseudo_labels_hard, uncertainties
+
+    # @torch.enable_grad()
+    # def forward_and_adapt(self, x, model, optimizer):
+    #     # 1. Tạo nhãn giả 6 lớp để đưa vào memory bank
+    #     pseudo_labels, mean_uncertainties = self.get_teacher_output_selective(x)
+
+    #     # 2. Cập nhật Memory Bank
+    #     for i in range(x.size(0)):
+    #         instance = (x[i], pseudo_labels[i], mean_uncertainties[i].item())
+    #         self.mem.add_instance(instance)
+    #         self.instance_counter += 1
+
+    #     # 3. Cập nhật mô hình theo tần suất
+    #     if self.instance_counter % self.update_frequency == 0:
+    #         bank_data, bank_labels, bank_ages = self.mem.get_memory()
+
+    #         unique_items = list({id(item.data): item for class_list in self.mem.data.values() for item in class_list}.values())
+        
+    #         print(f"unique_items size: {len(unique_items)} - COmpare with: {self.cfg.ADAPTER.BATCH_SIZE}")
+            
+    #         if len(unique_items) >= self.cfg.ADAPTER.BATCH_SIZE:
+    #             model.train() # Chuyển student sang chế độ train để các lớp BN hoạt động đúng
+                
+    #             indices = random.sample(range(len(bank_data)), self.cfg.ADAPTER.BATCH_SIZE)
+                
+    #             batch_images = torch.stack([bank_data[i] for i in indices]).to(x.device)
+    #             # bank_labels (nhãn cứng) không được dùng cho loss, chỉ để tham khảo nếu cần
+    #             batch_ages_list = [bank_ages[i] for i in indices]
+
+    #             strong_aug_images = self.transform(batch_images)
+    #             student_logits_14_cls = model(strong_aug_images)
+
+    #             # Dùng Teacher để tạo SOFT targets
+    #             with torch.no_grad():
+    #                 teacher_logits_14_cls = self.teacher(batch_images)
+
+    #             student_logits_6_cls = torch.index_select(student_logits_14_cls, 1, self.target_indices)
+    #             teacher_logits_6_cls = torch.index_select(teacher_logits_14_cls, 1, self.target_indices)
+
+    #             soft_targets = torch.sigmoid(teacher_logits_6_cls)
+    #             instance_loss = self.criterion(student_logits_6_cls, soft_targets).mean(dim=1)
+                
+    #             instance_weight = timeliness_reweighting(batch_ages_list, device=x.device)
+    #             final_loss = (instance_loss * instance_weight).mean()
+                
+    #             if optimizer is not None and final_loss > 0:
+    #                 print(f"Train model => loss backward")
+    #                 optimizer.zero_grad()
+    #                 final_loss.backward()
+    #                 optimizer.step()
+                
+    #             print(f"Teacher model => update_ema_variables")
+    #             self.update_ema_variables(self.teacher, self.student, self.nu)
+
+    #     # 4. Trả về kết quả để đánh giá
+    #     with torch.no_grad():
+    #         self.teacher.eval()
+    #         final_output_14_cls = self.teacher(x)
+    #         final_output_6_cls = torch.index_select(final_output_14_cls, 1, self.target_indices)
+            
+    #     return final_output_6_cls
+
+    @torch.enable_grad()
+    def forward_and_adapt(self, x, model, optimizer):
+        # 1. Lấy nhãn giả và uncertainty từ teacher
+        pseudo_labels, mean_uncertainties = self.get_teacher_output_selective(x)
+
+        # 2. Cập nhật Memory Bank
+        for i in range(x.size(0)):
+            instance = (x[i], pseudo_labels[i], mean_uncertainties[i].item())
+            self.mem.add_instance(instance)
+            self.instance_counter += 1
+
+        # === LOGIC HUẤN LUYỆN ĐÃ ĐƯỢC THIẾT KẾ LẠI HOÀN TOÀN ===
+        
+        # 3. Kích hoạt huấn luyện theo tần suất
+        if self.instance_counter % self.cfg.ADAPTER.UPDATE_FREQUENCY == 0:
+            print(f"Model train")
+            model.train()
+            
+            # 3.1 Lấy toàn bộ các mẫu duy nhất hiện có trong memory
+            unique_items = list({id(item.data): item for class_list in self.mem.data.values() for item in class_list}.values())
+            
+            # 3.2 KIỂM TRA ĐIỀU KIỆN MỚI: Chỉ cần có ít nhất một mẫu là có thể học
+            if len(unique_items) > 0:
+                
+                # 3.3 TẠO BATCH HUẤN LUYỆN
+                # Nếu số mẫu ít hơn batch_size, thì học trên tất cả các mẫu đó.
+                # Nếu nhiều hơn, thì lấy ngẫu nhiên một batch.
+                current_batch_size = min(len(unique_items), self.cfg.ADAPTER.BATCH_SIZE)
+                batch_samples = random.sample(unique_items, current_batch_size)
+                
+                # Tạo tensor từ batch
+                batch_images = torch.stack([s.data for s in batch_samples]).to(x.device)
+                batch_labels = torch.stack([s.pseudo_label for s in batch_samples]).to(x.device)
+                batch_ages = [s.age for s in batch_samples]
+
+                # 3.4 THỰC HIỆN CẬP NHẬT
+                student_logits_14_cls = model(batch_images)
+                teacher_logits_14_cls = self.teacher(batch_images) # Cần teacher output cho soft labels
+
+                student_logits_6_cls = torch.index_select(student_logits_14_cls, 1, self.target_indices)
+                teacher_logits_6_cls = torch.index_select(teacher_logits_14_cls, 1, self.target_indices)
+
+                soft_targets = torch.sigmoid(teacher_logits_6_cls)
+                instance_loss = self.criterion(student_logits_6_cls, soft_targets).mean(dim=1)
+                
+                instance_weight = timeliness_reweighting(batch_ages, device=x.device)
+                final_loss = (instance_loss * instance_weight).mean()
+                
+                if optimizer is not None and final_loss > 0:
+                    self.logger.info(f"Updating model with a batch of {current_batch_size}. Loss: {final_loss.item():.4f}")
+                    optimizer.zero_grad()
+                    final_loss.backward()
+                    optimizer.step()
+                
+                self.update_ema_variables(self.teacher, self.student, self.nu)
+
+                stats = self.analyze_memory_bank()
+                if stats:
+                    wandb.log(stats, step=self.instance_counter)
+
+        # 4. Trả về kết quả để đánh giá
+        with torch.no_grad():
+            self.teacher.eval()
+            final_output_14_cls = self.teacher(x)
+            final_output_6_cls = torch.index_select(final_output_14_cls, 1, self.target_indices)
+            
+        return final_output_6_cls
+    
+    def analyze_memory_bank(self):
+        """Tính toán và trả về các chỉ số thống kê của memory bank."""
+        unique_items = list({id(item.data): item for class_list in self.mem.data.values() for item in class_list}.values())
+        if not unique_items:
+            return None
+
+        # 1. Các chỉ số cơ bản
+        stats = {
+            "memory/unique_occupancy": len(unique_items),
+            "memory/total_slots_used": self.mem.get_occupancy(),
+        }
+
+        # 2. Phân phối lớp trong memory
+        class_dist = self.mem.per_class_dist()
+        for i, class_name in enumerate(COMMON_FINAL_LABEL_SET):
+            stats[f"memory/dist/{class_name}"] = class_dist[i]
+
+        # 3. Thống kê về Uncertainty và Age
+        uncertainties = [item.uncertainty for item in unique_items]
+        ages = [item.age for item in unique_items]
+        stats["memory/avg_uncertainty"] = np.mean(uncertainties)
+        stats["memory/max_uncertainty"] = np.max(uncertainties)
+        stats["memory/avg_age"] = np.mean(ages)
+        stats["memory/max_age"] = np.max(ages)
+        
+        return stats
+
     @staticmethod
     def update_ema_variables(ema_model, model, nu):
         for ema_param, param in zip(ema_model.parameters(), model.parameters()):

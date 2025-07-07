@@ -80,14 +80,20 @@ def main(cfg):
 
     # 2. Tạo luồng dữ liệu liên tục từ các miền đích
     print("\n>>> Preparing the continual domain data stream...")
+    BLUR_KERNEL_SIZE = 3     # Kích thước kernel cho GaussianBlur
+    BLUR_SIGMA = (0.1, 1.0)  # Độ lệch chuẩn cho GaussianBlur
+    
     eval_transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
+        transforms.ColorJitter(brightness=0.2, contrast=0.2),
+        transforms.GaussianBlur(kernel_size=BLUR_KERNEL_SIZE, sigma=BLUR_SIGMA),
+        transforms.Lambda(lambda x: torch.clamp(x + 0.005 * torch.randn_like(x), 0, 1)),
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
     
     # domain_sequence = (['vindr', 'nih14', 'padchest'] * 34)[:100] # Tạo chuỗi 100 batch luân phiên
-    domain_sequence = ['vindr', 'nih14'] * 50
+    domain_sequence = ['vindr', 'nih14'] * 500
     # domain_sequence = ['vindr'] * 100
     
     continual_loader = ContinualDomainLoader(
