@@ -15,7 +15,8 @@ DISEASES_TO_KEEP = [
     'Pneumothorax'
 ]
 # Toàn bộ các cột cuối cùng, bao gồm cả 'No Finding'
-FINAL_LABEL_SET = ['No Finding'] + DISEASES_TO_KEEP
+# FINAL_LABEL_SET = ['No Finding'] + DISEASES_TO_KEEP
+FINAL_LABEL_SET = DISEASES_TO_KEEP
 
 # Ánh xạ tên bệnh từ VinDr-CXR sang tên chung
 VINDR_TO_COMMON_MAP = {
@@ -42,7 +43,7 @@ def preprocess_and_filter_vindr():
 
     target_dir = os.path.join(OUTPUT_PATH)
     target_image_dir = os.path.join(target_dir, 'train') # Tạo thư mục con train
-    target_csv_path = os.path.join(target_dir, 'refined_train.csv')
+    target_csv_path = os.path.join(target_dir, 'validate.csv')
 
     # Tạo thư mục đầu ra
     os.makedirs(target_image_dir, exist_ok=True)

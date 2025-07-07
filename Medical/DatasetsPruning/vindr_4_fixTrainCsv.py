@@ -1,7 +1,7 @@
 import csv
 
 # Read the CSV file
-with open('/Users/admin/Working/Data/vinbigdata-chest-xray-30-percent/validate.csv', 'r') as file:
+with open('/Users/admin/Working/Data/vinbigdata-chest-xray/train.csv', 'r') as file:
     reader = csv.reader(file)
     data = list(reader)
 
@@ -18,6 +18,6 @@ for i in range(len(data)):
             pass
 
 # Write the processed data back to a new CSV file
-with open('/Users/admin/Working/Data/vinbigdata-chest-xray-30-percent/validate_fix.csv', 'w', newline='') as file:
+with open('/Users/admin/Working/Data/vinbigdata-chest-xray/train_fixed.csv', 'w', newline='') as file:
     writer = csv.writer(file)
     writer.writerows(data)

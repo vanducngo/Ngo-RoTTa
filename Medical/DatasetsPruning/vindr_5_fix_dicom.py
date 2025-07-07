@@ -3,7 +3,7 @@ import os
 import warnings
 
 # Directory containing DICOM files
-dicom_dir = "/Users/admin/Working/Data/MixData/vinbigdata_structured/images/"
+dicom_dir = "/Users/admin/Working/Data/vinbigdata-chest-xray/images/"
 
 # Suppress invalid VR UI warnings (optional, see notes below)
 warnings.filterwarnings("ignore", category=UserWarning, module="pydicom.valuerep")

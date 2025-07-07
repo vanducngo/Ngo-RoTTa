@@ -6,7 +6,7 @@ from tqdm import tqdm
 import glob
 
 NIH14_ROOT_PATH = "/Users/admin/Working/Data/nih-14-origin" # Thư mục gốc chứa images/ và Data_Entry_2017.csv
-OUTPUT_PATH = "/Users/admin/Working/Data/nih-14-pruning"
+OUTPUT_PATH = "/Users/admin/Working/Data/nih-14-pruning-5-class"
 
 # Định nghĩa bộ nhãn chúng ta muốn giữ lại
 DISEASES_TO_KEEP = [
@@ -16,7 +16,8 @@ DISEASES_TO_KEEP = [
     'Effusion', # Tên gốc trong NIH14
     'Pneumothorax'
 ]
-FINAL_LABEL_SET_MAPPED = ['No Finding', 'Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
+# FINAL_LABEL_SET_MAPPED = ['No Finding', 'Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
+FINAL_LABEL_SET_MAPPED = ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
 
 def preprocess_and_filter_nih14():
     """
@@ -39,7 +40,7 @@ def preprocess_and_filter_nih14():
 
     target_dir = os.path.join(OUTPUT_PATH)
     target_image_dir = os.path.join(target_dir, 'images') # Tạo thư mục con images
-    target_csv_path = os.path.join(target_dir, 'Data_Entry_2017.csv')
+    target_csv_path = os.path.join(target_dir, 'validate.csv')
 
     # Tạo thư mục đầu ra
     os.makedirs(target_image_dir, exist_ok=True)
