@@ -6,7 +6,6 @@ output_file = '/Users/admin/Working/Data/CheXpert-v1.0-small/valid_filtered.csv'
 
 # Danh sách các bệnh cần kiểm tra
 selected_diseases = [
-    'No Finding', 
     'Cardiomegaly', 
     'Consolidation', 
     'Pleural Effusion', 
