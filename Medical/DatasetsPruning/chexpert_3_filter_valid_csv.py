@@ -1,8 +1,8 @@
 import pandas as pd
 
 # Đường dẫn file CSV
-valid_file = '/Users/admin/Working/Data/CheXpert-v1.0-small/valid.csv'
-output_file = '/Users/admin/Working/Data/CheXpert-v1.0-small/valid_filtered.csv'
+valid_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/valid.csv'
+output_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/valid_filtered.csv'
 
 # Danh sách các bệnh cần kiểm tra
 selected_diseases = [

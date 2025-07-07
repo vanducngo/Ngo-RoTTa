@@ -11,10 +11,10 @@ def set_parameter_requires_grad(model, feature_extracting):
             param.requires_grad = False
 
 def get_model_chexpert_14(cfg):
-    return get_model(cfg, feature_extract=False, useWeight = True, numclasses=14)
+    return get_model(cfg, feature_extract=False, useWeight = True, numclasses=5)
 
 
-def get_model(cfg, feature_extract=False, useWeight = True, numclasses = 6):
+def get_model(cfg, feature_extract=False, useWeight = True, numclasses = 5):
     """
     Tải mô hình và tùy chọn đóng băng các lớp đầu để chỉ fine-tune các lớp cuối.
 
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     # Tạo một config giả để test
     def create_test_config(arch_name):
         return OmegaConf.create({
-            "MODEL": { "ARCH": arch_name, "NUM_CLASSES": 6 }
+            "MODEL": { "ARCH": arch_name, "NUM_CLASSES": 5 }
         })
 
     print("\n--- TESTING ResNet18 ---")
