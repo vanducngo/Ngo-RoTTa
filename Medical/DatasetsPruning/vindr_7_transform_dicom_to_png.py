@@ -7,9 +7,9 @@ import pandas as pd
 from tqdm import tqdm
 from PIL import Image
 
-VINDR_ROOT_PATH = "/Users/admin/Working/Data/MixData/vinbigdata-chest-xray-30-percent"
+VINDR_ROOT_PATH = "/Users/admin/Working/Data/vinbigdata-chest-xray"
 
-OUTPUT_ROOT_PATH = "/Users/admin/Working/Data/vinbigdata_structured"
+OUTPUT_ROOT_PATH = "/Users/admin/Working/Data/MixData/vinbigdata_structured"
 
 SETS_TO_CONVERT = {
     'images': 'validate.csv',
