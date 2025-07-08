@@ -45,9 +45,6 @@ class CSTUMultiLabel:
         new_item = MemoryItem(data=x.cpu(), pseudo_label=pseudo_label.cpu(), uncertainty=uncertainty, age=0)
         new_score = self.heuristic_score(0, uncertainty)
 
-        # === THAY ĐỔI 1: XEM XÉT TẤT CẢ CÁC LỚP ===
-        # Thay vì chỉ lặp qua các lớp dương tính, ta lặp qua tất cả các lớp.
-        # Điều này đảm bảo ngay cả ảnh "No Finding" (toàn số 0) cũng được thêm vào.
         for cls_idx in positive_classes:
             cls_idx = cls_idx.item() # Chuyển tensor thành int
             # Logic quyết định và loại bỏ được gọi cho từng lớp
@@ -81,6 +78,7 @@ class CSTUMultiLabel:
         if worst_item_info['class'] is not None and worst_item_info['score'] > score_to_beat:
             cls, idx = worst_item_info['class'], worst_item_info['index']
             self.data[cls].pop(idx)
+            print(f'remove_from_classes ->Worst: {worst_item_info['score']} compare to new {score_to_beat}')
             return True
             
         # Không thêm vào nếu không tìm thấy mẫu nào để thay thế

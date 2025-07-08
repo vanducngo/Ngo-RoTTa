@@ -492,13 +492,13 @@ class RoTTAMultiLabelConsistent(BaseAdapter):
             unique_items = list({id(item.data): item for class_list in self.mem.data.values() for item in class_list}.values())
             
             # 3.2 KIỂM TRA ĐIỀU KIỆN MỚI: Chỉ cần có ít nhất một mẫu là có thể học
-            if len(unique_items) > 0:
-                
+            if len(unique_items) >= self.cfg.ADAPTER.BATCH_SIZE:
                 # 3.3 TẠO BATCH HUẤN LUYỆN
                 # Nếu số mẫu ít hơn batch_size, thì học trên tất cả các mẫu đó.
                 # Nếu nhiều hơn, thì lấy ngẫu nhiên một batch.
                 current_batch_size = min(len(unique_items), self.cfg.ADAPTER.BATCH_SIZE)
-                batch_samples = random.sample(unique_items, current_batch_size)
+                # batch_samples = random.sample(unique_items, current_batch_size)
+                batch_samples = unique_items
                 
                 # Tạo tensor từ batch
                 batch_images = torch.stack([s.data for s in batch_samples]).to(x.device)
@@ -518,6 +518,7 @@ class RoTTAMultiLabelConsistent(BaseAdapter):
                 instance_weight = timeliness_reweighting(batch_ages, device=x.device)
                 final_loss = (instance_loss * instance_weight).mean()
                 
+                print(f'training model -> Loss: {final_loss}')
                 if optimizer is not None and final_loss > 0:
                     self.logger.info(f"Updating model with a batch of {current_batch_size}. Loss: {final_loss.item():.4f}")
                     optimizer.zero_grad()
