@@ -54,7 +54,7 @@ def main(cfg):
     
     # Chuỗi các domain thay đổi theo từng batch
     # domain_sequence = ['vindr', 'nih14', 'padchest'] * 33 + ['vindr'] 
-    domains_to_load = ['nih14']
+    domains_to_load = ['vindr']
 
     continual_loader = ContinualDomainLoader(
         cfg, 

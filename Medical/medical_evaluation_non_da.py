@@ -93,7 +93,7 @@ def main(cfg):
     ])
     
     # domains_to_load = ['vindr', 'nih14', 'padchest'] 
-    domains_to_load = ['nih14'] 
+    domains_to_load = ['vindr'] 
     
     continual_loader = ContinualDomainLoader(
         cfg, 

@@ -296,7 +296,7 @@ class RoTTAMultiLabelConsistent(BaseAdapter):
         teacher_logits_6_cls = torch.index_select(teacher_logits_14_cls, 1, self.target_indices)
 
         probs = torch.sigmoid(teacher_logits_6_cls)
-        pseudo_labels_hard = (probs > 0.9).float()
+        pseudo_labels_hard = (probs > 0.5).float()
         
         uncertainties = torch.mean(1 - torch.abs(probs - 0.5) * 2, dim=1)
         return pseudo_labels_hard, uncertainties
