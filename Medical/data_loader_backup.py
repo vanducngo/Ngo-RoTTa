@@ -68,11 +68,11 @@
 #             self.is_dicom = True # Đánh dấu đây là dữ liệu DICOM
             
 #         elif self.dataset_name == 'nih14':
-#             csv_path = os.path.join(cfg.DATA.CHESTXRAY14_PATH, cfg.DATA.CHESTXRAY14_CSV)
+#             csv_path = os.path.join(cfg.DATA.NIH14_PATH, cfg.DATA.NIH14_CSV)
 #             raw_df = pd.read_csv(csv_path)
 #             # self.df = map_chestxray14_labels(raw_df)
 #             self.df = raw_df
-#             self.root_dir = os.path.join(cfg.DATA.CHESTXRAY14_PATH, 'images') 
+#             self.root_dir = os.path.join(cfg.DATA.NIH14_PATH, 'images') 
 #             self.image_col = 'image_id'
 #             self.path_prefix = '' # ChestXray14 thường là .png và đã có trong tên file
 #             self.is_dicom = False

@@ -92,13 +92,12 @@ def main(cfg):
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
     
-    # domain_sequence = (['vindr', 'nih14', 'padchest'] * 34)[:100] # Tạo chuỗi 100 batch luân phiên
-    domain_sequence = ['vindr', 'nih14'] * 500
-    # domain_sequence = ['vindr'] * 100
+    # domains_to_load = ['vindr', 'nih14', 'padchest'] 
+    domains_to_load = ['nih14'] 
     
     continual_loader = ContinualDomainLoader(
         cfg, 
-        domain_sequence=domain_sequence, 
+        domains_to_load=domains_to_load, 
         batch_size=cfg.ADAPTER.BATCH_SIZE, 
         transform=eval_transform
     )

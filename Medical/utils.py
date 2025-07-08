@@ -139,7 +139,7 @@ def print_selected_auc_stats(per_class_auc, domain='X'):
         print(f"{disease}: {auc:.4f}")
 
 def get_pretrained_model(cfg):
-    model_path = "./results/best_model_5_class_jul7_16h30.pth"
+    model_path = "./results/best_model_5_class_jul7_17h30.pth"
     print(f"Loading fine-tuned weights from: {model_path}")
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found at {model_path}. Please run the training script first.")

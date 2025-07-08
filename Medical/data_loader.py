@@ -65,9 +65,9 @@ class MultiSourceDataset(Dataset):
             self.root_dir = os.path.join(cfg.DATA.VINDR_PATH, cfg.DATA.VINDR_IMAGE_DIR)
             self.image_col = 'image_id'
         elif self.dataset_name == 'nih14':
-            csv_path = os.path.join(cfg.DATA.CHESTXRAY14_PATH, cfg.DATA.CHESTXRAY14_CSV)
+            csv_path = os.path.join(cfg.DATA.NIH14_PATH, cfg.DATA.NIH14_CSV)
             self.df = pd.read_csv(csv_path)
-            self.root_dir = os.path.join(cfg.DATA.CHESTXRAY14_PATH, cfg.DATA.CHESTXRAY14_IMAGE_DIR) 
+            self.root_dir = os.path.join(cfg.DATA.NIH14_PATH, cfg.DATA.NIH14_IMAGE_DIR) 
             self.image_col = 'image_id'
         elif self.dataset_name == 'padchest':
             csv_path = os.path.join(cfg.DATA.PADCHEST_PATH, cfg.DATA.PADCHEST_CSV)
