@@ -78,7 +78,7 @@ class CSTUMultiLabel:
         if worst_item_info['class'] is not None and worst_item_info['score'] > score_to_beat:
             cls, idx = worst_item_info['class'], worst_item_info['index']
             self.data[cls].pop(idx)
-            print(f'remove_from_classes ->Worst: {worst_item_info['score']} compare to new {score_to_beat}')
+            # print(f"remove_from_classes ->Worst: {worst_item_info['score']} compare to new {score_to_beat}")
             return True
             
         # Không thêm vào nếu không tìm thấy mẫu nào để thay thế

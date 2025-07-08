@@ -19,7 +19,9 @@ def build_adapter(cfg, model):
     # optimizer_func = lambda params: optim.Adam(params, lr=cfg.TTA.ADAPTER.OPTIM.LR, weight_decay=cfg.TTA.ADAPTER.OPTIM.WEIGHT_DECAY)
     optimizer_func = lambda params: optim.Adam(params, lr=cfg.ADAPTER.LR, weight_decay=cfg.OPTIM.WD)
     
-    adapter_name = cfg.TTA.ADAPTER.NAME
+    adapter_name = cfg.ADAPTER.NAME
+
+    print(f"Running with adapter: {adapter_name}")
     
     if adapter_name == "RoTTAMultiLabel":
         return RoTTAMultiLabelConsistent(cfg, model, optimizer_func)
@@ -80,7 +82,11 @@ def main(cfg):
         all_labels[current_domain].append(labels.numpy())
         
         # pbar.set_postfix(domain=current_domain, bank_size=tta_model.mem.get_occupancy())
-        pbar.set_postfix(domain=current_domain, bank_occupancy=tta_model.mem.get_occupancy())
+        adapter_name = cfg.ADAPTER.NAME
+        if adapter_name == "RoTTAMultiLabel":
+            pbar.set_postfix(domain=current_domain, bank_occupancy=tta_model.mem.get_occupancy())
+        else:
+            pbar.set_postfix(domain=current_domain)
 
     # 5. In kết quả cuối cùng
     print("\n--- Final Performance after Continual Adaptation ---")
