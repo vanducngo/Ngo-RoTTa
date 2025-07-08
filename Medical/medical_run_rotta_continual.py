@@ -7,10 +7,26 @@ from torchvision import transforms
 import torch.optim as optim
 
 # Import các thành phần đã tạo
+from core.tent_adapter import TENT
 from constants import COMMON_FINAL_LABEL_SET, TRAINING_LABEL_SET
 from utils import get_pretrained_model, print_selected_auc_stats
 from medical_continual_data_loader import ContinualDomainLoader # Đã có từ câu trả lời trước
 from core.rotta_multilabel_adapter import RoTTAMultiLabelConsistent
+
+def build_adapter(cfg, model):
+    """Factory để tạo adapter dựa trên config."""
+    # Hàm tạo optimizer chung
+    # optimizer_func = lambda params: optim.Adam(params, lr=cfg.TTA.ADAPTER.OPTIM.LR, weight_decay=cfg.TTA.ADAPTER.OPTIM.WEIGHT_DECAY)
+    optimizer_func = lambda params: optim.Adam(params, lr=cfg.ADAPTER.LR, weight_decay=cfg.OPTIM.WD)
+    
+    adapter_name = cfg.TTA.ADAPTER.NAME
+    
+    if adapter_name == "RoTTAMultiLabel":
+        return RoTTAMultiLabelConsistent(cfg, model, optimizer_func)
+    elif adapter_name == "TENT": # <<< THÊM NHÁNH MỚI
+        return TENT(cfg, model, optimizer_func)
+    else:
+        raise ValueError(f"Unknown adapter: {adapter_name}")
 
 def main(cfg):
     device = torch.device(cfg.TRAINING.DEVICE if torch.cuda.is_available() else "cpu")
@@ -20,8 +36,7 @@ def main(cfg):
     model = get_pretrained_model(cfg=cfg)
     
     # 2. Khởi tạo RoTTA adapter
-    optimizer_func = lambda params: optim.Adam(params, lr=cfg.ADAPTER.LR, weight_decay=cfg.OPTIM.WD)
-    tta_model = RoTTAMultiLabelConsistent(cfg, model, optimizer_func).to(device)
+    tta_model = build_adapter(cfg, model).to(device)
 
     # 3. Tạo luồng dữ liệu liên tục
     BLUR_KERNEL_SIZE = 3     # Kích thước kernel cho GaussianBlur

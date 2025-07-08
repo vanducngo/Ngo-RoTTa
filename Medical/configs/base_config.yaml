@@ -55,11 +55,11 @@ OPTIM:
   WD: 0.
 
 ADAPTER: # Cấu hình riêng cho RoTTA
-  NAME: "RoTTAMultiLabel"
-  LR: 1e-5
+  NAME: "TENT" # RoTTAMultiLabel, TENT
+  LR: 1e-4
   MEMORY_SIZE: 128
   BATCH_SIZE: 16  # Batch size để học từ memory
-  EMA_DECAY: 0.6
+  EMA_DECAY: 0.5
   UPDATE_FREQUENCY: 32 # Cập nhật model sau mỗi 64 mẫu
   LAMBDA_T: 1.0 # Trọng số cho tuổi
   LAMBDA_U: 1.0 # Trọng số cho uncertainty
