@@ -9,10 +9,6 @@ from .base_adapter import BaseAdapter
 
 @torch.jit.script
 def softmax_entropy(x: torch.Tensor) -> torch.Tensor:
-    """Entropy của đầu ra softmax."""
-    # Áp dụng cho bài toán đa nhãn, ta tính entropy trên từng đầu ra sigmoid
-    # và lấy trung bình.
-    # p * log(p) + (1-p) * log(1-p)
     p = torch.sigmoid(x)
     return - (p * torch.log(p + 1e-6) + (1-p) * torch.log(1-p + 1e-6)).mean(dim=1)
 

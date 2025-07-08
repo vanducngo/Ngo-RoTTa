@@ -12,9 +12,9 @@ DATA:
   VINDR_IMAGE_DIR: "images"
 
   # CHESTXRAY14_PATH: "/Users/admin/Working/Data/MixData/nih_14_structured"
-  CHESTXRAY14_PATH: "/home/ngo/Working/Data/MixData/nih_14_structured"
-  CHESTXRAY14_CSV: "validate.csv"
-  CHESTXRAY14_IMAGE_DIR: "images"
+  NIH14_PATH: "/home/ngo/Working/Data/MixData/nih_14_structured"
+  NIH14_CSV: "validate.csv"
+  NIH14_IMAGE_DIR: "images"
 
   # PADCHEST_PATH: "/Users/admin/Working/Data/MixData/padchest_structured"
   # PADCHEST_CSV: "validate.csv"
@@ -30,7 +30,6 @@ COMMON_DISEASES:
     - 'Consolidation'
     - 'Pleural Effusion'
     - 'Pneumothorax'
-    - 'No Finding'
 
 # Cấu hình mô hình
 MODEL:
@@ -57,12 +56,13 @@ OPTIM:
   WD: 0.
 
 ADAPTER: # Cấu hình riêng cho RoTTA
-  NAME: "TENT" # RoTTAMultiLabel, TENT
+  NAME: "RoTTAMultiLabel" # RoTTAMultiLabel, TENT
   LR: 1e-4
   MEMORY_SIZE: 128
   BATCH_SIZE: 32  # Batch size để học từ memory
   EMA_DECAY: 0.9
   UPDATE_FREQUENCY: 64 # Cập nhật model sau mỗi 64 mẫu
+  HIGH_CONF_THRESHOLD: 0.9
   LAMBDA_T: 1.0 # Trọng số cho tuổi
   LAMBDA_U: 1.0 # Trọng số cho uncertainty
 
