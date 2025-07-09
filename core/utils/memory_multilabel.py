@@ -1,58 +1,125 @@
-import torch
+# memory_multilabel.py
+
 import random
+import copy
+import torch
+import torch.nn.functional as F
+import numpy as np
+import math
 
-class MultiLabelMemory:
-    def __init__(self, capacity, batch_size):
+class MemoryItem:
+    def __init__(self, data=None, label=None, uncertainty=0, age=0):
+        self.data = data
+        self.label = label # Thêm label để dễ truy cập
+        self.uncertainty = uncertainty
+        self.age = age
+
+    def increase_age(self):
+        self.age += 1
+
+# Lớp CSTU mới cho bài toán đa nhãn
+class CSTU_MultiLabel:
+    def __init__(self, capacity, num_class, lambda_t=1.0, lambda_u=1.0):
         self.capacity = capacity
-        self.batch_size = batch_size
-        self.memory = [] # Sẽ chứa các tuple: (image_tensor, pseudo_label_tensor, uncertainty_score, age)
+        self.num_class = num_class
+        self.lambda_t = lambda_t
+        self.lambda_u = lambda_u
 
-    def __len__(self):
-        return len(self.memory)
-
-    def add_instance(self, instance):
-        """
-        Thêm một mẫu mới vào memory bank.
-        instance: tuple (image, pseudo_label, uncertainty)
-        """
-        # Tăng tuổi cho tất cả các mẫu hiện có
-        for i in range(len(self.memory)):
-            self.memory[i] = self.memory[i][:3] + (self.memory[i][3] + 1,)
-
-        image, pseudo_label, uncertainty = instance
-        age = 0
-        
-        # Nếu memory chưa đầy, chỉ cần thêm vào
-        if len(self.memory) < self.capacity:
-            self.memory.append((image, pseudo_label, uncertainty, age))
-        else:
-            # Nếu memory đã đầy, tìm mẫu "tệ" nhất để thay thế
-            # Điểm heuristic: H = uncertainty + weight * age
-            # Ở đây ta đơn giản hóa: ưu tiên loại bỏ mẫu có uncertainty cao nhất
-            worst_idx = -1
-            max_uncertainty = -1
-            
-            for i, (_, _, u, _) in enumerate(self.memory):
-                if u > max_uncertainty:
-                    max_uncertainty = u
-                    worst_idx = i
-            
-            # Thay thế mẫu tệ nhất bằng mẫu mới
-            self.memory[worst_idx] = (image, pseudo_label, uncertainty, age)
-            
-    def get_memory_batch(self):
-        """Lấy một batch ngẫu nhiên từ memory."""
-        if len(self.memory) < self.batch_size:
-            return [], [], [] # Trả về rỗng nếu không đủ mẫu
-
-        # Lấy một batch ngẫu nhiên
-        batch_samples = random.sample(self.memory, self.batch_size)
-        
-        images = torch.stack([s[0] for s in batch_samples])
-        labels = torch.stack([s[1] for s in batch_samples])
-        ages = [s[3] for s in batch_samples]
-        
-        return images, labels, ages
+        # Sửa đổi: Chỉ dùng một list duy nhất để lưu các MemoryItem
+        self.memory: list[MemoryItem] = []
+        # Sửa đổi: Theo dõi số lần xuất hiện của mỗi lớp
+        self.class_counts = torch.zeros(num_class, dtype=torch.long)
 
     def get_occupancy(self):
         return len(self.memory)
+
+    def add_instance(self, instance):
+        assert len(instance) == 3
+        x, prediction, uncertainty = instance # prediction giờ là một vector [0,1,0,1,...]
+        new_item = MemoryItem(data=x, label=prediction, uncertainty=uncertainty, age=0)
+        
+        # Tăng tuổi các item cũ
+        self.add_age()
+        
+        # Nếu memory chưa đầy, thêm trực tiếp
+        if self.get_occupancy() < self.capacity:
+            self.memory.append(new_item)
+            # Cập nhật số đếm lớp
+            self.class_counts += prediction.long()
+        else: # Nếu memory đã đầy, cần thay thế
+            # Tìm lớp chiếm ưu thế nhất trong số các lớp của instance mới
+            # Chỉ xét các lớp mà instance này thuộc về (prediction > 0)
+            instance_classes = torch.where(prediction > 0)[0]
+            if len(instance_classes) == 0: # Nếu instance không thuộc lớp nào, không thêm
+                return
+
+            # Tìm lớp đang có số đếm cao nhất trong memory
+            current_counts = self.class_counts[instance_classes]
+            if len(current_counts) == 0:
+                 majority_class_idx = torch.argmax(self.class_counts)
+            else:
+                 majority_class_idx = instance_classes[torch.argmax(current_counts)]
+
+            # Tìm item tệ nhất trong memory thuộc lớp chiếm ưu thế này để thay thế
+            max_score = -1
+            replace_idx = -1
+            for i, item in enumerate(self.memory):
+                # Nếu item này thuộc lớp chiếm ưu thế
+                if item.label[majority_class_idx] > 0:
+                    score = self.heuristic_score(item.age, item.uncertainty)
+                    if score > max_score:
+                        max_score = score
+                        replace_idx = i
+            
+            # Nếu không tìm thấy ai để thay thế (trường hợp hiếm), thay thế item có score tệ nhất
+            if replace_idx == -1:
+                max_score = -1
+                for i, item in enumerate(self.memory):
+                    score = self.heuristic_score(item.age, item.uncertainty)
+                    if score > max_score:
+                        max_score = score
+                        replace_idx = i
+
+            # Thực hiện thay thế
+            if replace_idx != -1:
+                removed_item = self.memory.pop(replace_idx)
+                # Cập nhật số đếm lớp
+                self.class_counts -= removed_item.label.long()
+                
+                self.memory.append(new_item)
+                self.class_counts += new_item.label.long()
+
+
+    def heuristic_score(self, age, uncertainty):
+        # Heuristic score để tìm item TỆ NHẤT (cũ nhất và không chắc chắn nhất)
+        # Vì vậy ta dùng age và uncertainty trực tiếp thay vì 1/(...)
+        # Lưu ý: uncertainty gốc là entropy (càng cao càng không chắc chắn)
+        # age càng cao càng cũ
+        # Chúng ta muốn tìm item có age LỚN và uncertainty LỚN
+        
+        # Chuẩn hóa age để có cùng thang đo với uncertainty
+        normalized_age = age / self.capacity
+        
+        # uncertainty/math.log(self.num_class) là từ code gốc
+        # Giữ nguyên để có thang đo tương tự
+        normalized_uncertainty = uncertainty / math.log(self.num_class) if self.num_class > 1 else uncertainty
+
+        return self.lambda_t * normalized_age + self.lambda_u * normalized_uncertainty
+
+    def add_age(self):
+        for item in self.memory:
+            item.increase_age()
+
+    def get_memory(self):
+        tmp_data = []
+        tmp_age = []
+
+        for item in self.memory:
+            tmp_data.append(item.data)
+            tmp_age.append(item.age)
+            
+        # Chuẩn hóa age để dùng trong timeliness_reweighting
+        # Chú ý: trong code gốc, age được chia cho capacity ở đây
+        # nhưng timeliness_reweighting lại không dùng đến capacity.
+        # Để nhất quán, ta truyền age chưa chuẩn hóa
+        return tmp_data, tmp_age

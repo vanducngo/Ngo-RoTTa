@@ -104,3 +104,39 @@ _C.ADAPTER.RoTTA.LAMBDA_U = 1.0
 _CFG_DEFAULT = _C.clone()
 _CFG_DEFAULT.freeze()
 
+
+# Thêm mục DATASET vào đây để yacs nhận diện được nó
+_C.DATASET = CN()
+_C.DATASET.NAME = 'DefaultDataset'
+# Định nghĩa các khóa bạn sẽ dùng, có thể để giá trị mặc định là chuỗi rỗng hoặc list rỗng
+_C.DATASET.TEST_DOMAINS = []
+_C.DATASET.LABELS_LIST = []
+
+# Định nghĩa các khóa cho đường dẫn, để giá trị mặc định là chuỗi rỗng
+# Cần định nghĩa cho TẤT CẢ các domain bạn có thể dùng
+_C.DATASET.VINDR_PATH = ""
+_C.DATASET.VINDR_CSV = ""
+_C.DATASET.VINDR_IMAGE_DIR = ""
+
+_C.DATASET.NIH14_PATH = ""
+_C.DATASET.NIH14_CSV = ""
+_C.DATASET.NIH14_IMAGE_DIR = ""
+
+_C.DATASET.PADCHEST_PATH = ""
+_C.DATASET.PADCHEST_CSV = ""
+_C.DATASET.PADCHEST_IMAGE_DIR = ""
+
+_C.DATASET.CHEXPERT_PATH = ""
+_C.DATASET.CHEXPERT_CSV = ""
+_C.DATASET.CHEXPERT_IMAGE_DIR = ""
+
+if 'MODEL' not in _C:
+    _C.MODEL = CN()
+_C.MODEL.NUM_CLASSES = -1 # Giá trị mặc định
+
+# Thêm INPUT nếu nó chưa tồn tại
+if 'INPUT' not in _C:
+    _C.INPUT = CN()
+_C.INPUT.SIZE = (224, 224)
+_C.INPUT.PIXEL_MEAN = [0.485, 0.456, 0.406]
+_C.INPUT.PIXEL_STD = [0.229, 0.224, 0.225]

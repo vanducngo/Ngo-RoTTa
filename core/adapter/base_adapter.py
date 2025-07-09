@@ -2,6 +2,7 @@ from copy import deepcopy
 import torch
 import torch.nn as nn
 import logging
+import torch.nn.functional as F
 
 class BaseAdapter(nn.Module):
     def __init__(self, cfg, model, optimizer):
@@ -60,3 +61,22 @@ class BaseAdapter(nn.Module):
 @torch.jit.script
 def softmax_entropy(x, x_ema):
     return -(x_ema.softmax(1) * x.log_softmax(1)).sum(1)
+
+@torch.jit.script
+def bce_entropy(x, x_ema):
+    """
+    Consistency loss for multi-label tasks based on Binary Cross Entropy.
+    x: student output (logits)
+    x_ema: teacher output (logits)
+    """
+    # Không tính grad cho teacher
+    x_ema = x_ema.detach()
+    
+    # Tính target probability từ teacher
+    prob_ema = torch.sigmoid(x_ema)
+    
+    # Tính loss BCE giữa student và teacher's soft pseudo-labels
+    loss = F.binary_cross_entropy_with_logits(x, prob_ema, reduction='none')
+    
+    # Tổng loss trên các lớp để có loss cho mỗi instance
+    return loss.sum(1)
