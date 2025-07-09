@@ -41,7 +41,7 @@ def process_chexpert_data(input_csv_path, output_csv_path):
         df[col] = df[col].fillna(0.0)
         
         # Thay thế giá trị -1.0 (không chắc chắn) bằng 0.5
-        df[col] = df[col].replace(-1.0, 0.5)
+        df[col] = df[col].replace(-1.0, 1.0)
 
     # Bước 5: Lưu DataFrame đã được xử lý
     df.to_csv(output_csv_path, index=False)
@@ -60,8 +60,8 @@ train_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/train_origin.csv'
 valid_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/valid_origin.csv'
 
 # Đường dẫn file đầu ra (tên file mới)
-fixed_train_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/train_fixed.csv'
-fixed_valid_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/valid_fixed.csv'
+fixed_train_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/train_restructed.csv'
+fixed_valid_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/valid_restructed.csv'
 
 # Chạy hàm để xử lý file train.csv
 process_chexpert_data(train_file, fixed_train_file)

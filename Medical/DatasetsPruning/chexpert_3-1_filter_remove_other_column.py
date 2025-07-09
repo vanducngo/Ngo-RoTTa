@@ -1,10 +1,10 @@
 import pandas as pd
 
 # File paths
-train_input_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/train_pruning.csv'
-train_output_file = '/home/ngo//Working/Data/CheXpert-v1.0-small/train_filtered.csv'
-valid_input_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/valid_pruning.csv'
-valid_output_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/valid_filtered.csv'
+train_input_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/train_filtered.csv'
+train_output_file = '/home/ngo//Working/Data/CheXpert-v1.0-small/train_final.csv'
+valid_input_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/valid_filtered.csv'
+valid_output_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/valid_final.csv'
 
 
 def execute(input, output):
@@ -35,4 +35,4 @@ def execute(input, output):
 
 if __name__ == "__main__":
     # execute(train_input_file, train_output_file)
-    execute(valid_input_file, valid_output_file)
+    execute(train_input_file, train_output_file)
