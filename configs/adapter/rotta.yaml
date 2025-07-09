@@ -18,7 +18,7 @@ INPUT:
   PIXEL_STD: [0.229, 0.224, 2.225]
 
 ADAPTER:
-  NAME: rotta
+  NAME: rotta_multilabels
   RoTTA:
     NU: 0.001
     MEMORY_SIZE: 64
@@ -34,7 +34,12 @@ LOADER:
 LOADER:
   NUM_WORKS: 4
 
+MODEL:
+  ARCH: 'mobilenet_v3_small' # Hoặc một kiến trúc ResNet/WideResNet khác có trong robustbench
+  NUM_CLASSES: 5 # Rất quan trọng
+
 DATASET:
+  NAME: 'CXR'
   TEST_DOMAINS: ['vindr'] # Các domain chạy TTA
   LABELS_LIST: ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
 
@@ -55,6 +60,6 @@ DATASET:
   PADCHEST_CSV: "padchest_labels.csv"
   PADCHEST_IMAGE_DIR: "images"
   
-  CHEXPERT_PATH: '/path/to/chexpert_data'
-  CHEXPERT_CSV: 'chexpert_test_processed.csv'
-  CHEXPERT_IMAGE_DIR: '' # Để trống nếu đường dẫn trong CSV là tuyệt đối/tương đối từ root
+  CHEXPERT_PATH: '/Users/admin/Working/Data/MixData/nih_14_structured'
+  CHEXPERT_CSV: 'validate.csv'
+  CHEXPERT_IMAGE_DIR: 'valid'

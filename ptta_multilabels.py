@@ -1,5 +1,3 @@
-# main_multilabel.py (đặt tên file mới để không ghi đè file cũ)
-
 import logging
 import torch
 import argparse
@@ -58,20 +56,41 @@ def testTimeAdaptationMultiLabel(cfg):
         # Đưa xác suất và nhãn thật vào processor để tính toán sau
         processor.process(probabilities, label, domain)
         
-        if batch_id % 10 == 0:
-            # Lấy mean AUC tạm thời để hiển thị, processor sẽ tính lại chính xác ở cuối
-            current_mean_auc = np.nanmean([roc_auc_score(l, p) for l, p in zip(processor.all_labels, processor.all_predictions)]) \
-                if len(processor.all_labels) > 0 else 0.0
+        if batch_id > 0 and batch_id % 10 == 0:
+            # Gộp tất cả các batch đã thu thập lại
+            temp_labels = np.concatenate(processor.all_labels, axis=0)
+            temp_preds = np.concatenate(processor.all_predictions, axis=0)
+            
+            # Tính AUC cho từng lớp trên toàn bộ dữ liệu đã thu thập
+            per_class_aucs = []
+            for i in range(temp_labels.shape[1]): # Lặp qua từng lớp (bệnh)
+                y_true_col = temp_labels[:, i]
+                y_pred_col = temp_preds[:, i]
+                
+                # Chỉ tính AUC nếu có cả hai loại nhãn (0 và 1)
+                if len(np.unique(y_true_col)) > 1:
+                    try:
+                        auc = roc_auc_score(y_true_col, y_pred_col)
+                        per_class_aucs.append(auc)
+                    except ValueError:
+                        # Trường hợp hiếm gặp khác, bỏ qua
+                        pass
+            
+            # Tính mean AUC từ các giá trị hợp lệ
+            current_mean_auc = np.mean(per_class_aucs) if per_class_aucs else 0.0
+
+            # Cập nhật thanh tiến trình
             if hasattr(tta_model, "mem"):
                 tbar.set_postfix(m_auc=f"{current_mean_auc:.3f}", bank=tta_model.mem.get_occupancy())
             else:
                 tbar.set_postfix(m_auc=f"{current_mean_auc:.3f}")
+
     
     # ### SỬA ĐỔI ###: Tính toán kết quả cuối cùng
     processor.calculate()
 
     logger.info(f"All Results\n{processor.info()}")
-
+    print(f"RoTTa Results\n{processor.info()}")
 
 def main():
     # Phần main() để parse config không cần thay đổi nhiều

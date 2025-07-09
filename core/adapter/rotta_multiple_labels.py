@@ -9,13 +9,14 @@ from .base_adapter import bce_entropy
 from ..utils.bn_layers import RobustBN1d, RobustBN2d
 from ..utils.utils import set_named_submodule, get_named_submodule
 from ..utils.custom_transforms import get_tta_transforms
+from ..utils.constants import DEVICE
 
 class RoTTA_MultiLabels(BaseAdapter):
     def __init__(self, cfg, model, optimizer):
         super(RoTTA_MultiLabels, self).__init__(cfg, model, optimizer)
         # SỬA ĐỔI: Sử dụng lớp Memory mới cho bài toán đa nhãn
         self.mem = memory.CSTU_MultiLabel(capacity=self.cfg.ADAPTER.RoTTA.MEMORY_SIZE, 
-                                          num_class=cfg.CORRUPTION.NUM_CLASS, 
+                                          num_class=cfg.MODEL.NUM_CLASSES, 
                                           lambda_t=cfg.ADAPTER.RoTTA.LAMBDA_T, 
                                           lambda_u=cfg.ADAPTER.RoTTA.LAMBDA_U)
         self.model_ema = self.build_ema(self.model)
@@ -66,8 +67,8 @@ class RoTTA_MultiLabels(BaseAdapter):
         sup_data, ages = self.mem.get_memory()
         l_sup = None
         if len(sup_data) > 0:
-            sup_data = torch.stack(sup_data).to(self.device) # Chuyển lên device
-            ages = torch.tensor(ages).float().to(self.device) # Chuyển lên device
+            sup_data = torch.stack(sup_data).to(DEVICE) # Chuyển lên device
+            ages = torch.tensor(ages).float().to(DEVICE) # Chuyển lên device
 
             strong_sup_aug = self.transform(sup_data)
             

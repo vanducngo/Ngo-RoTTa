@@ -1,6 +1,6 @@
 from .base_adapter import BaseAdapter
 from .rotta import RoTTA
-from .rotta_multilabel_adapter import RoTTAMultiLabel
+from .rotta_multiple_labels import RoTTA_MultiLabels
 
 
 def build_adapter(cfg) -> type(BaseAdapter):
@@ -8,7 +8,7 @@ def build_adapter(cfg) -> type(BaseAdapter):
     if adapterName == "rotta":
         return RoTTA
     elif adapterName == "rotta_multilabels":
-        return RoTTAMultiLabel
+        return RoTTA_MultiLabels
     else:
         raise NotImplementedError("Implement your own adapter")
 

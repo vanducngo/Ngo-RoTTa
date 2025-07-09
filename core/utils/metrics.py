@@ -54,6 +54,8 @@ class AUCProcessor:
             "per_class_auc": per_class_auc
         }
 
+        return self.results
+
     def info(self):
         if not hasattr(self, 'results'):
             self.calculate()
