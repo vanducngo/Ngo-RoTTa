@@ -51,12 +51,14 @@ class RoTTA_MultiLabels(BaseAdapter):
             # SỬA ĐỔI: pseudo_label giờ là một vector
             p_l = pseudo_label[i] 
             uncertainty = entropy[i].item()
+            
             current_instance = (data, p_l, uncertainty)
             self.mem.add_instance(current_instance)
             self.current_instance += 1
 
             if self.current_instance % self.update_frequency == 0:
                 self.update_model(model, optimizer)
+                pass
 
         return ema_out
 

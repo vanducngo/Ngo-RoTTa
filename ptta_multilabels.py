@@ -27,7 +27,7 @@ def testTimeAdaptationMultiLabel(cfg):
     tta_adapter = build_adapter(cfg)
 
     tta_model = tta_adapter(cfg, model, optimizer)
-    tta_model.cpu()
+    tta_model.cuda()
 
     # Build_loader giờ sẽ tải dữ liệu từ các domain
     # và được thay thế bằng cấu hình về domain trong file config.
@@ -44,7 +44,7 @@ def testTimeAdaptationMultiLabel(cfg):
         data, label, domain = data_package["image"], data_package['label'], data_package['domain']
         
         # Bỏ qua kiểm tra len(label) == 1 vì batch cuối vẫn xử lý được
-        data, label = data.cpu(), label.cpu()
+        data, label = data.cuda(), label.cuda()
         
         # forward_and_adapt đã được sửa để xử lý đa nhãn
         logits = tta_model(data)

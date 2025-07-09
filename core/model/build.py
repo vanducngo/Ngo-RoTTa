@@ -97,7 +97,7 @@ def get_model_chexpert_14(cfg):
     return get_model(cfg, feature_extract=False, useWeight = True, numclasses=5)
 
 def get_pretrained_model(cfg):
-    model_path = "./ckpt/mobile_net_5_class_jul8_22h49.pth"
+    model_path = "./ckpt/mobile_net_5_class_jul9_16h34.pth"
     print(f"Loading fine-tuned weights from: {model_path}")
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found at {model_path}. Please run the training script first.")

@@ -40,16 +40,16 @@ MODEL:
 
 DATASET:
   NAME: 'CXR'
-  TEST_DOMAINS: ['vindr'] # Các domain chạy TTA
+  TEST_DOMAINS: ['vindr', 'nih14'] # Các domain chạy TTA ['vindr', 'nih14']
   LABELS_LIST: ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
 
-  VINDR_PATH: "/Users/admin/Working/Data/MixData/vinbigdata_structured"
-  # VINDR_PATH: "/home/ngo/Working/Data/MixData/vinbigdata_structured"
+  # VINDR_PATH: "/Users/admin/Working/Data/MixData/vinbigdata_structured"
+  VINDR_PATH: "/home/ngo/Working/Data/MixData/vinbigdata_structured"
   VINDR_CSV: "validate.csv"
   VINDR_IMAGE_DIR: "images"
 
-  NIH14_PATH: "/Users/admin/Working/Data/MixData/nih_14_structured"
-  # NIH14_PATH: "/home/ngo/Working/Data/MixData/nih_14_structured"
+  # NIH14_PATH: "/Users/admin/Working/Data/MixData/nih_14_structured"
+  NIH14_PATH: "/home/ngo/Working/Data/MixData/nih_14_structured"
   NIH14_CSV: "validate.csv"
   NIH14_IMAGE_DIR: "images"
 

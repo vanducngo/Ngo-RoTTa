@@ -33,7 +33,7 @@ class CSTUMultiLabel:
         x, pseudo_label, uncertainty = instance
         self.add_age()
 
-        new_item = MemoryItem(data=x.cpu(), pseudo_label=pseudo_label.cpu(), uncertainty=uncertainty, age=0)
+        new_item = MemoryItem(data=x.cuda(), pseudo_label=pseudo_label.cuda(), uncertainty=uncertainty, age=0)
         new_score = self.heuristic_score(0, uncertainty)
 
         # THAY ĐỔI 1: Lặp qua các lớp dương tính

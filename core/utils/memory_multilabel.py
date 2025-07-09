@@ -28,7 +28,7 @@ class CSTU_MultiLabel:
         # Sửa đổi: Chỉ dùng một list duy nhất để lưu các MemoryItem
         self.memory: list[MemoryItem] = []
         # Sửa đổi: Theo dõi số lần xuất hiện của mỗi lớp
-        self.class_counts = torch.zeros(num_class, dtype=torch.long)
+        self.class_counts = torch.zeros(num_class, dtype=torch.long).cuda()
 
     def get_occupancy(self):
         return len(self.memory)
