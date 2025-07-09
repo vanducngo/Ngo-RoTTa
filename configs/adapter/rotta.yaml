@@ -40,7 +40,7 @@ MODEL:
 
 DATASET:
   NAME: 'CXR'
-  TEST_DOMAINS: ['vindr', 'nih14'] # Các domain chạy TTA ['vindr', 'nih14']
+  TEST_DOMAINS: ['vindr', 'nih14', 'padchest'] # Các domain chạy TTA ['vindr', 'nih14']
   LABELS_LIST: ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
 
   # VINDR_PATH: "/Users/admin/Working/Data/MixData/vinbigdata_structured"
@@ -56,7 +56,7 @@ DATASET:
   # PADCHEST_PATH: "/Users/admin/Working/Data/MixData/padchest_structured"
   # PADCHEST_CSV: "validate.csv"
   # PADCHEST_IMAGE_DIR: "images"
-  PADCHEST_PATH: "/home/ngo/Working/Data/PadChestPruning"
+  PADCHEST_PATH: "/home/ngo/Working/Data/MixData/PadChestPruning"
   PADCHEST_CSV: "padchest_labels.csv"
   PADCHEST_IMAGE_DIR: "images"
   
