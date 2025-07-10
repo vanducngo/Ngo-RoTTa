@@ -8,6 +8,7 @@ from core.configs import cfg
 from core.utils import *
 
 # Import lớp processor mới
+from core.utils.constants import IS_CPU_DEVICE
 from core.utils.metrics import AUCProcessor 
 from core.model import build_model
 from core.data.multilabel_loader import build_loader_multilabel
@@ -27,7 +28,11 @@ def testTimeAdaptationMultiLabel(cfg):
     tta_adapter = build_adapter(cfg)
 
     tta_model = tta_adapter(cfg, model, optimizer)
-    tta_model.cuda()
+
+    if IS_CPU_DEVICE:
+        tta_model.cpu()
+    else:
+        tta_model.cuda()
 
     # Build_loader giờ sẽ tải dữ liệu từ các domain
     # và được thay thế bằng cấu hình về domain trong file config.
@@ -44,7 +49,10 @@ def testTimeAdaptationMultiLabel(cfg):
         data, label, domain = data_package["image"], data_package['label'], data_package['domain']
         
         # Bỏ qua kiểm tra len(label) == 1 vì batch cuối vẫn xử lý được
-        data, label = data.cuda(), label.cuda()
+        if IS_CPU_DEVICE:
+            data, label = data.cpu(), label.cpu()
+        else:
+            data, label = data.cuda(), label.cuda()
         
         # forward_and_adapt đã được sửa để xử lý đa nhãn
         logits = tta_model(data)

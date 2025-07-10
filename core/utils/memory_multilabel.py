@@ -7,6 +7,8 @@ import torch.nn.functional as F
 import numpy as np
 import math
 
+from core.utils.constants import IS_CPU_DEVICE
+
 class MemoryItem:
     def __init__(self, data=None, label=None, uncertainty=0, age=0):
         self.data = data
@@ -28,7 +30,10 @@ class CSTU_MultiLabel:
         # Sửa đổi: Chỉ dùng một list duy nhất để lưu các MemoryItem
         self.memory: list[MemoryItem] = []
         # Sửa đổi: Theo dõi số lần xuất hiện của mỗi lớp
-        self.class_counts = torch.zeros(num_class, dtype=torch.long).cuda()
+        if IS_CPU_DEVICE:
+            self.class_counts = torch.zeros(num_class, dtype=torch.long).cpu()
+        else:
+            self.class_counts = torch.zeros(num_class, dtype=torch.long).cuda()
 
     def get_occupancy(self):
         return len(self.memory)

@@ -3,8 +3,8 @@ import pandas as pd
 # File paths
 # train_input_file = '/Users/admin/Working/Data/vinbigdata-chest-xray/validate.csv'
 # train_output_file = '/Users/admin/Working/Data/vinbigdata-chest-xray/validate-5-class.csv'
-train_input_file = '/Users/admin/Working/Data/MixData/nih-14-structured/validate.csv'
-train_output_file = '/Users/admin/Working/Data/MixData/nih-14-structured/validate_filtered.csv'
+train_input_file = '/Users/admin/Working/Data/MixData/PadChestPruning/padchest_labels.csv'
+train_output_file = '/Users/admin/Working/Data/MixData/PadChestPruning/validate_filtered.csv'
 
 def execute(input, output):
     # List of diseases to keep

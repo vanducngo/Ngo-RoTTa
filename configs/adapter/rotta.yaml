@@ -1,5 +1,5 @@
 TEST:
-  BATCH_SIZE: 64
+  BATCH_SIZE: 32
 
 OPTIM:
   METHOD: Adam
@@ -40,24 +40,24 @@ MODEL:
 
 DATASET:
   NAME: 'CXR'
-  TEST_DOMAINS: ['vindr', 'nih14', 'padchest'] # Các domain chạy TTA ['vindr', 'nih14']
+  TEST_DOMAINS: ['vindr'] # Các domain chạy TTA ['vindr', 'nih14', 'padchest']
   LABELS_LIST: ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
 
-  # VINDR_PATH: "/Users/admin/Working/Data/MixData/vinbigdata_structured"
-  VINDR_PATH: "/home/ngo/Working/Data/MixData/vinbigdata_structured"
+  VINDR_PATH: "/Users/admin/Working/Data/MixData/vinbigdata_structured"
+  # VINDR_PATH: "/home/ngo/Working/Data/MixData/vinbigdata_structured"
   VINDR_CSV: "validate.csv"
   VINDR_IMAGE_DIR: "images"
 
-  # NIH14_PATH: "/Users/admin/Working/Data/MixData/nih_14_structured"
-  NIH14_PATH: "/home/ngo/Working/Data/MixData/nih_14_structured"
+  NIH14_PATH: "/Users/admin/Working/Data/MixData/nih_14_structured"
+  # NIH14_PATH: "/home/ngo/Working/Data/MixData/nih_14_structured"
   NIH14_CSV: "validate.csv"
   NIH14_IMAGE_DIR: "images"
 
-  # PADCHEST_PATH: "/Users/admin/Working/Data/MixData/padchest_structured"
+  PADCHEST_PATH: "/Users/admin/Working/Data/MixData/PadChestPruning"
   # PADCHEST_CSV: "validate.csv"
   # PADCHEST_IMAGE_DIR: "images"
-  PADCHEST_PATH: "/home/ngo/Working/Data/MixData/PadChestPruning"
-  PADCHEST_CSV: "padchest_labels.csv"
+  # PADCHEST_PATH: "/home/ngo/Working/Data/MixData/PadChestPruning"
+  PADCHEST_CSV: "validate_filtered.csv"
   PADCHEST_IMAGE_DIR: "images"
   
   CHEXPERT_PATH: '/Users/admin/Working/Data/MixData/nih_14_structured'

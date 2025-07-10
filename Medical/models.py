@@ -119,8 +119,8 @@ def get_model(cfg, feature_extract=False, useWeight=True, numclasses=5):
         raise ValueError(f"Model architecture {arch} not supported.")
 
     # Bước 2: Đóng băng (nếu cần)
-    if feature_extract:
-        set_parameter_requires_grad(model, True)
+    # if feature_extract:
+    #     set_parameter_requires_grad(model, True)
 
     # Bước 3: Xác định số features và thay thế classifier
     if hasattr(model, 'fc'): # Dành cho ResNet
