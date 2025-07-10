@@ -175,6 +175,7 @@ class CSTU_MultiLabel:
     # Cung cấp phân phối lớp từ `self.class_counts`
     def per_class_dist(self) -> list[int]:
         # Chuyển tensor về list trên CPU để xử lý bên ngoài
+        self.class_counts = self._recalculate_class_counts()
         return self.class_counts.cpu().tolist()
 
     def get_memory(self):
@@ -210,21 +211,26 @@ class CSTU_MultiLabel:
         if self._should_add(prediction, new_score):
             self.memory.append(new_item)
             self.class_counts += prediction.long() # Cập nhật số đếm lớp
-            print(f'vanducngo+++: {self.class_counts}')
-            print(f'vanducngo121: {prediction.long()} - {prediction.long()}')
 
     def _should_add(self, new_prediction, new_score) -> bool:
         """
         Hàm quyết định chính: có nên thêm item mới không?
         Nếu cần, nó sẽ tự động dọn chỗ.
         """
+        if new_prediction.sum() == 0:
+            return False
+
         # Trường hợp 1: Memory chưa đầy, luôn thêm
         if self.get_occupancy() < self.capacity:
             return True
 
         # Trường hợp 2: Memory đã đầy, cần dọn chỗ
         # Tìm lớp nào đang chiếm ưu thế nhất trong bank
-        majority_class_idx = torch.argmax(self.class_counts).item()
+        
+        newClassCount = self._recalculate_class_counts()
+        majority_class_idx = torch.argmax(newClassCount).item()
+        # print(f'newClassCount+++: {newClassCount} - {len(self.memory)}')
+        # print(f'Prediction+++: {new_prediction}')
 
         # Tìm ứng cử viên để xóa: item tệ nhất (score cao nhất) thuộc lớp chiếm ưu thế
         max_score = -1.0
@@ -254,7 +260,21 @@ class CSTU_MultiLabel:
         # Chỉ thay thế nếu item cũ thực sự tệ hơn item mới
         if max_score > new_score:
             removed_item = self.memory.pop(replace_idx)
-            self.class_counts -= removed_item.label.long()
+            # self.class_counts -= removed_item.label.long()
             return True # Dọn chỗ thành công, sẵn sàng để thêm
         else:
             return False # Item mới không đủ tốt, không thêm
+        
+    def _recalculate_class_counts(self) -> torch.Tensor:
+        """
+        Tính toán lại và trả về số lượng mẫu cho mỗi lớp dựa trên trạng thái hiện tại của memory.
+        """
+        if not self.memory:
+            return torch.zeros(self.num_class, dtype=torch.long, device=self.device)
+
+        # Lấy tất cả các vector label từ memory
+        all_labels = [item.label for item in self.memory]
+        
+        # Stack chúng lại thành một tensor và tính tổng theo cột
+        class_counts = torch.stack(all_labels).long().sum(dim=0)
+        return class_counts
