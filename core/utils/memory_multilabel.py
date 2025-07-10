@@ -97,22 +97,53 @@ class CSTU_MultiLabel:
             #     self.class_counts += new_item.label.long()
 
             ####### Phiên bản gọn hơn là luôn thay thể cho item có score tệ nhất #######
-            # 1. Tìm item có score tệ nhất (cao nhất) trong TOÀN BỘ memory bank
-            max_score = -1.0
+            # # 1. Tìm item có score tệ nhất (cao nhất) trong TOÀN BỘ memory bank
+            # max_score = -1.0
+            # replace_idx = -1
+            # for i, item in enumerate(self.memory):
+            #     score = self.heuristic_score(item.age, item.uncertainty)
+            #     if score > max_score:
+            #         max_score = score
+            #         replace_idx = i
+            
+            # # 2. Luôn luôn thực hiện thay thế tại vị trí đã tìm thấy
+            # if replace_idx != -1:
+            #     # Lấy ra item cũ để cập nhật class_counts
+            #     removed_item = self.memory.pop(replace_idx)
+            #     self.class_counts -= removed_item.label.long()
+                
+            #     # Thêm item mới vào
+            #     self.memory.append(new_item)
+            #     self.class_counts += new_item.label.long()
+
+            ####### Phiên bản giữ logic cân bằng lớp #######
+            # 1. Tìm lớp chiếm ưu thế nhất (có số lượng item nhiều nhất trong bank)
+            majority_class_idx = torch.argmax(self.class_counts).item()
+
+            # 2. Tìm item tệ nhất thuộc lớp chiếm ưu thế đó
+            max_score_in_majority = -1.0
             replace_idx = -1
             for i, item in enumerate(self.memory):
-                score = self.heuristic_score(item.age, item.uncertainty)
-                if score > max_score:
-                    max_score = score
-                    replace_idx = i
+                if item.label[majority_class_idx] > 0: # Nếu item thuộc lớp chiếm ưu thế
+                    score = self.heuristic_score(item.age, item.uncertainty)
+                    if score > max_score_in_majority:
+                        max_score_in_majority = score
+                        replace_idx = i
+
+            # 3. Nếu không tìm được ai trong lớp chiếm ưu thế (trường hợp hiếm),
+            # thì tìm item tệ nhất trong toàn bộ bank.
+            if replace_idx == -1:
+                max_score_global = -1.0
+                for i, item in enumerate(self.memory):
+                    score = self.heuristic_score(item.age, item.uncertainty)
+                    if score > max_score_global:
+                        max_score_global = score
+                        replace_idx = i
             
-            # 2. Luôn luôn thực hiện thay thế tại vị trí đã tìm thấy
+            # 4. Thực hiện thay thế
             if replace_idx != -1:
-                # Lấy ra item cũ để cập nhật class_counts
                 removed_item = self.memory.pop(replace_idx)
                 self.class_counts -= removed_item.label.long()
-                
-                # Thêm item mới vào
                 self.memory.append(new_item)
                 self.class_counts += new_item.label.long()
 
@@ -159,3 +190,71 @@ class CSTU_MultiLabel:
         # nhưng timeliness_reweighting lại không dùng đến capacity.
         # Để nhất quán, ta truyền age chưa chuẩn hóa
         return tmp_data, tmp_age
+    
+    def add_instance2(self, instance):
+        """
+        Thêm một mẫu mới vào memory bank đa nhãn.
+        instance: tuple (data, prediction_vector, uncertainty_score)
+        """
+        assert len(instance) == 3
+        x, prediction, uncertainty = instance
+        
+        # Luôn tăng tuổi trước khi quyết định
+        self.add_age()
+
+        # Tạo một MemoryItem và tính score cho nó
+        new_item = MemoryItem(data=x, label=prediction, uncertainty=uncertainty, age=0)
+        new_score = self.heuristic_score(0, uncertainty)
+
+        # Quyết định xem có nên thêm item mới vào không
+        if self._should_add(prediction, new_score):
+            self.memory.append(new_item)
+            self.class_counts += prediction.long() # Cập nhật số đếm lớp
+            print(f'vanducngo+++: {self.class_counts}')
+            print(f'vanducngo121: {prediction.long()} - {prediction.long()}')
+
+    def _should_add(self, new_prediction, new_score) -> bool:
+        """
+        Hàm quyết định chính: có nên thêm item mới không?
+        Nếu cần, nó sẽ tự động dọn chỗ.
+        """
+        # Trường hợp 1: Memory chưa đầy, luôn thêm
+        if self.get_occupancy() < self.capacity:
+            return True
+
+        # Trường hợp 2: Memory đã đầy, cần dọn chỗ
+        # Tìm lớp nào đang chiếm ưu thế nhất trong bank
+        majority_class_idx = torch.argmax(self.class_counts).item()
+
+        # Tìm ứng cử viên để xóa: item tệ nhất (score cao nhất) thuộc lớp chiếm ưu thế
+        max_score = -1.0
+        replace_idx = -1
+        
+        # Quét để tìm ứng cử viên trong lớp chiếm ưu thế
+        for i, item in enumerate(self.memory):
+            if item.label[majority_class_idx] > 0: # Nếu item thuộc lớp chiếm ưu thế
+                score = self.heuristic_score(item.age, item.uncertainty)
+                if score > max_score:
+                    max_score = score
+                    replace_idx = i
+        
+        # Nếu không tìm được ai trong lớp chiếm ưu thế (hiếm), tìm item tệ nhất trong toàn bộ bank
+        if replace_idx == -1:
+            for i, item in enumerate(self.memory):
+                score = self.heuristic_score(item.age, item.uncertainty)
+                if score > max_score:
+                    max_score = score
+                    replace_idx = i
+
+        # Nếu không có gì trong bank để xóa (không thể xảy ra nếu bank đầy), không thêm
+        if replace_idx == -1:
+            return False
+
+        # **Logic cốt lõi của RoTTA gốc:**
+        # Chỉ thay thế nếu item cũ thực sự tệ hơn item mới
+        if max_score > new_score:
+            removed_item = self.memory.pop(replace_idx)
+            self.class_counts -= removed_item.label.long()
+            return True # Dọn chỗ thành công, sẵn sàng để thêm
+        else:
+            return False # Item mới không đủ tốt, không thêm

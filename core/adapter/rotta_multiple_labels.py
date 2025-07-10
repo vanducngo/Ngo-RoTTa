@@ -67,7 +67,7 @@ class RoTTA_MultiLabels(BaseAdapter):
             uncertainty = entropy[i].item()
             
             current_instance = (data, p_l, uncertainty)
-            self.mem.add_instance(current_instance)
+            self.mem.add_instance2(current_instance)
             self.current_instance += 1
 
             if self.current_instance % self.update_frequency == 0:
