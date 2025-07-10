@@ -52,45 +52,67 @@ class CSTU_MultiLabel:
             # Cập nhật số đếm lớp
             self.class_counts += prediction.long()
         else: # Nếu memory đã đầy, cần thay thế
-            # Tìm lớp chiếm ưu thế nhất trong số các lớp của instance mới
-            # Chỉ xét các lớp mà instance này thuộc về (prediction > 0)
-            instance_classes = torch.where(prediction > 0)[0]
-            if len(instance_classes) == 0: # Nếu instance không thuộc lớp nào, không thêm
-                return
+            
+            ####### Phiên bản ban đầu #######
+            # # Tìm lớp chiếm ưu thế nhất trong số các lớp của instance mới
+            # # Chỉ xét các lớp mà instance này thuộc về (prediction > 0)
+            # instance_classes = torch.where(prediction > 0)[0]
+            # if len(instance_classes) == 0: # Nếu instance không thuộc lớp nào, không thêm
+            #     return
 
-            # Tìm lớp đang có số đếm cao nhất trong memory
-            current_counts = self.class_counts[instance_classes]
-            if len(current_counts) == 0:
-                 majority_class_idx = torch.argmax(self.class_counts)
-            else:
-                 majority_class_idx = instance_classes[torch.argmax(current_counts)]
+            # # Tìm lớp đang có số đếm cao nhất trong memory
+            # current_counts = self.class_counts[instance_classes]
+            # if len(current_counts) == 0:
+            #      majority_class_idx = torch.argmax(self.class_counts)
+            # else:
+            #      majority_class_idx = instance_classes[torch.argmax(current_counts)]
 
-            # Tìm item tệ nhất trong memory thuộc lớp chiếm ưu thế này để thay thế
-            max_score = -1
+            # # Tìm item tệ nhất trong memory thuộc lớp chiếm ưu thế này để thay thế
+            # max_score = -1
+            # replace_idx = -1
+            # for i, item in enumerate(self.memory):
+            #     # Nếu item này thuộc lớp chiếm ưu thế
+            #     if item.label[majority_class_idx] > 0:
+            #         score = self.heuristic_score(item.age, item.uncertainty)
+            #         if score > max_score:
+            #             max_score = score
+            #             replace_idx = i
+            
+            # # Nếu không tìm thấy ai để thay thế (trường hợp hiếm), thay thế item có score tệ nhất
+            # if replace_idx == -1:
+            #     max_score = -1
+            #     for i, item in enumerate(self.memory):
+            #         score = self.heuristic_score(item.age, item.uncertainty)
+            #         if score > max_score:
+            #             max_score = score
+            #             replace_idx = i
+
+            # # Thực hiện thay thế
+            # if replace_idx != -1:
+            #     removed_item = self.memory.pop(replace_idx)
+            #     # Cập nhật số đếm lớp
+            #     self.class_counts -= removed_item.label.long()
+                
+            #     self.memory.append(new_item)
+            #     self.class_counts += new_item.label.long()
+
+            ####### Phiên bản gọn hơn là luôn thay thể cho item có score tệ nhất #######
+            # 1. Tìm item có score tệ nhất (cao nhất) trong TOÀN BỘ memory bank
+            max_score = -1.0
             replace_idx = -1
             for i, item in enumerate(self.memory):
-                # Nếu item này thuộc lớp chiếm ưu thế
-                if item.label[majority_class_idx] > 0:
-                    score = self.heuristic_score(item.age, item.uncertainty)
-                    if score > max_score:
-                        max_score = score
-                        replace_idx = i
+                score = self.heuristic_score(item.age, item.uncertainty)
+                if score > max_score:
+                    max_score = score
+                    replace_idx = i
             
-            # Nếu không tìm thấy ai để thay thế (trường hợp hiếm), thay thế item có score tệ nhất
-            if replace_idx == -1:
-                max_score = -1
-                for i, item in enumerate(self.memory):
-                    score = self.heuristic_score(item.age, item.uncertainty)
-                    if score > max_score:
-                        max_score = score
-                        replace_idx = i
-
-            # Thực hiện thay thế
+            # 2. Luôn luôn thực hiện thay thế tại vị trí đã tìm thấy
             if replace_idx != -1:
+                # Lấy ra item cũ để cập nhật class_counts
                 removed_item = self.memory.pop(replace_idx)
-                # Cập nhật số đếm lớp
                 self.class_counts -= removed_item.label.long()
                 
+                # Thêm item mới vào
                 self.memory.append(new_item)
                 self.class_counts += new_item.label.long()
 
