@@ -19,9 +19,7 @@ from setproctitle import setproctitle
 def testZeroShotMultiLabel(cfg):
     logger = logging.getLogger("ZeroShot.test_time_multilabel")
     
-    # --- THAY ĐỔI: Chỉ cần xây dựng mô hình, không cần adapter hay optimizer ---
     model = build_model(cfg)
-    # model.cuda() # Chuyển mô hình lên GPU
     model.to(DEVICE)
     model.eval() # Đặt mô hình ở chế độ đánh giá
 

@@ -28,11 +28,12 @@ ADAPTER:
     ALPHA: 0.05
 
 LOADER:
+  NUM_WORKS: 4
   SAMPLER:
     TYPE: "temporal"
 
-LOADER:
-  NUM_WORKS: 4
+# LOADER:
+#   NUM_WORKS: 4
 
 MODEL:
   ARCH: 'mobilenet_v3_small' # Hoặc một kiến trúc ResNet/WideResNet khác có trong robustbench
@@ -40,16 +41,16 @@ MODEL:
 
 DATASET:
   NAME: 'CXR'
-  TEST_DOMAINS: ['vindr'] # Các domain chạy TTA ['vindr', 'nih14', 'padchest']
+  TEST_DOMAINS: ['vindr', 'nih14'] # Các domain chạy TTA ['vindr', 'nih14', 'padchest']
   LABELS_LIST: ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
 
-  VINDR_PATH: "/Users/admin/Working/Data/MixData/vinbigdata_structured"
-  # VINDR_PATH: "/home/ngo/Working/Data/MixData/vinbigdata_structured"
+  # VINDR_PATH: "/Users/admin/Working/Data/MixData/vinbigdata_structured"
+  VINDR_PATH: "/home/ngo/Working/Data/MixData/vinbigdata_structured"
   VINDR_CSV: "validate.csv"
   VINDR_IMAGE_DIR: "images"
 
-  NIH14_PATH: "/Users/admin/Working/Data/MixData/nih_14_structured"
-  # NIH14_PATH: "/home/ngo/Working/Data/MixData/nih_14_structured"
+  # NIH14_PATH: "/Users/admin/Working/Data/MixData/nih_14_structured"
+  NIH14_PATH: "/home/ngo/Working/Data/MixData/nih_14_structured"
   NIH14_CSV: "validate.csv"
   NIH14_IMAGE_DIR: "images"
 

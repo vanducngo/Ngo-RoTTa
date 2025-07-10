@@ -115,6 +115,15 @@ class CSTU_MultiLabel:
         for item in self.memory:
             item.increase_age()
 
+    # Cung cấp truy cập trực tiếp vào danh sách các item
+    def get_all_items(self) -> list[MemoryItem]:
+        return self.memory
+    
+    # Cung cấp phân phối lớp từ `self.class_counts`
+    def per_class_dist(self) -> list[int]:
+        # Chuyển tensor về list trên CPU để xử lý bên ngoài
+        return self.class_counts.cpu().tolist()
+
     def get_memory(self):
         tmp_data = []
         tmp_age = []

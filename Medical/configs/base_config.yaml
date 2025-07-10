@@ -6,13 +6,13 @@ DATA:
   CHEXPERT_TRAIN_CSV: "train_split.csv"
   CHEXPERT_TEST_CSV: "valid_split.csv"
 
-  VINDR_PATH: "/Users/admin/Working/Data/MixData/vinbigdata_structured"
-  # VINDR_PATH: "/home/ngo/Working/Data/MixData/vinbigdata_structured"
+  # VINDR_PATH: "/Users/admin/Working/Data/MixData/vinbigdata_structured"
+  VINDR_PATH: "/home/ngo/Working/Data/MixData/vinbigdata_structured"
   VINDR_CSV: "validate.csv"
   VINDR_IMAGE_DIR: "images"
 
-  NIH14_PATH: "/Users/admin/Working/Data/MixData/nih_14_structured"
-  # NIH14_PATH: "/home/ngo/Working/Data/MixData/nih_14_structured"
+  # NIH14_PATH: "/Users/admin/Working/Data/MixData/nih_14_structured"
+  NIH14_PATH: "/home/ngo/Working/Data/MixData/nih_14_structured"
   NIH14_CSV: "validate.csv"
   NIH14_IMAGE_DIR: "images"
 
