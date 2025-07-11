@@ -237,12 +237,12 @@ class CSTU_MultiLabel:
         replace_idx = -1
         
         # Quét để tìm ứng cử viên trong lớp chiếm ưu thế
-        for i, item in enumerate(self.memory):
-            if item.label[majority_class_idx] > 0: # Nếu item thuộc lớp chiếm ưu thế
-                score = self.heuristic_score(item.age, item.uncertainty)
-                if score > max_score:
-                    max_score = score
-                    replace_idx = i
+        # for i, item in enumerate(self.memory):
+        #     if item.label[majority_class_idx] > 0: # Nếu item thuộc lớp chiếm ưu thế
+        #         score = self.heuristic_score(item.age, item.uncertainty)
+        #         if score > max_score:
+        #             max_score = score
+        #             replace_idx = i
         
         # Nếu không tìm được ai trong lớp chiếm ưu thế (hiếm), tìm item tệ nhất trong toàn bộ bank
         if replace_idx == -1:
@@ -254,6 +254,7 @@ class CSTU_MultiLabel:
 
         # Nếu không có gì trong bank để xóa (không thể xảy ra nếu bank đầy), không thêm
         if replace_idx == -1:
+            print(f'Co truong hop khong thay idx de thay the: {replace_idx}')
             return False
 
         # **Logic cốt lõi của RoTTA gốc:**
@@ -264,6 +265,10 @@ class CSTU_MultiLabel:
             return True # Dọn chỗ thành công, sẵn sàng để thêm
         else:
             return False # Item mới không đủ tốt, không thêm
+        
+        ##### Thu truong hop luon luon thay the memory bank
+        # self.memory.pop(replace_idx)
+        # return True
         
     def _recalculate_class_counts(self) -> torch.Tensor:
         """

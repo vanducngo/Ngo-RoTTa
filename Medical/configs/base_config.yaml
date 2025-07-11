@@ -34,7 +34,7 @@ COMMON_DISEASES:
 
 # Cấu hình mô hình
 MODEL:
-  ARCH: "mobilenet_v3_small"           # Kiến trúc mô hình > resnet18, resnet50, mobilenet_v3_small, densenet121
+  ARCH: "resnet18"           # Kiến trúc mô hình > resnet18, resnet50, mobilenet_v3_small, densenet121
   NUM_CLASSES: 5                       # Số lớp bệnh chung
   NUM_CLASSES_SOURCE: 14 # Số lớp của mô hình gốc
   NUM_CLASSES_TTA: 5     # Số lớp mục tiêu cho adaptation

@@ -21,8 +21,8 @@ ADAPTER:
   NAME: rotta_multilabels
   RoTTA:
     NU: 0.001
-    MEMORY_SIZE: 64
-    UPDATE_FREQUENCY: 64
+    MEMORY_SIZE: 128
+    UPDATE_FREQUENCY: 128
     LAMBDA_T: 1.0
     LAMBDA_U: 1.0
     ALPHA: 0.05
@@ -36,7 +36,7 @@ LOADER:
 #   NUM_WORKS: 4
 
 MODEL:
-  ARCH: 'mobilenet_v3_small' # Hoặc một kiến trúc ResNet/WideResNet khác có trong robustbench
+  ARCH: 'resnet18' # Hoặc một kiến trúc ResNet/WideResNet khác có trong robustbench
   NUM_CLASSES: 5 # Rất quan trọng
 
 DATASET:

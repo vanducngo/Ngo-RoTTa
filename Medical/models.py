@@ -126,7 +126,7 @@ def get_model(cfg, feature_extract=False, useWeight=True, numclasses=5):
     if hasattr(model, 'fc'): # Dành cho ResNet
         num_ftrs = model.fc.in_features
         model.fc = nn.Sequential(
-            nn.Dropout(p=0.5),
+            # nn.Dropout(p=0.5),
             nn.Linear(num_ftrs, numclasses)
         )
     elif hasattr(model, 'classifier'): # Dành cho DenseNet và MobileNet
@@ -134,7 +134,7 @@ def get_model(cfg, feature_extract=False, useWeight=True, numclasses=5):
         if isinstance(model.classifier, nn.Linear):
             num_ftrs = model.classifier.in_features
             model.classifier = nn.Sequential(
-                nn.Dropout(p=0.5),
+                # nn.Dropout(p=0.5),
                 nn.Linear(num_ftrs, numclasses)
             )
         # Xử lý MobileNet (classifier là một Sequential)
@@ -145,7 +145,7 @@ def get_model(cfg, feature_extract=False, useWeight=True, numclasses=5):
             model.classifier = nn.Sequential(
                 nn.Linear(model.classifier[0].in_features, 512), # Lớp ẩn mới
                 nn.ReLU(),
-                nn.Dropout(p=0.5),
+                # nn.Dropout(p=0.5),
                 nn.Linear(512, numclasses)
             )
             # Hoặc cách đơn giản hơn chỉ thay lớp cuối

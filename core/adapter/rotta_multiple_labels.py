@@ -103,6 +103,7 @@ class RoTTA_MultiLabels(BaseAdapter):
             optimizer.zero_grad()
             l.backward()
             optimizer.step()
+            # print(f'Training student -> loss: {l}')
 
         self.update_ema_variables(self.model_ema, self.model, self.nu)
         
