@@ -51,7 +51,7 @@ class RoTTA_MultiLabels(BaseAdapter):
             # Sử dụng Sigmoid cho bài toán đa nhãn
             predict_prob = torch.sigmoid(ema_out) 
             # Tạo pseudo label bằng cách đặt ngưỡng (ví dụ: 0.5)
-            pseudo_label = (predict_prob > 0.5).float() 
+            pseudo_label = (predict_prob > 0.8).float() 
             
             # Tính uncertainty cho đầu ra Sigmoid
             # (Tổng của binary cross-entropy trên mỗi lớp)
@@ -67,6 +67,10 @@ class RoTTA_MultiLabels(BaseAdapter):
             uncertainty = entropy[i].item()
             
             current_instance = (data, p_l, uncertainty)
+
+            if p_l.sum() == 0:
+                continue
+
             self.mem.add_instance2(current_instance)
             self.current_instance += 1
 
