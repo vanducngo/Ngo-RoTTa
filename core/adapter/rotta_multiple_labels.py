@@ -23,11 +23,15 @@ class RoTTA_MultiLabels(BaseAdapter):
                                           lambda_t=cfg.ADAPTER.RoTTA.LAMBDA_T, 
                                           lambda_u=cfg.ADAPTER.RoTTA.LAMBDA_U)
         self.model_ema = self.build_ema(self.model)
-        self.transform = get_tta_transforms(cfg)
+        # self.transform = get_tta_transforms(cfg)
+        self.transform = nn.Identity()
         self.nu = cfg.ADAPTER.RoTTA.NU
         self.update_frequency = cfg.ADAPTER.RoTTA.UPDATE_FREQUENCY
         self.current_instance = 0
         self.labels_list = cfg.DATASET.LABELS_LIST
+
+        target_indices_list = [0, 1, 2, 3, 4]
+        self.target_indices = torch.tensor(target_indices_list, device=DEVICE)
 
          # Khởi tạo wandb run
 
@@ -45,12 +49,11 @@ class RoTTA_MultiLabels(BaseAdapter):
         with torch.no_grad():
             model.eval()
             self.model_ema.eval()
-            ema_out = self.model_ema(batch_data)
             
-            # --- SỬA ĐỔI BẮT ĐẦU ---
-            # Sử dụng Sigmoid cho bài toán đa nhãn
-            predict_prob = torch.sigmoid(ema_out) 
-            # Tạo pseudo label bằng cách đặt ngưỡng (ví dụ: 0.5)
+            
+            ema_out_14_cls = self.model_ema(batch_data)
+            ema_out_5_cls = torch.index_select(ema_out_14_cls, 1, self.target_indices)
+            predict_prob = torch.sigmoid(ema_out_5_cls)
             pseudo_label = (predict_prob > 0.8).float() 
             
             # Tính uncertainty cho đầu ra Sigmoid
@@ -58,7 +61,6 @@ class RoTTA_MultiLabels(BaseAdapter):
             entropy = - (predict_prob * torch.log(predict_prob + 1e-6) + \
                         (1 - predict_prob) * torch.log(1 - predict_prob + 1e-6))
             entropy = torch.sum(entropy, dim=1)
-            # --- SỬA ĐỔI KẾT THÚC ---
 
         # add into memory
         for i, data in enumerate(batch_data):
@@ -77,8 +79,12 @@ class RoTTA_MultiLabels(BaseAdapter):
             if self.current_instance % self.update_frequency == 0:
                 self.update_model(model, optimizer)
                 pass
+        
+        with torch.no_grad():
+            final_logits_14_cls = self.model_ema(batch_data)
+            final_logits_5_cls = torch.index_select(final_logits_14_cls, 1, self.target_indices)
 
-        return ema_out
+        return final_logits_5_cls
 
     def update_model(self, model, optimizer):
         model.train()

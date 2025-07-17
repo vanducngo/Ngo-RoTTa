@@ -237,15 +237,19 @@ class CSTU_MultiLabel:
         replace_idx = -1
         
         # Quét để tìm ứng cử viên trong lớp chiếm ưu thế
-        # for i, item in enumerate(self.memory):
-        #     if item.label[majority_class_idx] > 0: # Nếu item thuộc lớp chiếm ưu thế
-        #         score = self.heuristic_score(item.age, item.uncertainty)
-        #         if score > max_score:
-        #             max_score = score
-        #             replace_idx = i
+        for i, item in enumerate(self.memory):
+            if item.label[majority_class_idx] > 0: # Nếu item thuộc lớp chiếm ưu thế
+                score = self.heuristic_score(item.age, item.uncertainty)
+                if score > max_score:
+                    max_score = score
+                    replace_idx = i
         
         # Nếu không tìm được ai trong lớp chiếm ưu thế (hiếm), tìm item tệ nhất trong toàn bộ bank
-        if replace_idx == -1:
+        if replace_idx > 0 and max_score > new_score:
+            self.memory.pop(replace_idx)
+            return True # Dọn chỗ thành công, sẵn sàng để thêm
+        # if replace_idx == -1:
+        else:
             for i, item in enumerate(self.memory):
                 score = self.heuristic_score(item.age, item.uncertainty)
                 if score > max_score:

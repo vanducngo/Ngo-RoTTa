@@ -1,12 +1,12 @@
 TEST:
-  BATCH_SIZE: 32
+  BATCH_SIZE: 64
 
 OPTIM:
   METHOD: Adam
   STEPS: 1
   BETA: 0.9
   # LR: 1e-5
-  LR: 0.0001
+  LR: 0.001
   WD: 0.
 
 INPUT:
@@ -21,7 +21,7 @@ INPUT:
 ADAPTER:
   NAME: rotta_multilabels
   RoTTA:
-    NU: 0.1
+    NU: 0.01
     MEMORY_SIZE: 64
     UPDATE_FREQUENCY: 64
     LAMBDA_T: 1.0
@@ -47,12 +47,12 @@ DATASET:
 
   # VINDR_PATH: "/Users/admin/Working/Data/MixData/vinbigdata_structured"
   VINDR_PATH: "/home/ngo/Working/Data/MixData/vinbigdata_structured"
-  VINDR_CSV: "validate.csv"
+  VINDR_CSV: "validate_reordered.csv"
   VINDR_IMAGE_DIR: "images"
 
   # NIH14_PATH: "/Users/admin/Working/Data/MixData/nih_14_structured"
   NIH14_PATH: "/home/ngo/Working/Data/MixData/nih_14_structured"
-  NIH14_CSV: "validate.csv"
+  NIH14_CSV: "validate_reordered.csv"
   NIH14_IMAGE_DIR: "images"
 
   PADCHEST_PATH: "/Users/admin/Working/Data/MixData/PadChestPruning"
