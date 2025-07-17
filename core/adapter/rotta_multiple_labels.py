@@ -23,8 +23,8 @@ class RoTTA_MultiLabels(BaseAdapter):
                                           lambda_t=cfg.ADAPTER.RoTTA.LAMBDA_T, 
                                           lambda_u=cfg.ADAPTER.RoTTA.LAMBDA_U)
         self.model_ema = self.build_ema(self.model)
-        # self.transform = get_tta_transforms(cfg)
-        self.transform = nn.Identity()
+        self.transform = get_tta_transforms(cfg)
+        # self.transform = nn.Identity()
         self.nu = cfg.ADAPTER.RoTTA.NU
         self.update_frequency = cfg.ADAPTER.RoTTA.UPDATE_FREQUENCY
         self.current_instance = 0
@@ -54,7 +54,7 @@ class RoTTA_MultiLabels(BaseAdapter):
             ema_out_14_cls = self.model_ema(batch_data)
             ema_out_5_cls = torch.index_select(ema_out_14_cls, 1, self.target_indices)
             predict_prob = torch.sigmoid(ema_out_5_cls)
-            pseudo_label = (predict_prob > 0.8).float() 
+            pseudo_label = (predict_prob > 0.5).float() 
             
             # Tính uncertainty cho đầu ra Sigmoid
             # (Tổng của binary cross-entropy trên mỗi lớp)
@@ -92,6 +92,7 @@ class RoTTA_MultiLabels(BaseAdapter):
         # get memory data
         sup_data, ages = self.mem.get_memory()
         l_sup = None
+        # print(f'len(sup_data) => {len(sup_data)}')
         if len(sup_data) > 0:
             sup_data = torch.stack(sup_data).to(DEVICE) # Chuyển lên device
             ages = torch.tensor(ages).float().to(DEVICE) # Chuyển lên device
@@ -164,7 +165,6 @@ class RoTTA_MultiLabels(BaseAdapter):
         
         return stats
     
-    # Các hàm còn lại (update_ema_variables, configure_model) không thay đổi
     @staticmethod
     def update_ema_variables(ema_model, model, nu):
         for ema_param, param in zip(ema_model.parameters(), model.parameters()):
@@ -177,13 +177,16 @@ class RoTTA_MultiLabels(BaseAdapter):
 
         for name, sub_module in model.named_modules():
             if isinstance(sub_module, nn.BatchNorm1d) or isinstance(sub_module, nn.BatchNorm2d):
+                print(f'Configure Model => Append BatchNorm1d and BatchNorm2d')
                 normlayer_names.append(name)
 
         for name in normlayer_names:
             bn_layer = get_named_submodule(model, name)
             if isinstance(bn_layer, nn.BatchNorm1d):
+                print(f'Replace  => Append BatchNorm1d to RobustBN1d')
                 NewBN = RobustBN1d
             elif isinstance(bn_layer, nn.BatchNorm2d):
+                print(f'Replace  => Append BatchNorm2d to BatchNorm2d')
                 NewBN = RobustBN2d
             else:
                 raise RuntimeError()

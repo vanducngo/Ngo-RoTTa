@@ -69,6 +69,7 @@ class RoTTA(BaseAdapter):
     @staticmethod
     def update_ema_variables(ema_model, model, nu):
         for ema_param, param in zip(ema_model.parameters(), model.parameters()):
+            print('Upate EMA model')
             ema_param.data[:] = (1 - nu) * ema_param[:].data[:] + nu * param[:].data[:]
         return ema_model
 

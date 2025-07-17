@@ -6,7 +6,7 @@ OPTIM:
   STEPS: 1
   BETA: 0.9
   # LR: 1e-5
-  LR: 0.001
+  LR: 0.0001
   WD: 0.
 
 INPUT:
@@ -21,7 +21,7 @@ INPUT:
 ADAPTER:
   NAME: rotta_multilabels
   RoTTA:
-    NU: 0.01
+    NU: 0.001
     MEMORY_SIZE: 64
     UPDATE_FREQUENCY: 64
     LAMBDA_T: 1.0
@@ -42,7 +42,7 @@ MODEL:
 
 DATASET:
   NAME: 'CXR'
-  TEST_DOMAINS: ['vindr', 'nih14'] # Các domain chạy TTA ['vindr', 'nih14', 'padchest']
+  TEST_DOMAINS: ['nih14'] # Các domain chạy TTA ['vindr', 'nih14', 'padchest']
   LABELS_LIST: ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
 
   # VINDR_PATH: "/Users/admin/Working/Data/MixData/vinbigdata_structured"
