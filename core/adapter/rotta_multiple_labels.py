@@ -77,7 +77,7 @@ class RoTTA_MultiLabels(BaseAdapter):
             self.current_instance += 1
 
             if self.current_instance % self.update_frequency == 0:
-                # self.update_model(model, optimizer)
+                self.update_model(model, optimizer)
                 pass
         
         with torch.no_grad():
