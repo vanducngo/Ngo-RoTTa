@@ -13474,3 +13474,542 @@ OUTPUT_DIR: RoTTA_ML/CXR
 SEED: -1
 TEST:
   BATCH_SIZE: 64
+2025-07-20 11:24:59,129 TTA-ML INFO: Namespace(config_file='configs/adapter/rotta.yaml', opts=['OUTPUT_DIR', 'RoTTA_ML/CXR'])
+2025-07-20 11:24:59,130 TTA-ML INFO: Running with config:
+ADAPTER:
+  NAME: rotta_multilabels
+  RoTTA:
+    ALPHA: 0.05
+    LAMBDA_T: 1.0
+    LAMBDA_U: 1.0
+    MEMORY_SIZE: 64
+    NU: 0.001
+    UPDATE_FREQUENCY: 64
+BN:
+  EPS: 1e-05
+  MOM: 0.1
+CKPT_DIR: ./ckpt
+CORRUPTION:
+  DATASET: cifar10
+  NUM_CLASS: -1
+  NUM_EX: 10000
+  SEVERITY: [5, 4, 3, 2, 1]
+  SOURCE: 
+  TYPE: ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur', 'motion_blur', 'zoom_blur', 'snow', 'frost', 'fog', 'brightness', 'contrast', 'elastic_transform', 'pixelate', 'jpeg_compression']
+CUDNN:
+  BENCHMARK: True
+DATASET:
+  CHEXPERT_CSV: validate.csv
+  CHEXPERT_IMAGE_DIR: valid
+  CHEXPERT_PATH: /Users/admin/Working/Data/MixData/nih_14_structured
+  LABELS_LIST: ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
+  NAME: CXR
+  NIH14_CSV: validate_reordered.csv
+  NIH14_IMAGE_DIR: images
+  NIH14_PATH: /home/ngo/Working/Data/MixData/nih_14_structured
+  PADCHEST_CSV: validate_filtered.csv
+  PADCHEST_IMAGE_DIR: images
+  PADCHEST_PATH: /Users/admin/Working/Data/MixData/PadChestPruning
+  TEST_DOMAINS: ['nih14']
+  VINDR_CSV: validate_reordered.csv
+  VINDR_IMAGE_DIR: images
+  VINDR_PATH: /home/ngo/Working/Data/MixData/vinbigdata_structured
+DATA_DIR: ./datasets
+DEBUG: 0
+DESC: 
+INPUT:
+  INTERPOLATION: bilinear
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 2.225]
+  SIZE: (224, 224)
+  TRANSFORMS: ('normalize',)
+LOADER:
+  NUM_WORKS: 4
+  SAMPLER:
+    GAMMA: 0.1
+    TYPE: temporal
+LOG_DEST: log.txt
+LOG_TIME: 
+MODEL:
+  ARCH: resnet18
+  EPISODIC: False
+  NUM_CLASSES: 5
+  PROJECTION:
+    EMB_DIM: 2048
+    FEA_DIM: 128
+    HEAD: linear
+OPTIM:
+  BETA: 0.9
+  DAMPENING: 0.0
+  LR: 0.0001
+  METHOD: Adam
+  MOMENTUM: 0.9
+  NESTEROV: True
+  STEPS: 1
+  WD: 0.0
+OUTPUT_DIR: RoTTA_ML/CXR
+SEED: -1
+TEST:
+  BATCH_SIZE: 64
+2025-07-20 11:27:15,612 TTA-ML INFO: Namespace(config_file='configs/adapter/rotta.yaml', opts=['OUTPUT_DIR', 'RoTTA_ML/CXR'])
+2025-07-20 11:27:15,612 TTA-ML INFO: Running with config:
+ADAPTER:
+  NAME: rotta_multilabels
+  RoTTA:
+    ALPHA: 0.05
+    LAMBDA_T: 1.0
+    LAMBDA_U: 1.0
+    MEMORY_SIZE: 64
+    NU: 0.001
+    UPDATE_FREQUENCY: 64
+BN:
+  EPS: 1e-05
+  MOM: 0.1
+CKPT_DIR: ./ckpt
+CORRUPTION:
+  DATASET: cifar10
+  NUM_CLASS: -1
+  NUM_EX: 10000
+  SEVERITY: [5, 4, 3, 2, 1]
+  SOURCE: 
+  TYPE: ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur', 'motion_blur', 'zoom_blur', 'snow', 'frost', 'fog', 'brightness', 'contrast', 'elastic_transform', 'pixelate', 'jpeg_compression']
+CUDNN:
+  BENCHMARK: True
+DATASET:
+  CHEXPERT_CSV: validate.csv
+  CHEXPERT_IMAGE_DIR: valid
+  CHEXPERT_PATH: /Users/admin/Working/Data/MixData/nih_14_structured
+  LABELS_LIST: ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
+  NAME: CXR
+  NIH14_CSV: validate_reordered.csv
+  NIH14_IMAGE_DIR: images
+  NIH14_PATH: /home/ngo/Working/Data/MixData/nih_14_structured
+  PADCHEST_CSV: validate_filtered.csv
+  PADCHEST_IMAGE_DIR: images
+  PADCHEST_PATH: /Users/admin/Working/Data/MixData/PadChestPruning
+  TEST_DOMAINS: ['nih14']
+  VINDR_CSV: validate_reordered.csv
+  VINDR_IMAGE_DIR: images
+  VINDR_PATH: /home/ngo/Working/Data/MixData/vinbigdata_structured
+DATA_DIR: ./datasets
+DEBUG: 0
+DESC: 
+INPUT:
+  INTERPOLATION: bilinear
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 2.225]
+  SIZE: (224, 224)
+  TRANSFORMS: ('normalize',)
+LOADER:
+  NUM_WORKS: 4
+  SAMPLER:
+    GAMMA: 0.1
+    TYPE: temporal
+LOG_DEST: log.txt
+LOG_TIME: 
+MODEL:
+  ARCH: resnet18
+  EPISODIC: False
+  NUM_CLASSES: 5
+  PROJECTION:
+    EMB_DIM: 2048
+    FEA_DIM: 128
+    HEAD: linear
+OPTIM:
+  BETA: 0.9
+  DAMPENING: 0.0
+  LR: 0.0001
+  METHOD: Adam
+  MOMENTUM: 0.9
+  NESTEROV: True
+  STEPS: 1
+  WD: 0.0
+OUTPUT_DIR: RoTTA_ML/CXR
+SEED: -1
+TEST:
+  BATCH_SIZE: 64
+2025-07-20 11:27:54,974 TTA-ML INFO: Namespace(config_file='configs/adapter/rotta.yaml', opts=['OUTPUT_DIR', 'RoTTA_ML/CXR'])
+2025-07-20 11:27:54,974 TTA-ML INFO: Running with config:
+ADAPTER:
+  NAME: rotta_multilabels
+  RoTTA:
+    ALPHA: 0.05
+    LAMBDA_T: 1.0
+    LAMBDA_U: 1.0
+    MEMORY_SIZE: 64
+    NU: 0.001
+    UPDATE_FREQUENCY: 64
+BN:
+  EPS: 1e-05
+  MOM: 0.1
+CKPT_DIR: ./ckpt
+CORRUPTION:
+  DATASET: cifar10
+  NUM_CLASS: -1
+  NUM_EX: 10000
+  SEVERITY: [5, 4, 3, 2, 1]
+  SOURCE: 
+  TYPE: ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur', 'motion_blur', 'zoom_blur', 'snow', 'frost', 'fog', 'brightness', 'contrast', 'elastic_transform', 'pixelate', 'jpeg_compression']
+CUDNN:
+  BENCHMARK: True
+DATASET:
+  CHEXPERT_CSV: validate.csv
+  CHEXPERT_IMAGE_DIR: valid
+  CHEXPERT_PATH: /Users/admin/Working/Data/MixData/nih_14_structured
+  LABELS_LIST: ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
+  NAME: CXR
+  NIH14_CSV: validate_reordered.csv
+  NIH14_IMAGE_DIR: images
+  NIH14_PATH: /home/ngo/Working/Data/MixData/nih_14_structured
+  PADCHEST_CSV: validate_filtered.csv
+  PADCHEST_IMAGE_DIR: images
+  PADCHEST_PATH: /Users/admin/Working/Data/MixData/PadChestPruning
+  TEST_DOMAINS: ['nih14']
+  VINDR_CSV: validate_reordered.csv
+  VINDR_IMAGE_DIR: images
+  VINDR_PATH: /home/ngo/Working/Data/MixData/vinbigdata_structured
+DATA_DIR: ./datasets
+DEBUG: 0
+DESC: 
+INPUT:
+  INTERPOLATION: bilinear
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 2.225]
+  SIZE: (224, 224)
+  TRANSFORMS: ('normalize',)
+LOADER:
+  NUM_WORKS: 4
+  SAMPLER:
+    GAMMA: 0.1
+    TYPE: temporal
+LOG_DEST: log.txt
+LOG_TIME: 
+MODEL:
+  ARCH: resnet18
+  EPISODIC: False
+  NUM_CLASSES: 5
+  PROJECTION:
+    EMB_DIM: 2048
+    FEA_DIM: 128
+    HEAD: linear
+OPTIM:
+  BETA: 0.9
+  DAMPENING: 0.0
+  LR: 0.0001
+  METHOD: Adam
+  MOMENTUM: 0.9
+  NESTEROV: True
+  STEPS: 1
+  WD: 0.0
+OUTPUT_DIR: RoTTA_ML/CXR
+SEED: -1
+TEST:
+  BATCH_SIZE: 64
+2025-07-20 11:29:27,702 TTA-ML INFO: Namespace(config_file='configs/adapter/rotta.yaml', opts=['OUTPUT_DIR', 'RoTTA_ML/CXR'])
+2025-07-20 11:29:27,703 TTA-ML INFO: Running with config:
+ADAPTER:
+  NAME: rotta_multilabels
+  RoTTA:
+    ALPHA: 0.05
+    LAMBDA_T: 1.0
+    LAMBDA_U: 1.0
+    MEMORY_SIZE: 64
+    NU: 0.001
+    UPDATE_FREQUENCY: 64
+BN:
+  EPS: 1e-05
+  MOM: 0.1
+CKPT_DIR: ./ckpt
+CORRUPTION:
+  DATASET: cifar10
+  NUM_CLASS: -1
+  NUM_EX: 10000
+  SEVERITY: [5, 4, 3, 2, 1]
+  SOURCE: 
+  TYPE: ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur', 'motion_blur', 'zoom_blur', 'snow', 'frost', 'fog', 'brightness', 'contrast', 'elastic_transform', 'pixelate', 'jpeg_compression']
+CUDNN:
+  BENCHMARK: True
+DATASET:
+  CHEXPERT_CSV: validate.csv
+  CHEXPERT_IMAGE_DIR: valid
+  CHEXPERT_PATH: /Users/admin/Working/Data/MixData/nih_14_structured
+  LABELS_LIST: ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
+  NAME: CXR
+  NIH14_CSV: validate_reordered.csv
+  NIH14_IMAGE_DIR: images
+  NIH14_PATH: /home/ngo/Working/Data/MixData/nih_14_structured
+  PADCHEST_CSV: validate_filtered.csv
+  PADCHEST_IMAGE_DIR: images
+  PADCHEST_PATH: /Users/admin/Working/Data/MixData/PadChestPruning
+  TEST_DOMAINS: ['nih14']
+  VINDR_CSV: validate_reordered.csv
+  VINDR_IMAGE_DIR: images
+  VINDR_PATH: /home/ngo/Working/Data/MixData/vinbigdata_structured
+DATA_DIR: ./datasets
+DEBUG: 0
+DESC: 
+INPUT:
+  INTERPOLATION: bilinear
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 2.225]
+  SIZE: (224, 224)
+  TRANSFORMS: ('normalize',)
+LOADER:
+  NUM_WORKS: 4
+  SAMPLER:
+    GAMMA: 0.1
+    TYPE: temporal
+LOG_DEST: log.txt
+LOG_TIME: 
+MODEL:
+  ARCH: resnet18
+  EPISODIC: False
+  NUM_CLASSES: 5
+  PROJECTION:
+    EMB_DIM: 2048
+    FEA_DIM: 128
+    HEAD: linear
+OPTIM:
+  BETA: 0.9
+  DAMPENING: 0.0
+  LR: 0.0001
+  METHOD: Adam
+  MOMENTUM: 0.9
+  NESTEROV: True
+  STEPS: 1
+  WD: 0.0
+OUTPUT_DIR: RoTTA_ML/CXR
+SEED: -1
+TEST:
+  BATCH_SIZE: 64
+2025-07-20 11:30:31,346 TTA-ML INFO: Namespace(config_file='configs/adapter/rotta.yaml', opts=['OUTPUT_DIR', 'RoTTA_ML/CXR'])
+2025-07-20 11:30:31,347 TTA-ML INFO: Running with config:
+ADAPTER:
+  NAME: rotta_multilabels
+  RoTTA:
+    ALPHA: 0.05
+    LAMBDA_T: 1.0
+    LAMBDA_U: 1.0
+    MEMORY_SIZE: 64
+    NU: 0.001
+    UPDATE_FREQUENCY: 64
+BN:
+  EPS: 1e-05
+  MOM: 0.1
+CKPT_DIR: ./ckpt
+CORRUPTION:
+  DATASET: cifar10
+  NUM_CLASS: -1
+  NUM_EX: 10000
+  SEVERITY: [5, 4, 3, 2, 1]
+  SOURCE: 
+  TYPE: ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur', 'motion_blur', 'zoom_blur', 'snow', 'frost', 'fog', 'brightness', 'contrast', 'elastic_transform', 'pixelate', 'jpeg_compression']
+CUDNN:
+  BENCHMARK: True
+DATASET:
+  CHEXPERT_CSV: validate.csv
+  CHEXPERT_IMAGE_DIR: valid
+  CHEXPERT_PATH: /Users/admin/Working/Data/MixData/nih_14_structured
+  LABELS_LIST: ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
+  NAME: CXR
+  NIH14_CSV: validate_reordered.csv
+  NIH14_IMAGE_DIR: images
+  NIH14_PATH: /home/ngo/Working/Data/MixData/nih_14_structured
+  PADCHEST_CSV: validate_filtered.csv
+  PADCHEST_IMAGE_DIR: images
+  PADCHEST_PATH: /Users/admin/Working/Data/MixData/PadChestPruning
+  TEST_DOMAINS: ['nih14']
+  VINDR_CSV: validate_reordered.csv
+  VINDR_IMAGE_DIR: images
+  VINDR_PATH: /home/ngo/Working/Data/MixData/vinbigdata_structured
+DATA_DIR: ./datasets
+DEBUG: 0
+DESC: 
+INPUT:
+  INTERPOLATION: bilinear
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 2.225]
+  SIZE: (224, 224)
+  TRANSFORMS: ('normalize',)
+LOADER:
+  NUM_WORKS: 4
+  SAMPLER:
+    GAMMA: 0.1
+    TYPE: temporal
+LOG_DEST: log.txt
+LOG_TIME: 
+MODEL:
+  ARCH: resnet18
+  EPISODIC: False
+  NUM_CLASSES: 5
+  PROJECTION:
+    EMB_DIM: 2048
+    FEA_DIM: 128
+    HEAD: linear
+OPTIM:
+  BETA: 0.9
+  DAMPENING: 0.0
+  LR: 0.0001
+  METHOD: Adam
+  MOMENTUM: 0.9
+  NESTEROV: True
+  STEPS: 1
+  WD: 0.0
+OUTPUT_DIR: RoTTA_ML/CXR
+SEED: -1
+TEST:
+  BATCH_SIZE: 64
+2025-07-20 11:33:19,384 TTA-ML INFO: Namespace(config_file='configs/adapter/rotta.yaml', opts=['OUTPUT_DIR', 'RoTTA_ML/CXR'])
+2025-07-20 11:33:19,384 TTA-ML INFO: Running with config:
+ADAPTER:
+  NAME: rotta_multilabels
+  RoTTA:
+    ALPHA: 0.05
+    LAMBDA_T: 1.0
+    LAMBDA_U: 1.0
+    MEMORY_SIZE: 64
+    NU: 0.001
+    UPDATE_FREQUENCY: 64
+BN:
+  EPS: 1e-05
+  MOM: 0.1
+CKPT_DIR: ./ckpt
+CORRUPTION:
+  DATASET: cifar10
+  NUM_CLASS: -1
+  NUM_EX: 10000
+  SEVERITY: [5, 4, 3, 2, 1]
+  SOURCE: 
+  TYPE: ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur', 'motion_blur', 'zoom_blur', 'snow', 'frost', 'fog', 'brightness', 'contrast', 'elastic_transform', 'pixelate', 'jpeg_compression']
+CUDNN:
+  BENCHMARK: True
+DATASET:
+  CHEXPERT_CSV: validate.csv
+  CHEXPERT_IMAGE_DIR: valid
+  CHEXPERT_PATH: /Users/admin/Working/Data/MixData/nih_14_structured
+  LABELS_LIST: ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
+  NAME: CXR
+  NIH14_CSV: validate.csv
+  NIH14_IMAGE_DIR: images
+  NIH14_PATH: /home/ngo/Working/Data/MixData/nih_14_structured
+  PADCHEST_CSV: validate_filtered.csv
+  PADCHEST_IMAGE_DIR: images
+  PADCHEST_PATH: /Users/admin/Working/Data/MixData/PadChestPruning
+  TEST_DOMAINS: ['nih14']
+  VINDR_CSV: validate.csv
+  VINDR_IMAGE_DIR: images
+  VINDR_PATH: /home/ngo/Working/Data/MixData/vinbigdata_structured
+DATA_DIR: ./datasets
+DEBUG: 0
+DESC: 
+INPUT:
+  INTERPOLATION: bilinear
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 2.225]
+  SIZE: (224, 224)
+  TRANSFORMS: ('normalize',)
+LOADER:
+  NUM_WORKS: 4
+  SAMPLER:
+    GAMMA: 0.1
+    TYPE: temporal
+LOG_DEST: log.txt
+LOG_TIME: 
+MODEL:
+  ARCH: resnet18
+  EPISODIC: False
+  NUM_CLASSES: 5
+  PROJECTION:
+    EMB_DIM: 2048
+    FEA_DIM: 128
+    HEAD: linear
+OPTIM:
+  BETA: 0.9
+  DAMPENING: 0.0
+  LR: 0.0001
+  METHOD: Adam
+  MOMENTUM: 0.9
+  NESTEROV: True
+  STEPS: 1
+  WD: 0.0
+OUTPUT_DIR: RoTTA_ML/CXR
+SEED: -1
+TEST:
+  BATCH_SIZE: 64
+2025-07-20 11:34:03,229 TTA-ML INFO: Namespace(config_file='configs/adapter/rotta.yaml', opts=['OUTPUT_DIR', 'RoTTA_ML/CXR'])
+2025-07-20 11:34:03,229 TTA-ML INFO: Running with config:
+ADAPTER:
+  NAME: rotta_multilabels
+  RoTTA:
+    ALPHA: 0.05
+    LAMBDA_T: 1.0
+    LAMBDA_U: 1.0
+    MEMORY_SIZE: 64
+    NU: 0.001
+    UPDATE_FREQUENCY: 64
+BN:
+  EPS: 1e-05
+  MOM: 0.1
+CKPT_DIR: ./ckpt
+CORRUPTION:
+  DATASET: cifar10
+  NUM_CLASS: -1
+  NUM_EX: 10000
+  SEVERITY: [5, 4, 3, 2, 1]
+  SOURCE: 
+  TYPE: ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur', 'motion_blur', 'zoom_blur', 'snow', 'frost', 'fog', 'brightness', 'contrast', 'elastic_transform', 'pixelate', 'jpeg_compression']
+CUDNN:
+  BENCHMARK: True
+DATASET:
+  CHEXPERT_CSV: validate.csv
+  CHEXPERT_IMAGE_DIR: valid
+  CHEXPERT_PATH: /Users/admin/Working/Data/MixData/nih_14_structured
+  LABELS_LIST: ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
+  NAME: CXR
+  NIH14_CSV: validate.csv
+  NIH14_IMAGE_DIR: images
+  NIH14_PATH: /Users/admin/Working/Data/MixData/nih_14_structured
+  PADCHEST_CSV: validate_filtered.csv
+  PADCHEST_IMAGE_DIR: images
+  PADCHEST_PATH: /Users/admin/Working/Data/MixData/PadChestPruning
+  TEST_DOMAINS: ['nih14']
+  VINDR_CSV: validate.csv
+  VINDR_IMAGE_DIR: images
+  VINDR_PATH: /Users/admin/Working/Data/MixData/vinbigdata_structured
+DATA_DIR: ./datasets
+DEBUG: 0
+DESC: 
+INPUT:
+  INTERPOLATION: bilinear
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 2.225]
+  SIZE: (224, 224)
+  TRANSFORMS: ('normalize',)
+LOADER:
+  NUM_WORKS: 4
+  SAMPLER:
+    GAMMA: 0.1
+    TYPE: temporal
+LOG_DEST: log.txt
+LOG_TIME: 
+MODEL:
+  ARCH: resnet18
+  EPISODIC: False
+  NUM_CLASSES: 5
+  PROJECTION:
+    EMB_DIM: 2048
+    FEA_DIM: 128
+    HEAD: linear
+OPTIM:
+  BETA: 0.9
+  DAMPENING: 0.0
+  LR: 0.0001
+  METHOD: Adam
+  MOMENTUM: 0.9
+  NESTEROV: True
+  STEPS: 1
+  WD: 0.0
+OUTPUT_DIR: RoTTA_ML/CXR
+SEED: -1
+TEST:
+  BATCH_SIZE: 64

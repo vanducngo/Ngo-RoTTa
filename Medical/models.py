@@ -11,7 +11,7 @@ def set_parameter_requires_grad(model, feature_extracting):
             param.requires_grad = False
 
 def get_model_chexpert_14(cfg):
-    return get_model(cfg, feature_extract=False, useWeight = True, numclasses=14)
+    return get_model(cfg, feature_extract=False, useWeight = True, numclasses=5)
 
 def get_model(cfg, feature_extract=False, useWeight=True, numclasses=5):
     """

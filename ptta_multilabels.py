@@ -45,19 +45,15 @@ def testTimeAdaptationMultiLabel(cfg):
 
     tbar = tqdm(loader)
     for batch_id, data_package in enumerate(tbar):
-        # Giả định data_package giờ chứa nhãn đa nhãn (multi-label)
         data, label, domain = data_package["image"], data_package['label'], data_package['domain']
         
-        # Bỏ qua kiểm tra len(label) == 1 vì batch cuối vẫn xử lý được
         if IS_CPU_DEVICE:
             data, label = data.cpu(), label.cpu()
         else:
             data, label = data.cuda(), label.cuda()
         
-        # forward_and_adapt đã được sửa để xử lý đa nhãn
         logits = tta_model(data)
 
-        # ### SỬA ĐỔI ###: Logic đánh giá chuyển sang tính AUC
         # Lấy xác suất từ logits bằng Sigmoid
         probabilities = torch.sigmoid(logits)
         
@@ -94,14 +90,14 @@ def testTimeAdaptationMultiLabel(cfg):
                 tbar.set_postfix(m_auc=f"{current_mean_auc:.3f}")
 
     
-    # ### SỬA ĐỔI ###: Tính toán kết quả cuối cùng
+    # Tính toán kết quả cuối cùng
     processor.calculate()
 
     logger.info(f"All Results\n{processor.info()}")
     print(f"RoTTa Results\n{processor.info()}")
 
 def main():
-    # Phần main() để parse config không cần thay đổi nhiều
+    # Phần main() để parse config 
     parser = argparse.ArgumentParser("Pytorch Implementation for Multi-Label Test Time Adaptation!")
 
     parser.add_argument(
@@ -111,27 +107,6 @@ def main():
         default="",
         help="path to the main config file",
         type=str)
-    
-    # parser.add_argument(
-    #     '-acfg',
-    #     '--adapter-config-file',
-    #     metavar="FILE",
-    #     default="",
-    #     help="path to adapter config file",
-    #     type=str)
-    # parser.add_argument(
-    #     '-dcfg',
-    #     '--dataset-config-file',
-    #     metavar="FILE",
-    #     help="path to dataset config file for multi-domain/multi-label setup",
-    #     type=str)
-    
-    # Bỏ order-config-file nếu không cần thiết cho kịch bản domain
-    # parser.add_argument(
-    #     '-ocfg',
-    #     '--order-config-file',
-    #     ...
-    # )
 
     parser.add_argument(
         'opts',
@@ -147,14 +122,10 @@ def main():
     torch.backends.cudnn.benchmark = True
 
     cfg.merge_from_file(args.config_file)
-    # cfg.merge_from_file(args.adapter_config_file)
-    # cfg.merge_from_file(args.dataset_config_file)
-    # if not args.order_config_file == "":
-    #     cfg.merge_from_file(args.order_config_file)
     cfg.merge_from_list(args.opts)
     cfg.freeze()
 
-    ds = cfg.DATASET.NAME # ### SỬA ĐỔI ###: Lấy tên dataset từ config mới
+    ds = cfg.DATASET.NAME
     adapter = cfg.ADAPTER.NAME
     setproctitle(f"TTA-ML:{ds:>8s}:{adapter:<10s}")
 
@@ -164,10 +135,6 @@ def main():
     logger = setup_logger('TTA-ML', cfg.OUTPUT_DIR, 0, filename=cfg.LOG_DEST)
     logger.info(args)
 
-    # logger.info(f"Loaded configuration file: \n"
-    #             f"\tadapter: {args.adapter_config_file}\n"
-    #             f"\tdataset: {args.dataset_config_file}\n")
-    #             # f"\torder: {args.order_config_file}")
     logger.info("Running with config:\n{}".format(cfg))
 
     set_random_seed(cfg.SEED)

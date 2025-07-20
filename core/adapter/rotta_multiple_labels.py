@@ -73,11 +73,11 @@ class RoTTA_MultiLabels(BaseAdapter):
             if p_l.sum() == 0:
                 continue
 
-            self.mem.add_instance2(current_instance)
+            self.mem.add_instance(current_instance)
             self.current_instance += 1
 
             if self.current_instance % self.update_frequency == 0:
-                self.update_model(model, optimizer)
+                # self.update_model(model, optimizer)
                 pass
         
         with torch.no_grad():
