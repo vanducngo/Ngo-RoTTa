@@ -1,16 +1,13 @@
 import pandas as pd
 
 # Đường dẫn file CSV
-valid_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/train_restructed.csv'
-output_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/train_filtered.csv'
+valid_file = '/home/ngoto/Working/Data/CheXpert-v1.0-small/train_restructed.csv'
+output_file = '/home/ngoto/Working/Data/CheXpert-v1.0-small/train_filtered.csv'
 
 # Danh sách các bệnh cần kiểm tra
 selected_diseases = [
-    'Cardiomegaly', 
-    'Consolidation', 
-    'Pleural Effusion', 
-    'Pneumothorax', 
-    'Atelectasis'
+    'Atelectasis', 'Cardiomegaly', 'Consolidation', 
+    'Pleural Effusion', 'Pneumothorax'
 ]
 
 # Đọc file CSV

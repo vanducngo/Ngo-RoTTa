@@ -17,10 +17,10 @@ def split_chexpert_csv(train_ratio=0.8, random_state=42):
     TRAINING_LABEL_SET = ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
     
     # Read the input CSV
-    CHEXPERT_PATH = "/home/ngo/Working/Data/CheXpert-v1.0-small"
+    CHEXPERT_PATH = "/home/ngoto/Working/Data/CheXpert-v1.0-small"
     # CHEXPERT_PATH_ROOT_PATH: "/Users/admin/Working/Data"
     # CHEXPERT_PATH: "/Users/admin/Working/Data/CheXpert-v1.0-small"
-    CHEXPERT_TRAIN_CSV = "train_final.csv"
+    CHEXPERT_TRAIN_CSV = "train_final_reordered.csv"
     csv_path = os.path.join(CHEXPERT_PATH, CHEXPERT_TRAIN_CSV)
     df = pd.read_csv(csv_path)
     

@@ -137,7 +137,8 @@ def main():
 
     logger.info("Running with config:\n{}".format(cfg))
 
-    set_random_seed(cfg.SEED)
+    # set_random_seed(cfg.SEED)
+    set_random_seed(42)
 
     # Gọi hàm mới
     testTimeAdaptationMultiLabel(cfg)

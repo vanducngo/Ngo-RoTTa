@@ -1,10 +1,10 @@
 import pandas as pd
 
 # File paths
-train_input_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/train_filtered.csv'
-train_output_file = '/home/ngo//Working/Data/CheXpert-v1.0-small/train_final.csv'
-valid_input_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/valid_filtered.csv'
-valid_output_file = '/home/ngo/Working/Data/CheXpert-v1.0-small/valid_final.csv'
+train_input_file = '/home/ngoto/Working/Data/CheXpert-v1.0-small/train_filtered.csv'
+train_output_file = '/home/ngoto//Working/Data/CheXpert-v1.0-small/train_final.csv'
+valid_input_file = '/home/ngoto/Working/Data/CheXpert-v1.0-small/valid_filtered.csv'
+valid_output_file = '/home/ngoto/Working/Data/CheXpert-v1.0-small/valid_final.csv'
 
 
 def execute(input, output):

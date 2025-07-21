@@ -1,10 +1,10 @@
 DATA:
-  CHEXPERT_PATH_ROOT_PATH: "/home/ngo/Working/Data"
-  CHEXPERT_PATH: "/home/ngo/Working/Data/CheXpert-v1.0-small"
+  CHEXPERT_PATH_ROOT_PATH: "/home/ngoto/Working/Data"
+  CHEXPERT_PATH: "/home/ngoto/Working/Data/CheXpert-v1.0-small"
   # CHEXPERT_PATH_ROOT_PATH: "/Users/admin/Working/Data"
   # CHEXPERT_PATH: "/Users/admin/Working/Data/CheXpert-v1.0-small"
-  CHEXPERT_TRAIN_CSV: "train_restructed_reordered.csv"
-  CHEXPERT_TEST_CSV: "valid_restructed_reordered.csv"
+  CHEXPERT_TRAIN_CSV: "train_split.csv"
+  CHEXPERT_TEST_CSV: "valid_split.csv"
 
   # VINDR_PATH: "/Users/admin/Working/Data/MixData/vinbigdata_structured"
   VINDR_PATH: "/home/ngo/Working/Data/MixData/vinbigdata_structured"
@@ -30,7 +30,6 @@ COMMON_DISEASES:
     - 'Consolidation'
     - 'Pleural Effusion'
     - 'Pneumothorax'
-    - 'No Finding'
 
 # Cấu hình mô hình
 MODEL:
