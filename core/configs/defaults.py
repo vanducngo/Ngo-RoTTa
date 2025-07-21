@@ -130,6 +130,17 @@ _C.DATASET.CHEXPERT_PATH = ""
 _C.DATASET.CHEXPERT_CSV = ""
 _C.DATASET.CHEXPERT_IMAGE_DIR = ""
 
+_C.DATASET.ADAPTATION_MODE = ""
+_C.DATASET.BASE_DOMAIN = CN()
+_C.DATASET.BASE_DOMAIN.PATH = ""
+_C.DATASET.BASE_DOMAIN.CSV = ""
+_C.DATASET.BASE_DOMAIN.IMAGE_DIR = ""
+
+# Danh sách các loại nhiễu sẽ được áp dụng theo thứ tự
+_C.DATASET.TEST_CORRUPTIONS = []
+# Mức độ nhiễu (1-5)
+_C.DATASET.SEVERITY = 3
+
 if 'MODEL' not in _C:
     _C.MODEL = CN()
 _C.MODEL.NUM_CLASSES = -1 # Giá trị mặc định

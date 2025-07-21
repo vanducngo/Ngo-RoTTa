@@ -45,11 +45,17 @@ class RoTTA_MultiLabels(BaseAdapter):
 
     @torch.enable_grad()
     def forward_and_adapt(self, batch_data, model, optimizer):
+
+        # print(f"[DEBUG] forward_and_adapt received batch_data on device: {batch_data.device}")
+        # teacher_device = next(self.model_ema.parameters()).device
+        # print(f"[DEBUG] model_ema is on device: {teacher_device}")
+        # student_device = next(model.parameters()).device
+        # print(f"[DEBUG] student model is on device: {student_device}")
+
         # batch data
         with torch.no_grad():
             model.eval()
             self.model_ema.eval()
-            
             
             ema_out_14_cls = self.model_ema(batch_data)
             ema_out_5_cls = torch.index_select(ema_out_14_cls, 1, self.target_indices)
@@ -177,16 +183,13 @@ class RoTTA_MultiLabels(BaseAdapter):
 
         for name, sub_module in model.named_modules():
             if isinstance(sub_module, nn.BatchNorm1d) or isinstance(sub_module, nn.BatchNorm2d):
-                print(f'Configure Model => Append BatchNorm1d and BatchNorm2d')
                 normlayer_names.append(name)
 
         for name in normlayer_names:
             bn_layer = get_named_submodule(model, name)
             if isinstance(bn_layer, nn.BatchNorm1d):
-                print(f'Replace  => Append BatchNorm1d to RobustBN1d')
                 NewBN = RobustBN1d
             elif isinstance(bn_layer, nn.BatchNorm2d):
-                print(f'Replace  => Append BatchNorm2d to BatchNorm2d')
                 NewBN = RobustBN2d
             else:
                 raise RuntimeError()

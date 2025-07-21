@@ -42,7 +42,7 @@ MODEL:
 
 DATASET:
   NAME: 'CXR'
-  TEST_DOMAINS: ['nih14'] # Các domain chạy TTA ['vindr', 'nih14', 'padchest']
+  TEST_DOMAINS: ['padchest'] # Các domain chạy TTA ['vindr', 'nih14', 'padchest']
   LABELS_LIST: ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
 
   # VINDR_PATH: "/Users/admin/Working/Data/MixData/vinbigdata_structured"
@@ -65,3 +65,27 @@ DATASET:
   CHEXPERT_PATH: '/Users/admin/Working/Data/MixData/nih_14_structured'
   CHEXPERT_CSV: 'validate.csv'
   CHEXPERT_IMAGE_DIR: 'valid'
+
+
+  ADAPTATION_MODE: "corruption" # domain, corruption
+  #Add nhieu single domain
+  BASE_DOMAIN:
+    # PATH: "/home/ngoto/Working/Data/CheXpert-v1.0-small"
+    # CSV: "valid_split.csv" # "validate_reordered.csv, validate_reordered_subset.csv, valid_split"
+    # IMAGE_DIR: "images"
+    
+    PATH: "/home/ngoto/Working/Data/MixData/nih_14_structured"
+    CSV: "validate_reordered.csv" # "validate_reordered.csv, validate_reordered_subset.csv, valid_split"
+    IMAGE_DIR: "images"
+
+  TEST_CORRUPTIONS:
+      # - 'motion_blur'
+      - 'gaussian_noise'
+      # - 'shot_noise'
+      # - 'contrast'
+      # - 'pixelate'
+      # - 'jpeg_compression'
+      # - 'brightness'
+      # - 'gaussian_blur'
+
+  SEVERITY: 1 # Mức độ nhiễu (0-5)

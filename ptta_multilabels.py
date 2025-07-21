@@ -5,6 +5,7 @@ from sklearn.metrics import roc_auc_score
 import numpy as np
 
 from core.configs import cfg
+from core.data.corruptions import apply_corruption
 from core.utils import *
 
 # Import lớp processor mới
@@ -20,81 +21,132 @@ from setproctitle import setproctitle
 
 def testTimeAdaptationMultiLabel(cfg):
     logger = logging.getLogger("TTA.test_time_multilabel")
-    # model, optimizer
+    
+    # --- Khởi tạo Model và Adapter (không đổi) ---
     model = build_model(cfg)
-
     optimizer = build_optimizer(cfg)
-
     tta_adapter = build_adapter(cfg)
-
     tta_model = tta_adapter(cfg, model, optimizer)
 
     if IS_CPU_DEVICE:
         tta_model.cpu()
+        tta_model.model_ema.cpu()
     else:
         tta_model.cuda()
-
-    # Build_loader giờ sẽ tải dữ liệu từ các domain
-    # và được thay thế bằng cấu hình về domain trong file config.
-    # loader = build_loader_multilabel(cfg)
-    loader, processor = build_loader_multilabel(cfg) 
-
-    # Sử dụng AUCProcessor thay vì processor cũ
-    # num_classes=len(cfg.DATASET.LABELS_LIST)
-    # processor = AUCProcessor(num_classes=num_classes)
-
-    tbar = tqdm(loader)
-    for batch_id, data_package in enumerate(tbar):
-        data, label, domain = data_package["image"], data_package['label'], data_package['domain']
-        
-        if IS_CPU_DEVICE:
-            data, label = data.cpu(), label.cpu()
-        else:
-            data, label = data.cuda(), label.cuda()
-        
-        logits = tta_model(data)
-
-        # Lấy xác suất từ logits bằng Sigmoid
-        probabilities = torch.sigmoid(logits)
-        
-        # Đưa xác suất và nhãn thật vào processor để tính toán sau
-        processor.process(probabilities, label, domain)
-        
-        if batch_id > 0 and batch_id % 10 == 0:
-            # Gộp tất cả các batch đã thu thập lại
-            temp_labels = np.concatenate(processor.all_labels, axis=0)
-            temp_preds = np.concatenate(processor.all_predictions, axis=0)
-            
-            # Tính AUC cho từng lớp trên toàn bộ dữ liệu đã thu thập
-            per_class_aucs = []
-            for i in range(temp_labels.shape[1]): # Lặp qua từng lớp (bệnh)
-                y_true_col = temp_labels[:, i]
-                y_pred_col = temp_preds[:, i]
-                
-                # Chỉ tính AUC nếu có cả hai loại nhãn (0 và 1)
-                if len(np.unique(y_true_col)) > 1:
-                    try:
-                        auc = roc_auc_score(y_true_col, y_pred_col)
-                        per_class_aucs.append(auc)
-                    except ValueError:
-                        # Trường hợp hiếm gặp khác, bỏ qua
-                        pass
-            
-            # Tính mean AUC từ các giá trị hợp lệ
-            current_mean_auc = np.mean(per_class_aucs) if per_class_aucs else 0.0
-
-            # Cập nhật thanh tiến trình
-            if hasattr(tta_model, "mem"):
-                tbar.set_postfix(m_auc=f"{current_mean_auc:.3f}", bank=tta_model.mem.get_occupancy())
-            else:
-                tbar.set_postfix(m_auc=f"{current_mean_auc:.3f}")
-
+        tta_model.model_ema.cuda()
     
-    # Tính toán kết quả cuối cùng
-    processor.calculate()
+    # --- Logic điều khiển chế độ thích ứng ---
+    adaptation_mode = cfg.DATASET.ADAPTATION_MODE
 
-    logger.info(f"All Results\n{processor.info()}")
-    print(f"RoTTa Results\n{processor.info()}")
+    if adaptation_mode == 'corruption':
+        # --- Chạy chế độ ĐA-NHIỄU ---
+        logger.info("Running in 'corruption' adaptation mode.")
+        
+        # Lấy danh sách nhiễu và Dataloader cho domain cơ sở
+        corruptions_list = cfg.DATASET.TEST_CORRUPTIONS if cfg.DATASET.TEST_CORRUPTIONS else ['none']
+        severity = cfg.DATASET.SEVERITY
+        corruption_idx = 0
+        loader, processor = build_loader_multilabel(cfg)
+
+        tbar = tqdm(loader, desc="Adapting on Corruptions")
+        for batch_id, data_package in enumerate(tbar):
+            if not data_package['image'].numel(): continue
+
+            clean_images, labels = data_package["image"], data_package['label']
+
+            clean_images, labels = clean_images.cuda(), labels.cuda()
+            current_corruption = corruptions_list[corruption_idx]
+            
+            # Áp dụng nhiễu
+            data_to_adapt = apply_corruption(clean_images, current_corruption, severity)
+            data_to_adapt = data_to_adapt.cuda()
+            
+            # Thực hiện TTA
+            logits = tta_model(data_to_adapt)
+            
+            # Xử lý kết quả (giữ nguyên)
+            probabilities = torch.sigmoid(logits)
+            domain_info = [current_corruption] * data_to_adapt.size(0)
+            processor.process(probabilities, labels, domain_info)
+            
+            if batch_id > 0 and batch_id % 10 == 0:
+                # Tính AUC tạm thời trên dữ liệu đã thu thập
+                temp_labels = np.concatenate(processor.all_labels, axis=0)
+                temp_preds = np.concatenate(processor.all_predictions, axis=0)
+                valid_aucs = [roc_auc_score(temp_labels[:, i], temp_preds[:, i]) 
+                              for i in range(temp_labels.shape[1]) 
+                              if len(np.unique(temp_labels[:, i])) > 1]
+                current_mean_auc = np.mean(valid_aucs) if valid_aucs else 0.0
+
+                if hasattr(tta_model, "mem"):
+                    tbar.set_postfix(m_auc=f"{current_mean_auc:.3f}", bank=tta_model.mem.get_occupancy(), severity={severity}, current_corruption={current_corruption})
+                else:
+                    tbar.set_postfix(m_auc=f"{current_mean_auc:.3f}")
+
+            corruption_idx = (corruption_idx + 1) % len(corruptions_list)
+
+    elif adaptation_mode == 'domain':
+        # --- Chạy chế độ ĐA-DOMAIN ---
+        logger.info("Running in 'domain' adaptation mode.")
+        
+        # Lặp qua từng domain được định nghĩa trong config
+        test_domains = cfg.DATASET.TEST_DOMAINS
+        
+        # Dùng một processor duy nhất để tổng hợp kết quả qua tất cả các domain
+        processor = AUCProcessor(num_classes=len(cfg.DATASET.LABELS_LIST))
+
+        for domain_name in test_domains:
+            logger.info(f"--- Starting adaptation on domain: {domain_name} ---")
+            
+            # Tạo một config tạm thời để build_loader chỉ cho domain hiện tại
+            domain_cfg = cfg.clone()
+            # Đặt domain hiện tại làm BASE_DOMAIN để loader có thể đọc
+            domain_cfg.defrost()
+            domain_cfg.DATASET.BASE_DOMAIN.PATH = getattr(cfg.DATASET, f"{domain_name.upper()}_PATH")
+            domain_cfg.DATASET.BASE_DOMAIN.CSV = getattr(cfg.DATASET, f"{domain_name.upper()}_CSV")
+            domain_cfg.DATASET.BASE_DOMAIN.IMAGE_DIR = getattr(cfg.DATASET, f"{domain_name.upper()}_IMAGE_DIR")
+            domain_cfg.freeze()
+
+            # Build loader chỉ cho domain này
+            loader, _ = build_loader_multilabel(domain_cfg)
+
+            tbar = tqdm(loader, desc=f"Adapting on {domain_name}")
+            for batch_id, data_package in enumerate(tbar):
+                if not data_package['image'].numel(): continue
+                
+                # Dữ liệu đã là của domain này, không cần áp dụng thêm gì
+                data_to_adapt, labels = data_package["image"].cuda(), data_package['label'].cuda()
+                
+                # Thực hiện TTA
+                logits = tta_model(data_to_adapt)
+
+                # Xử lý kết quả
+                probabilities = torch.sigmoid(logits)
+                domain_info = [domain_name] * data_to_adapt.size(0)
+                processor.process(probabilities, labels, domain_info)
+                
+                if batch_id > 0 and batch_id % 10 == 0:
+                    # Tính AUC tạm thời trên TOÀN BỘ dữ liệu đã thu thập (bao gồm cả các domain trước)
+                    temp_labels = np.concatenate(processor.all_labels, axis=0)
+                    temp_preds = np.concatenate(processor.all_predictions, axis=0)
+                    valid_aucs = [roc_auc_score(temp_labels[:, i], temp_preds[:, i]) 
+                                  for i in range(temp_labels.shape[1]) 
+                                  if len(np.unique(temp_labels[:, i])) > 1]
+                    current_mean_auc = np.mean(valid_aucs) if valid_aucs else 0.0
+
+                    if hasattr(tta_model, "mem"):
+                        tbar.set_postfix(m_auc=f"{current_mean_auc:.3f}", bank=tta_model.mem.get_occupancy())
+                    else:
+                        tbar.set_postfix(m_auc=f"{current_mean_auc:.3f}")
+            
+            # Quan trọng: Không reset model giữa các domain để mô phỏng continual adaptation
+    
+    else:
+        raise ValueError(f"Unknown ADAPTATION_MODE: {adaptation_mode}")
+
+    # --- Tính toán và in kết quả cuối cùng (chung cho cả hai chế độ) ---
+    logger.info(f"--- Final Results for mode '{adaptation_mode}' ---\n{processor.info()}")
+    print(f"--- Final Results for mode '{adaptation_mode}' ---\n{processor.info()}")
 
 def main():
     # Phần main() để parse config 
