@@ -48,15 +48,14 @@ def testTimeAdaptationMultiLabel(cfg):
         corruption_idx = 0
         loader, processor = build_loader_multilabel(cfg)
 
-        tbar = tqdm(loader, desc="Adapting on Corruptions")
+        tbar = tqdm(loader, desc="Adapt on Corruptions")
         for batch_id, data_package in enumerate(tbar):
             if not data_package['image'].numel(): continue
 
             clean_images, labels = data_package["image"], data_package['label']
 
             clean_images, labels = clean_images.cuda(), labels.cuda()
-            current_corruption = corruptions_list[corruption_idx]
-            
+            current_corruption = corruptions_list[corruption_idx]            
             # Áp dụng nhiễu
             data_to_adapt = apply_corruption(clean_images, current_corruption, severity)
             data_to_adapt = data_to_adapt.cuda()
@@ -79,7 +78,7 @@ def testTimeAdaptationMultiLabel(cfg):
                 current_mean_auc = np.mean(valid_aucs) if valid_aucs else 0.0
 
                 if hasattr(tta_model, "mem"):
-                    tbar.set_postfix(m_auc=f"{current_mean_auc:.3f}", bank=tta_model.mem.get_occupancy(), severity={severity}, current_corruption={current_corruption})
+                    tbar.set_postfix(m_auc=f"{current_mean_auc:.3f}", bank=tta_model.mem.get_occupancy(), severity={severity})
                 else:
                     tbar.set_postfix(m_auc=f"{current_mean_auc:.3f}")
 
@@ -110,7 +109,7 @@ def testTimeAdaptationMultiLabel(cfg):
             # Build loader chỉ cho domain này
             loader, _ = build_loader_multilabel(domain_cfg)
 
-            tbar = tqdm(loader, desc=f"Adapting on {domain_name}")
+            tbar = tqdm(loader, desc=f"Adapt on {domain_name}")
             for batch_id, data_package in enumerate(tbar):
                 if not data_package['image'].numel(): continue
                 

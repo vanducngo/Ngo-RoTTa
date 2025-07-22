@@ -109,8 +109,11 @@ if __name__ == "__main__":
     # input_file = '/home/ngo/Working/Data/MixData/vinbigdata_structured/validate.csv'
     # processingSingleFile(input_file)
 
-    input_file = '/home/ngoto/Working/Data/CheXpert-v1.0-small/train_final.csv'
-    processingSingleFile(input_file)
+    # input_file = '/home/ngoto/Working/Data/CheXpert-v1.0-small/train_final.csv'
+    # processingSingleFile(input_file)
 
-    input_file = '/home/ngoto/Working/Data/CheXpert-v1.0-small/valid_final.csv'
+    # input_file = '/home/ngoto/Working/Data/CheXpert-v1.0-small/valid_final.csv'
+    # processingSingleFile(input_file)
+
+    input_file = '/home/ngoto/Working/Data/MixData/PadChestPruning/refined_padchest_labels.csv'
     processingSingleFile(input_file)

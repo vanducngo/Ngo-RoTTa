@@ -42,7 +42,7 @@ MODEL:
 
 DATASET:
   NAME: 'CXR'
-  TEST_DOMAINS: ['padchest'] # Các domain chạy TTA ['vindr', 'nih14', 'padchest']
+  TEST_DOMAINS: ['nih14'] # Các domain chạy TTA ['vindr', 'nih14', 'padchest']
   LABELS_LIST: ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
 
   # VINDR_PATH: "/Users/admin/Working/Data/MixData/vinbigdata_structured"
@@ -55,12 +55,12 @@ DATASET:
   NIH14_CSV: "validate_reordered.csv" # "validate_reordered.csv"
   NIH14_IMAGE_DIR: "images"
 
-  PADCHEST_PATH: "/Users/admin/Working/Data/MixData/PadChestPruning"
+  # PADCHEST_PATH: "/Users/admin/Working/Data/MixData/PadChestPruning"
   # PADCHEST_CSV: "validate.csv"
   # PADCHEST_IMAGE_DIR: "images"
-  # PADCHEST_PATH: "/home/ngo/Working/Data/MixData/PadChestPruning"
-  PADCHEST_CSV: "validate_filtered.csv"
-  PADCHEST_IMAGE_DIR: "images"
+  PADCHEST_PATH: "/home/ngoto/Working/Data/MixData/PadChestPruning"
+  PADCHEST_CSV: "refined_padchest_labels_reordered.csv"
+  PADCHEST_IMAGE_DIR: "images-224"
   
   CHEXPERT_PATH: '/Users/admin/Working/Data/MixData/nih_14_structured'
   CHEXPERT_CSV: 'validate.csv'
@@ -81,11 +81,11 @@ DATASET:
   TEST_CORRUPTIONS:
       # - 'motion_blur'
       - 'gaussian_noise'
-      # - 'shot_noise'
-      # - 'contrast'
+      - 'shot_noise'
+      - 'contrast'
       # - 'pixelate'
       # - 'jpeg_compression'
-      # - 'brightness'
+      - 'brightness'
       # - 'gaussian_blur'
 
-  SEVERITY: 1 # Mức độ nhiễu (0-5)
+  SEVERITY: 0.1 # Mức độ nhiễu (0-5)

@@ -139,7 +139,7 @@ _C.DATASET.BASE_DOMAIN.IMAGE_DIR = ""
 # Danh sách các loại nhiễu sẽ được áp dụng theo thứ tự
 _C.DATASET.TEST_CORRUPTIONS = []
 # Mức độ nhiễu (1-5)
-_C.DATASET.SEVERITY = 3
+_C.DATASET.SEVERITY = 0.2
 
 if 'MODEL' not in _C:
     _C.MODEL = CN()

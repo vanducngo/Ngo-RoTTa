@@ -6,7 +6,7 @@ df = pd.read_csv(CSV_PATH)
 print(f"Total rows loaded: {len(df)}")
 
 # Define condition columns (excluding 'image_id' and the last column)
-condition_columns = ['No Finding', 'Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
+condition_columns = ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
 
 # Calculate the sum of each condition (number of positive cases)
 label_distribution = df[condition_columns].sum()
