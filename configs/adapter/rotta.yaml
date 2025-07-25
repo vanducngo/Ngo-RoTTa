@@ -79,13 +79,23 @@ DATASET:
     IMAGE_DIR: "images"
 
   TEST_CORRUPTIONS:
-      # - 'motion_blur'
-      - 'gaussian_noise'
-      - 'shot_noise'
-      - 'contrast'
-      # - 'pixelate'
-      # - 'jpeg_compression'
-      - 'brightness'
-      # - 'gaussian_blur'
+    # Các hàm thay doi tren tensor
+    - gaussian_noise
+    - shot_noise
+    - contrast
+    - brightness
+    - impulse_noise
+    - elastic_transform
+    
+    # # Các hàm cần PIL
+    # - motion_blur
+    # - zoom_blur
+    # - glass_blur
+    # - defocus_blur
+    # - pixelate
+    # - jpeg_compression
+    # - frost
+    # - snow
+    # - fog
 
-  SEVERITY: 0.1 # Mức độ nhiễu (0-5)
+  SEVERITY: 0.01 # Mức độ nhiễu (0-5)

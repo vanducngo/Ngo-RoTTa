@@ -4,8 +4,18 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from PIL import Image
 import os
+import torchvision.transforms.functional as TF
 
 from constants import COMMON_FINAL_LABEL_SET, TRAINING_LABEL_SET
+
+class QuantizationAugmentation:
+    """
+    Một phép transform mô phỏng lỗi lượng tử hóa
+    bằng cách chuyển đổi Tensor -> PIL -> Tensor.
+    """
+    def __call__(self, tensor):
+        pil_img = TF.to_pil_image(tensor)
+        return TF.to_tensor(pil_img)
 
 class CheXpertFullLabelDataset(Dataset):
     def __init__(self, cfg, mode='train', transform=None):
@@ -153,6 +163,7 @@ def get_chexpert_full_label_loaders(cfg):
         # Thêm các phép biến đổi màu sắc mạnh hơn
         transforms.ColorJitter(brightness=0.3, contrast=0.3), # Tăng độ sáng/tương phản từ 0.1 lên 0.3
         transforms.ToTensor(),
+        QuantizationAugmentation(), # <-- THÊM VÀO ĐÂY
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
     

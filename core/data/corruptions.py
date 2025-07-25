@@ -2,7 +2,9 @@ import torch
 import numpy as np
 from PIL import Image, ImageFilter
 import torchvision.transforms.functional as TF
+from scipy.ndimage import gaussian_filter
 from io import BytesIO
+from scipy.ndimage import map_coordinates
 
 # ==============================================================================
 # Hàm Helper cho Nội suy tuyến tính
@@ -63,6 +65,48 @@ def brightness(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
 
     return torch.clamp(image_tensor + scale, 0, 1)
 
+def impulse_noise(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
+    """Thêm nhiễu Salt & Pepper vào ảnh tensor."""
+    c_levels = [0, 0.01, 0.02, 0.03, 0.04, 0.05]
+    amount = _linear_interpolate(severity, c_levels)
+    if amount == 0: return image_tensor
+
+    # Tạo mặt nạ salt
+    salt_mask = torch.rand_like(image_tensor) < (amount / 2.0)
+    # Tạo mặt nạ pepper
+    pepper_mask = torch.rand_like(image_tensor) < (amount / 2.0)
+    
+    out = image_tensor.clone()
+    out[salt_mask] = 1.0
+    out[pepper_mask] = 0.0
+    return out
+
+def elastic_transform(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
+    """Áp dụng biến dạng đàn hồi."""
+    c_alpha = [0, 244, 16, 24, 32, 40] 
+    c_sigma = [0, 4, 5, 6, 7, 8]
+    alpha = _linear_interpolate(severity, c_alpha)
+    sigma = _linear_interpolate(severity, c_sigma)
+    if alpha == 0: return image_tensor
+
+    # Chuyển sang numpy để xử lý, vì scipy hoạt động trên numpy
+    # Giữ nguyên kiểu float, không chuyển sang uint8
+    image_np = image_tensor.permute(1, 2, 0).numpy()
+    shape = image_np.shape
+    
+    # Tạo trường dịch chuyển ngẫu nhiên
+    dx = gaussian_filter( (np.random.rand(*shape) * 2 - 1), sigma) * alpha
+    dy = gaussian_filter( (np.random.rand(*shape) * 2 - 1), sigma) * alpha
+    dz = np.zeros_like(dx) # Không dịch chuyển kênh màu
+
+    x, y, z = np.meshgrid(np.arange(shape[1]), np.arange(shape[0]), np.arange(shape[2]))
+    indices = np.reshape(y+dy, (-1, 1)), np.reshape(x+dx, (-1, 1)), np.reshape(z+dz, (-1, 1))
+
+    # Áp dụng biến dạng
+    distorted_np = map_coordinates(image_np, indices, order=1, mode='reflect').reshape(shape)
+    
+    return torch.from_numpy(distorted_np).permute(2, 0, 1)
+
 # --- Các hàm yêu cầu chuyển đổi sang PIL ---
 
 def _tensor_to_pil_to_tensor(corruption_func):
@@ -121,19 +165,143 @@ def gaussian_blur(image: Image.Image, severity: float = 1) -> Image.Image:
         
     return image.filter(ImageFilter.GaussianBlur(radius=radius))
     
+@_tensor_to_pil_to_tensor
+def zoom_blur(image: Image.Image, severity: float = 1) -> Image.Image:
+    """Làm mờ do zoom."""
+    c_levels = [1.0, 1.10, 1.15, 1.20, 1.25, 1.30]
+    zoom_factor = _linear_interpolate(severity, c_levels)
+    if zoom_factor == 1.0: return image
+
+    w, h = image.size
+    out = image.copy()
+    
+    for i in range(3): # Zoom 3 lần và lấy trung bình
+        zoom_i = 1.0 + (zoom_factor - 1.0) * (i+1)/4.0
+        w_i, h_i = int(w/zoom_i), int(h/zoom_i)
+        
+        img_zoom = image.resize((w_i, h_i), Image.BICUBIC)
+        img_crop = img_zoom.crop((
+            (w_i-w)//2, (h_i-h)//2,
+            (w_i-w)//2 + w, (h_i-h)//2 + h
+        ))
+        
+        if i == 0:
+            out = img_crop
+        else:
+            out = Image.blend(out, img_crop, 1.0/(i+1))
+            
+    return out
+
+@_tensor_to_pil_to_tensor
+def glass_blur(image: Image.Image, severity: float = 1) -> Image.Image:
+    """Hiệu ứng nhìn qua kính mờ."""
+    c_sigma = [0, 0.6, 0.7, 0.8, 0.9, 1.0]
+    c_max_delta = [0, 1, 1, 2, 2, 3]
+    c_iterations = [1, 1, 1, 1, 2, 2]
+    
+    sigma = _linear_interpolate(severity, c_sigma)
+    max_delta = int(_linear_interpolate(severity, c_max_delta))
+    iterations = int(_linear_interpolate(severity, c_iterations))
+    if sigma == 0: return image
+        
+    image_np = np.array(image, dtype=np.float32) / 255.0
+    
+    for i in range(iterations):
+        # Chọn các vị trí ngẫu nhiên để dịch chuyển pixel
+        dx = np.random.randint(-max_delta, max_delta, size=image_np.shape[:2])
+        dy = np.random.randint(-max_delta, max_delta, size=image_np.shape[:2])
+        x = np.arange(image_np.shape[1])
+        y = np.arange(image_np.shape[0])
+        xv, yv = np.meshgrid(x, y)
+        
+        # Áp dụng dịch chuyển
+        image_np = image_np[np.clip(yv + dy, 0, image_np.shape[0]-1),
+                          np.clip(xv + dx, 0, image_np.shape[1]-1)]
+        
+        # Làm mờ một chút
+        image_np = gaussian_filter(image_np, sigma=sigma)
+        
+    return Image.fromarray((np.clip(image_np, 0, 1) * 255).astype(np.uint8))
+
+@_tensor_to_pil_to_tensor
+def defocus_blur(image: Image.Image, severity: float = 1) -> Image.Image:
+    """Làm mờ do mất nét."""
+    c_radius = [0, 0.5, 1, 1.5, 2, 2.5]
+    radius = _linear_interpolate(severity, c_radius)
+    if radius == 0: return image
+    return image.filter(ImageFilter.BoxBlur(radius=int(radius)))
+
+# --- Các hàm phức tạp, thường phải dùng PIL để blend ảnh ---
+# Các hàm này cần có các ảnh pattern (frost.png, snow.png)
+# Tôi sẽ mô phỏng logic mà không cần file ngoài
+
+@_tensor_to_pil_to_tensor
+def frost(image: Image.Image, severity: float = 1) -> Image.Image:
+    """Hiệu ứng đóng băng."""
+    # Logic: Blend ảnh gốc với một ảnh pattern "băng"
+    # Ở đây ta tạo pattern băng một cách đơn giản
+    w, h = image.size
+    frost_pattern = Image.effect_noise((w, h), 128).convert("L").filter(ImageFilter.FIND_EDGES)
+    frost_pattern = frost_pattern.convert("RGB")
+    
+    c_levels = [0, 0.1, 0.15, 0.2, 0.25, 0.3]
+    alpha = _linear_interpolate(severity, c_levels)
+    if alpha == 0: return image
+        
+    return Image.blend(image, frost_pattern, alpha=alpha)
+
+@_tensor_to_pil_to_tensor
+def snow(image: Image.Image, severity: float = 1) -> Image.Image:
+    """Hiệu ứng tuyết rơi."""
+    # Logic: Blend ảnh gốc với một ảnh pattern "tuyết"
+    w, h = image.size
+    snow_pattern = (np.random.rand(h, w) * 255).astype(np.uint8)
+    snow_pattern[snow_pattern < 250] = 0 # Tạo các đốm trắng
+    snow_pattern = Image.fromarray(snow_pattern).convert("RGB")
+    snow_pattern = snow_pattern.filter(ImageFilter.GaussianBlur(radius=1.5))
+    
+    c_levels = [0, 0.1, 0.15, 0.2, 0.25, 0.3]
+    alpha = _linear_interpolate(severity, c_levels)
+    if alpha == 0: return image
+
+    return Image.blend(image, snow_pattern, alpha=alpha)
+
+@_tensor_to_pil_to_tensor
+def fog(image: Image.Image, severity: float = 1) -> Image.Image:
+    """Hiệu ứng sương mù."""
+    w, h = image.size
+    # Tạo một lớp sương mù bằng nhiễu Perlin/Simplex (hoặc nhiễu Gaussian mờ)
+    fog_pattern_np = gaussian_filter(np.random.randn(h, w) * 0.5, sigma=10)
+    fog_pattern_np = (fog_pattern_np - np.min(fog_pattern_np)) / (np.max(fog_pattern_np) - np.min(fog_pattern_np))
+    fog_pattern = Image.fromarray((fog_pattern_np*255).astype(np.uint8)).convert("RGB")
+    
+    c_levels = [0, 0.2, 0.3, 0.4, 0.5, 0.6]
+    alpha = _linear_interpolate(severity, c_levels)
+    if alpha == 0: return image
+        
+    return Image.blend(image, fog_pattern, alpha=alpha)
+
 # ==============================================================================
 # Dictionary và Hàm điều phối chính
 # ==============================================================================
-
 CORRUPTION_FUNCS = {
     'gaussian_noise': gaussian_noise,
     'shot_noise': shot_noise,
     'contrast': contrast,
+    'brightness': brightness,
+    'impulse_noise': impulse_noise,
+    'elastic_transform': elastic_transform,
+    
+    # Các hàm cần PIL
     'motion_blur': motion_blur,
+    'zoom_blur': zoom_blur,
+    'glass_blur': glass_blur,
+    'defocus_blur': defocus_blur,
     'pixelate': pixelate,
     'jpeg_compression': jpeg_compression,
-    'brightness': brightness,
-    'gaussian_blur': gaussian_blur
+    'frost': frost,
+    'snow': snow,
+    'fog': fog,
 }
 
 def apply_corruption(image_tensor: torch.Tensor, corruption_name: str, severity: float = 1) -> torch.Tensor:
