@@ -2,18 +2,18 @@ import torch
 import numpy as np
 from PIL import Image, ImageFilter
 import torchvision.transforms.functional as TF
-from scipy.ndimage import gaussian_filter
+import torch.nn.functional as F
+from scipy.ndimage import gaussian_filter as scipy_gaussian_filter
 from io import BytesIO
 from scipy.ndimage import map_coordinates
 
 # ==============================================================================
-# Hàm Helper cho Nội suy tuyến tính
+# Hàm Helper
 # ==============================================================================
 
 def _linear_interpolate(value: float, points: list):
     """
-    Nội suy tuyến tính.
-    `points` là một danh sách các giá trị tại các điểm nguyên 0, 1, 2, ...
+    Nội suy tuyến tính các giá trị dựa trên các điểm nguyên 0, 1, 2, ...
     """
     lower_pt = int(np.floor(value))
     upper_pt = int(np.ceil(value))
@@ -24,284 +24,275 @@ def _linear_interpolate(value: float, points: list):
     weight = value - lower_pt
     return (1 - weight) * points[lower_pt] + weight * points[upper_pt]
 
-# ==============================================================================
-# Các hàm tạo nhiễu - Đa số hoạt động trên TENSOR
-# ==============================================================================
+def _apply_gaussian_blur(image_tensor: torch.Tensor, sigma: float) -> torch.Tensor:
+    """
+    Hàm helper nội bộ để áp dụng Gaussian blur với sigma cụ thể.
+    """
+    if sigma < 0.1: # Ngưỡng nhỏ để tránh tính toán không cần thiết
+        return image_tensor
+        
+    channels = image_tensor.shape[0]
+    kernel_size = int(6 * sigma + 1)
+    if kernel_size % 2 == 0: kernel_size += 1
+    
+    x = torch.arange(-kernel_size // 2 + 1., kernel_size // 2 + 1., device=image_tensor.device)
+    kernel_1d = torch.exp(-x**2 / (2 * sigma**2))
+    kernel_1d = kernel_1d / kernel_1d.sum()
+    
+    kernel_2d = kernel_1d.view(1, 1, 1, kernel_size) * kernel_1d.view(1, 1, kernel_size, 1)
+    kernel = kernel_2d.repeat(channels, 1, 1, 1)
+    
+    return F.conv2d(image_tensor.unsqueeze(0), kernel, padding=kernel_size // 2, groups=channels).squeeze(0)
 
-# --- Các hàm hoạt động trực tiếp trên Tensor ---
+# ==============================================================================
+# Các hàm tạo nhiễu (phiên bản Tensor-native)
+# ==============================================================================
 
 def gaussian_noise(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
-    """Thêm nhiễu Gaussian vào ảnh tensor [0, 1]."""
-    c_levels = [0, 0.04, 0.06, 0.08, 0.09, 0.10] # Thêm 0 cho severity=0
+    c_levels = [0, 0.04, 0.06, 0.08, 0.09, 0.10]
     scale = _linear_interpolate(severity, c_levels)
     if scale == 0: return image_tensor
-    
     noise = torch.randn_like(image_tensor) * scale
     return torch.clamp(image_tensor + noise, 0, 1)
 
+# def shot_noise(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
+#     c_levels = [float('inf'), 500, 250, 100, 75, 50]
+#     scale = _linear_interpolate(severity, c_levels)
+#     if scale == float('inf'): return image_tensor
+#     return torch.clamp(torch.poisson(image_tensor * scale) / scale, 0, 1)
 def shot_noise(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
-    """Thêm nhiễu Shot (Poisson) vào ảnh tensor [0, 1]."""
-    c_levels = [float('inf'), 500, 250, 100, 75, 50] # inf cho severity=0 (ko nhiễu)
+    """
+    Thêm nhiễu Shot (Poisson) vào ảnh tensor đã được chuẩn hóa.
+    Nó sẽ tạm thời un-normalize, áp dụng nhiễu, rồi re-normalize.
+    """
+    mean=[0.485, 0.456, 0.406]
+    std=[0.229, 0.224, 0.225]
+    c_levels = [float('inf'), 500, 250, 100, 75, 50]
     scale = _linear_interpolate(severity, c_levels)
-    if scale == float('inf'): return image_tensor
+    if scale == float('inf'): 
+        return image_tensor
 
-    # Poisson noise phụ thuộc vào giá trị pixel, cần lặp
-    return torch.clamp(torch.poisson(image_tensor * scale) / scale, 0, 1)
+    # Đảm bảo các tensor mean/std ở cùng device với ảnh
+    device = image_tensor.device
+    mean = torch.tensor([0.485, 0.456, 0.406], device=device).view(3, 1, 1)
+    std = torch.tensor([0.229, 0.224, 0.225], device=device).view(3, 1, 1)
+
+    # --- BƯỚC 1: UN-NORMALIZE ---
+    # Chuyển dữ liệu từ miền đã chuẩn hóa về lại miền [0, 1]
+    image_unnormalized = image_tensor * std + mean
+    
+    # Kẹp lại để đảm bảo không có giá trị nào < 0 do sai số float
+    image_unnormalized = torch.clamp(image_unnormalized, 0, 1)
+
+    # --- BƯỚC 2: ÁP DỤNG NHIỄU TRÊN DỮ LIỆU [0, 1] ---
+    # Bây giờ đầu vào của torch.poisson sẽ luôn không âm
+    corrupted_unnormalized = torch.clamp(torch.poisson(image_unnormalized * scale) / scale, 0, 1)
+
+    # --- BƯỚC 3: RE-NORMALIZE ---
+    # Chuẩn hóa lại dữ liệu nhiễu để trả về
+    corrupted_normalized = (corrupted_unnormalized - mean) / std
+
+    return corrupted_normalized
 
 def contrast(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
-    """Thay đổi độ tương phản của ảnh tensor [0, 1]."""
-    c_levels = [1.0, 0.75, 0.5, 0.4, 0.3, 0.2] # 1.0 cho severity=0
+    c_levels = [1.0, 0.75, 0.5, 0.4, 0.3, 0.2]
     scale = _linear_interpolate(severity, c_levels)
     if scale == 1.0: return image_tensor
-
     mean = torch.mean(image_tensor, dim=[-2, -1], keepdim=True)
     return torch.clamp((image_tensor - mean) * scale + mean, 0, 1)
 
 def brightness(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
-    """Thay đổi độ sáng của ảnh tensor [0, 1]."""
-    c_levels = [0, 0.1, 0.2, 0.3, 0.4, 0.5] # 0 cho severity=0
+    c_levels = [0, 0.1, 0.2, 0.3, 0.4, 0.5]
     scale = _linear_interpolate(severity, c_levels)
     if scale == 0: return image_tensor
-
     return torch.clamp(image_tensor + scale, 0, 1)
 
 def impulse_noise(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
-    """Thêm nhiễu Salt & Pepper vào ảnh tensor."""
     c_levels = [0, 0.01, 0.02, 0.03, 0.04, 0.05]
     amount = _linear_interpolate(severity, c_levels)
     if amount == 0: return image_tensor
-
-    # Tạo mặt nạ salt
     salt_mask = torch.rand_like(image_tensor) < (amount / 2.0)
-    # Tạo mặt nạ pepper
     pepper_mask = torch.rand_like(image_tensor) < (amount / 2.0)
-    
     out = image_tensor.clone()
     out[salt_mask] = 1.0
     out[pepper_mask] = 0.0
     return out
 
 def elastic_transform(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
-    """Áp dụng biến dạng đàn hồi."""
     c_alpha = [0, 244, 16, 24, 32, 40] 
     c_sigma = [0, 4, 5, 6, 7, 8]
     alpha = _linear_interpolate(severity, c_alpha)
     sigma = _linear_interpolate(severity, c_sigma)
     if alpha == 0: return image_tensor
-
-    # Chuyển sang numpy để xử lý, vì scipy hoạt động trên numpy
-    # Giữ nguyên kiểu float, không chuyển sang uint8
+    
     image_np = image_tensor.permute(1, 2, 0).numpy()
     shape = image_np.shape
     
-    # Tạo trường dịch chuyển ngẫu nhiên
-    dx = gaussian_filter( (np.random.rand(*shape) * 2 - 1), sigma) * alpha
-    dy = gaussian_filter( (np.random.rand(*shape) * 2 - 1), sigma) * alpha
-    dz = np.zeros_like(dx) # Không dịch chuyển kênh màu
+    dx = scipy_gaussian_filter((np.random.rand(*shape) * 2 - 1), sigma) * alpha
+    dy = scipy_gaussian_filter((np.random.rand(*shape) * 2 - 1), sigma) * alpha
+    dz = np.zeros_like(dx)
 
     x, y, z = np.meshgrid(np.arange(shape[1]), np.arange(shape[0]), np.arange(shape[2]))
     indices = np.reshape(y+dy, (-1, 1)), np.reshape(x+dx, (-1, 1)), np.reshape(z+dz, (-1, 1))
-
-    # Áp dụng biến dạng
-    distorted_np = map_coordinates(image_np, indices, order=1, mode='reflect').reshape(shape)
     
+    distorted_np = map_coordinates(image_np, indices, order=1, mode='reflect').reshape(shape)
     return torch.from_numpy(distorted_np).permute(2, 0, 1)
 
-# --- Các hàm yêu cầu chuyển đổi sang PIL ---
-
-def _tensor_to_pil_to_tensor(corruption_func):
-    """Decorator để xử lý chuyển đổi qua lại cho các hàm cần PIL.Image."""
-    def wrapper(image_tensor: torch.Tensor, severity: float = 1):
-        if image_tensor.dim() != 3:
-            raise TypeError("This function only accepts single image tensors (C, H, W)")
-        
-        pil_img = TF.to_pil_image(image_tensor)
-        corrupted_pil = corruption_func(pil_img, severity)
-        return TF.to_tensor(corrupted_pil)
-    return wrapper
-
-@_tensor_to_pil_to_tensor
-def motion_blur(image: Image.Image, severity: float = 1) -> Image.Image:
-    """Làm mờ do chuyển động."""
-    k_levels = [1, 7, 9, 13, 15, 21]
-    interpolated_k = _linear_interpolate(severity, k_levels)
-    kernel_size = int(round(interpolated_k))
+def motion_blur(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
+    c_levels = [1, 7, 9, 13, 15, 21]
+    kernel_size = int(round(_linear_interpolate(severity, c_levels)))
     if kernel_size % 2 == 0: kernel_size += 1
-    if kernel_size <= 1: return image
-        
-    kernel = np.zeros((kernel_size, kernel_size), dtype=np.float32)
-    kernel[int((kernel_size - 1) / 2), :] = 1.0
-    kernel = kernel / np.sum(kernel)
-    return image.filter(ImageFilter.Kernel((kernel_size, kernel_size), kernel.flatten().tolist()))
+    if kernel_size <= 1: return image_tensor
 
-@_tensor_to_pil_to_tensor
-def pixelate(image: Image.Image, severity: float = 1) -> Image.Image:
-    """Làm vỡ ảnh (pixelate)."""
-    c_levels = [1.0, 0.88, 0.75, 0.6, 0.5, 0.4] # 1.0 cho severity=0
+    channels = image_tensor.shape[0]
+    kernel = torch.zeros(channels, 1, kernel_size, kernel_size, device=image_tensor.device)
+    kernel[:, 0, kernel_size // 2, :] = 1.0 / kernel_size
+    return F.conv2d(image_tensor.unsqueeze(0), kernel, padding=(kernel_size // 2, kernel_size // 2), groups=channels).squeeze(0)
+
+def pixelate(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
+    c_levels = [1.0, 0.88, 0.75, 0.6, 0.5, 0.4]
     scale = _linear_interpolate(severity, c_levels)
-    if scale == 1.0: return image
+    if scale == 1.0: return image_tensor
 
-    w, h = image.size
-    image_small = image.resize((int(w * scale), int(h * scale)), Image.BOX)
-    return image_small.resize(image.size, Image.BOX)
+    _, h, w = image_tensor.shape
+    small_size = (int(h * scale), int(w * scale))
+    small = F.interpolate(image_tensor.unsqueeze(0), size=small_size, mode='bilinear', align_corners=False).squeeze(0)
+    return F.interpolate(small.unsqueeze(0), size=(h, w), mode='nearest').squeeze(0)
 
-@_tensor_to_pil_to_tensor
-def jpeg_compression(image: Image.Image, severity: float = 1) -> Image.Image:
-    """Nén ảnh theo chuẩn JPEG."""
-    c_levels = [100, 40, 30, 20, 15, 10] # 100 cho severity=0
-    quality = int(_linear_interpolate(severity, c_levels))
-    if quality == 100: return image
+def jpeg_compression(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
+    c_levels = [256, 64, 32, 16, 8, 4]
+    levels = int(_linear_interpolate(severity, c_levels))
+    if levels >= 256: return image_tensor
+    return torch.round(image_tensor * (levels - 1)) / (levels - 1)
 
-    output = BytesIO()
-    image.save(output, 'JPEG', quality=quality)
-    return Image.open(output)
+def gaussian_blur(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
+    c_levels = [0, 0.5, 1, 1.5, 2, 2.5]
+    sigma = _linear_interpolate(severity, c_levels)
+    return _apply_gaussian_blur(image_tensor, sigma)
 
-@_tensor_to_pil_to_tensor
-def gaussian_blur(image: Image.Image, severity: float = 1) -> Image.Image:
-    """Làm mờ Gaussian."""
-    c_levels = [0, 0.5, 1, 1.5, 2, 2.5] # 0 cho severity=0
-    radius = _linear_interpolate(severity, c_levels)
-    if radius == 0: return image
-        
-    return image.filter(ImageFilter.GaussianBlur(radius=radius))
-    
-@_tensor_to_pil_to_tensor
-def zoom_blur(image: Image.Image, severity: float = 1) -> Image.Image:
-    """Làm mờ do zoom."""
+def zoom_blur(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
     c_levels = [1.0, 1.10, 1.15, 1.20, 1.25, 1.30]
     zoom_factor = _linear_interpolate(severity, c_levels)
-    if zoom_factor == 1.0: return image
+    if zoom_factor == 1.0: return image_tensor
 
-    w, h = image.size
-    out = image.copy()
-    
-    for i in range(3): # Zoom 3 lần và lấy trung bình
-        zoom_i = 1.0 + (zoom_factor - 1.0) * (i+1)/4.0
-        w_i, h_i = int(w/zoom_i), int(h/zoom_i)
+    _, h, w = image_tensor.shape
+    out = torch.zeros_like(image_tensor)
+    for i in range(4):
+        zoom_i = 1.0 + (zoom_factor - 1.0) * (i + 1) / 4.0
+        new_h, new_w = int(h / zoom_i), int(w / zoom_i)
         
-        img_zoom = image.resize((w_i, h_i), Image.BICUBIC)
-        img_crop = img_zoom.crop((
-            (w_i-w)//2, (h_i-h)//2,
-            (w_i-w)//2 + w, (h_i-h)//2 + h
-        ))
+        zoomed = F.interpolate(image_tensor.unsqueeze(0), size=(new_h, new_w), mode='bicubic', align_corners=False).squeeze(0)
         
-        if i == 0:
-            out = img_crop
-        else:
-            out = Image.blend(out, img_crop, 1.0/(i+1))
-            
-    return out
+        # Pad to original size before adding
+        pad_h, pad_w = h - new_h, w - new_w
+        top, left = pad_h // 2, pad_w // 2
+        padded = F.pad(zoomed, (left, pad_w - left, top, pad_h - top))
+        out += padded
+        
+    return torch.clamp(out / 4, 0, 1)
 
-@_tensor_to_pil_to_tensor
-def glass_blur(image: Image.Image, severity: float = 1) -> Image.Image:
-    """Hiệu ứng nhìn qua kính mờ."""
+def glass_blur(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
     c_sigma = [0, 0.6, 0.7, 0.8, 0.9, 1.0]
     c_max_delta = [0, 1, 1, 2, 2, 3]
     c_iterations = [1, 1, 1, 1, 2, 2]
-    
     sigma = _linear_interpolate(severity, c_sigma)
-    max_delta = int(_linear_interpolate(severity, c_max_delta))
-    iterations = int(_linear_interpolate(severity, c_iterations))
-    if sigma == 0: return image
-        
-    image_np = np.array(image, dtype=np.float32) / 255.0
-    
-    for i in range(iterations):
-        # Chọn các vị trí ngẫu nhiên để dịch chuyển pixel
-        dx = np.random.randint(-max_delta, max_delta, size=image_np.shape[:2])
-        dy = np.random.randint(-max_delta, max_delta, size=image_np.shape[:2])
-        x = np.arange(image_np.shape[1])
-        y = np.arange(image_np.shape[0])
-        xv, yv = np.meshgrid(x, y)
-        
-        # Áp dụng dịch chuyển
-        image_np = image_np[np.clip(yv + dy, 0, image_np.shape[0]-1),
-                          np.clip(xv + dx, 0, image_np.shape[1]-1)]
-        
-        # Làm mờ một chút
-        image_np = gaussian_filter(image_np, sigma=sigma)
-        
-    return Image.fromarray((np.clip(image_np, 0, 1) * 255).astype(np.uint8))
+    max_delta = int(round(_linear_interpolate(severity, c_max_delta)))
+    iterations = int(round(_linear_interpolate(severity, c_iterations)))
+    if max_delta == 0: return image_tensor
 
-@_tensor_to_pil_to_tensor
-def defocus_blur(image: Image.Image, severity: float = 1) -> Image.Image:
-    """Làm mờ do mất nét."""
+    _, h, w = image_tensor.shape
+    
+    # Grid sample requires 4D input
+    image_batch = image_tensor.unsqueeze(0)
+    
+    for _ in range(iterations):
+        dx = torch.randint(-max_delta, max_delta + 1, (1, h, w, 1), device=image_tensor.device).float()
+        dy = torch.randint(-max_delta, max_delta + 1, (1, h, w, 1), device=image_tensor.device).float()
+        
+        grid_y, grid_x = torch.meshgrid(torch.arange(h, device=image_tensor.device), torch.arange(w, device=image_tensor.device), indexing='ij')
+        
+        grid = torch.stack([grid_x, grid_y], dim=-1).float().unsqueeze(0)
+        grid = grid + torch.cat([dx, dy], dim=-1)
+        
+        # Normalize grid to [-1, 1]
+        grid[:, :, :, 0] = 2.0 * grid[:, :, :, 0] / (w - 1) - 1.0
+        grid[:, :, :, 1] = 2.0 * grid[:, :, :, 1] / (h - 1) - 1.0
+        
+        image_batch = F.grid_sample(image_batch, grid, mode='bilinear', padding_mode='reflection', align_corners=True)
+        image_batch = _apply_gaussian_blur(image_batch.squeeze(0), sigma).unsqueeze(0)
+        
+    return torch.clamp(image_batch.squeeze(0), 0, 1)
+
+
+def defocus_blur(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
     c_radius = [0, 0.5, 1, 1.5, 2, 2.5]
     radius = _linear_interpolate(severity, c_radius)
-    if radius == 0: return image
-    return image.filter(ImageFilter.BoxBlur(radius=int(radius)))
+    if radius < 0.1: return image_tensor
 
-# --- Các hàm phức tạp, thường phải dùng PIL để blend ảnh ---
-# Các hàm này cần có các ảnh pattern (frost.png, snow.png)
-# Tôi sẽ mô phỏng logic mà không cần file ngoài
+    kernel_size = int(2 * radius + 1)
+    if kernel_size % 2 == 0: kernel_size += 1
 
-@_tensor_to_pil_to_tensor
-def frost(image: Image.Image, severity: float = 1) -> Image.Image:
-    """Hiệu ứng đóng băng."""
-    # Logic: Blend ảnh gốc với một ảnh pattern "băng"
-    # Ở đây ta tạo pattern băng một cách đơn giản
-    w, h = image.size
-    frost_pattern = Image.effect_noise((w, h), 128).convert("L").filter(ImageFilter.FIND_EDGES)
-    frost_pattern = frost_pattern.convert("RGB")
-    
+    channels = image_tensor.shape[0]
+    kernel = torch.ones(channels, 1, kernel_size, kernel_size, device=image_tensor.device) / (kernel_size ** 2)
+    return F.conv2d(image_tensor.unsqueeze(0), kernel, padding=kernel_size // 2, groups=channels).squeeze(0)
+
+def frost(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
     c_levels = [0, 0.1, 0.15, 0.2, 0.25, 0.3]
     alpha = _linear_interpolate(severity, c_levels)
-    if alpha == 0: return image
-        
-    return Image.blend(image, frost_pattern, alpha=alpha)
+    if alpha == 0: return image_tensor
 
-@_tensor_to_pil_to_tensor
-def snow(image: Image.Image, severity: float = 1) -> Image.Image:
-    """Hiệu ứng tuyết rơi."""
-    # Logic: Blend ảnh gốc với một ảnh pattern "tuyết"
-    w, h = image.size
-    snow_pattern = (np.random.rand(h, w) * 255).astype(np.uint8)
-    snow_pattern[snow_pattern < 250] = 0 # Tạo các đốm trắng
-    snow_pattern = Image.fromarray(snow_pattern).convert("RGB")
-    snow_pattern = snow_pattern.filter(ImageFilter.GaussianBlur(radius=1.5))
-    
+    _, h, w = image_tensor.shape
+    noise = torch.randn(h, w, device=image_tensor.device)
+    sobel_x = torch.tensor([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], device=image_tensor.device, dtype=torch.float32).view(1, 1, 3, 3)
+    sobel_y = sobel_x.transpose(2, 3)
+    edge_x = F.conv2d(noise.unsqueeze(0).unsqueeze(0), sobel_x, padding=1).squeeze(0).squeeze(0)
+    edge_y = F.conv2d(noise.unsqueeze(0).unsqueeze(0), sobel_y, padding=1).squeeze(0).squeeze(0)
+    frost_pattern = torch.sqrt(edge_x**2 + edge_y**2).unsqueeze(0).repeat(image_tensor.shape[0], 1, 1)
+    frost_pattern = (frost_pattern - frost_pattern.min()) / (frost_pattern.max() - frost_pattern.min())
+    return torch.clamp((1 - alpha) * image_tensor + alpha * frost_pattern, 0, 1)
+
+def snow(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
     c_levels = [0, 0.1, 0.15, 0.2, 0.25, 0.3]
     alpha = _linear_interpolate(severity, c_levels)
-    if alpha == 0: return image
+    if alpha == 0: return image_tensor
 
-    return Image.blend(image, snow_pattern, alpha=alpha)
-
-@_tensor_to_pil_to_tensor
-def fog(image: Image.Image, severity: float = 1) -> Image.Image:
-    """Hiệu ứng sương mù."""
-    w, h = image.size
-    # Tạo một lớp sương mù bằng nhiễu Perlin/Simplex (hoặc nhiễu Gaussian mờ)
-    fog_pattern_np = gaussian_filter(np.random.randn(h, w) * 0.5, sigma=10)
-    fog_pattern_np = (fog_pattern_np - np.min(fog_pattern_np)) / (np.max(fog_pattern_np) - np.min(fog_pattern_np))
-    fog_pattern = Image.fromarray((fog_pattern_np*255).astype(np.uint8)).convert("RGB")
+    snow_pattern = torch.rand_like(image_tensor) * 0.7 # Less intense
+    snow_pattern = (snow_pattern > 0.995).float() # Sparse flakes
+    snow_pattern = _apply_gaussian_blur(snow_pattern, sigma=1.5)
     
+    # Whiten and brighten flakes
+    snow_pattern = (snow_pattern - snow_pattern.min()) / (snow_pattern.max() - snow_pattern.min() + 1e-6)
+    
+    return torch.clamp(image_tensor + snow_pattern * alpha, 0, 1)
+
+
+def fog(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
+    """Phiên bản mới, nhận toàn bộ batch"""
     c_levels = [0, 0.2, 0.3, 0.4, 0.5, 0.6]
     alpha = _linear_interpolate(severity, c_levels)
-    if alpha == 0: return image
-        
-    return Image.blend(image, fog_pattern, alpha=alpha)
+    if alpha == 0: return image_tensor
+    
+    b, c, h, w = image_tensor.shape
+    
+    # Tạo MỘT fog pattern và lặp lại cho cả batch
+    fog_pattern_single = torch.randn(1, h, w, device=image_tensor.device)
+    fog_pattern_single = _apply_gaussian_blur(fog_pattern_single, sigma=10).squeeze(0) # Vẫn có thể giảm sigma
+    fog_pattern_single = (fog_pattern_single - fog_pattern_single.min()) / (fog_pattern_single.max() - fog_pattern_single.min())
+    
+    # Lặp lại pattern này cho tất cả các kênh và các ảnh trong batch
+    fog_pattern_batch = fog_pattern_single.repeat(b, c, 1, 1)
+    
+    return torch.clamp((1 - alpha) * image_tensor + alpha * fog_pattern_batch, 0, 1)
 
 # ==============================================================================
 # Dictionary và Hàm điều phối chính
 # ==============================================================================
 CORRUPTION_FUNCS = {
-    'gaussian_noise': gaussian_noise,
-    'shot_noise': shot_noise,
-    'contrast': contrast,
-    'brightness': brightness,
-    'impulse_noise': impulse_noise,
-    'elastic_transform': elastic_transform,
-    
-    # Các hàm cần PIL
-    'motion_blur': motion_blur,
-    'zoom_blur': zoom_blur,
-    'glass_blur': glass_blur,
-    'defocus_blur': defocus_blur,
-    'pixelate': pixelate,
-    'jpeg_compression': jpeg_compression,
-    'frost': frost,
-    'snow': snow,
-    'fog': fog,
+    'gaussian_noise': gaussian_noise, 'shot_noise': shot_noise, 'impulse_noise': impulse_noise,
+    'defocus_blur': defocus_blur, 'glass_blur': glass_blur, 'motion_blur': motion_blur, 'zoom_blur': zoom_blur,
+    'snow': snow, 'frost': frost, 'fog': fog, 'brightness': brightness,
+    'contrast': contrast, 'elastic_transform': elastic_transform, 'pixelate': pixelate, 'jpeg_compression': jpeg_compression,
+    'gaussian_blur': gaussian_blur
 }
 
 def apply_corruption(image_tensor: torch.Tensor, corruption_name: str, severity: float = 1) -> torch.Tensor:
@@ -313,7 +304,13 @@ def apply_corruption(image_tensor: torch.Tensor, corruption_name: str, severity:
         raise ValueError(f"Unknown corruption type: {corruption_name}")
 
     original_device = image_tensor.device
-    image_tensor_cpu = image_tensor.cpu()
+
+    if corruption_name == 'fog':
+        # Gọi hàm fog đã được vector hóa
+        return fog(image_tensor, severity)
+
+    # Chuyển về CPU để xử lý, đặc biệt cho các hàm dùng numpy/scipy
+    image_tensor_cpu = image_tensor.cpu() 
     corruption_func = CORRUPTION_FUNCS[corruption_name]
 
     if image_tensor_cpu.dim() == 4: # Batch

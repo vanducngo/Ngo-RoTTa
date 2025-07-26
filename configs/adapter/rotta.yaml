@@ -87,15 +87,15 @@ DATASET:
     - impulse_noise
     - elastic_transform
     
-    # # Các hàm cần PIL
-    # - motion_blur
-    # - zoom_blur
-    # - glass_blur
-    # - defocus_blur
-    # - pixelate
-    # - jpeg_compression
-    # - frost
-    # - snow
-    # - fog
+    # Các hàm cần PIL
+    - motion_blur
+    - zoom_blur
+    - glass_blur
+    - defocus_blur
+    - pixelate
+    - jpeg_compression
+    - frost
+    - snow
+    - fog
 
-  SEVERITY: 0.01 # Mức độ nhiễu (0-5)
+  SEVERITY: 5.0 # Mức độ nhiễu (0-5)
