@@ -98,4 +98,4 @@ DATASET:
     - snow
     - fog
 
-  SEVERITY: 5.0 # Mức độ nhiễu (0-5)
+  SEVERITY: 1.00 # Mức độ nhiễu (0-5)

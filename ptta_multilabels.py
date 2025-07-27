@@ -51,7 +51,8 @@ def testTimeAdaptationMultiLabel(cfg):
         logger.info(f"=========== Starting TTA Epoch {epoch}/{num_epochs} ===========")
 
         # 2.1 Tạo lại processor cho mỗi epoch để đo lường riêng lẻ
-        processor = AUCProcessor(num_classes=len(cfg.DATASET.LABELS_LIST))
+        class_names_list = cfg.DATASET.LABELS_LIST
+        processor = AUCProcessor(num_classes=len(cfg.DATASET.LABELS_LIST), class_names=class_names_list)
 
         if adaptation_mode == 'corruption':
             # --- Chế độ ĐA-NHIỄU ---
