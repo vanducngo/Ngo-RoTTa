@@ -5,7 +5,6 @@ import torch
 import torch.nn as nn
 from ..utils import memory_multilabel as memory
 from .base_adapter import BaseAdapter
-from copy import deepcopy
 from .base_adapter import bce_entropy
 from ..utils.bn_layers import RobustBN1d, RobustBN2d
 from ..utils.utils import set_named_submodule, get_named_submodule
@@ -17,14 +16,12 @@ from omegaconf import OmegaConf
 class RoTTA_MultiLabels(BaseAdapter):
     def __init__(self, cfg, model, optimizer):
         super(RoTTA_MultiLabels, self).__init__(cfg, model, optimizer)
-        # SỬA ĐỔI: Sử dụng lớp Memory mới cho bài toán đa nhãn
         self.mem = memory.CSTU_MultiLabel(capacity=self.cfg.ADAPTER.RoTTA.MEMORY_SIZE, 
                                           num_class=cfg.MODEL.NUM_CLASSES, 
                                           lambda_t=cfg.ADAPTER.RoTTA.LAMBDA_T, 
                                           lambda_u=cfg.ADAPTER.RoTTA.LAMBDA_U)
         self.model_ema = self.build_ema(self.model)
         self.transform = get_tta_transforms(cfg)
-        # self.transform = nn.Identity()
         self.nu = cfg.ADAPTER.RoTTA.NU
         self.update_frequency = cfg.ADAPTER.RoTTA.UPDATE_FREQUENCY
         self.current_instance = 0
@@ -33,8 +30,7 @@ class RoTTA_MultiLabels(BaseAdapter):
         target_indices_list = [0, 1, 2, 3, 4]
         self.target_indices = torch.tensor(target_indices_list, device=DEVICE)
 
-         # Khởi tạo wandb run
-
+         # Init wandb run
         cfg2 = OmegaConf.load("configs/adapter/rotta.yaml")
         wandb.init(
             project="chexpert-rotta",
@@ -45,13 +41,6 @@ class RoTTA_MultiLabels(BaseAdapter):
 
     @torch.enable_grad()
     def forward_and_adapt(self, batch_data, model, optimizer):
-
-        # print(f"[DEBUG] forward_and_adapt received batch_data on device: {batch_data.device}")
-        # teacher_device = next(self.model_ema.parameters()).device
-        # print(f"[DEBUG] model_ema is on device: {teacher_device}")
-        # student_device = next(model.parameters()).device
-        # print(f"[DEBUG] student model is on device: {student_device}")
-
         # batch data
         with torch.no_grad():
             model.eval()
@@ -62,15 +51,14 @@ class RoTTA_MultiLabels(BaseAdapter):
             predict_prob = torch.sigmoid(ema_out_5_cls)
             pseudo_label = (predict_prob > 0.5).float() 
             
-            # Tính uncertainty cho đầu ra Sigmoid
-            # (Tổng của binary cross-entropy trên mỗi lớp)
+            # Compute uncertainty for Sigmoid outputs
+            # (Sum of binary cross-entropy across classes)
             entropy = - (predict_prob * torch.log(predict_prob + 1e-6) + \
                         (1 - predict_prob) * torch.log(1 - predict_prob + 1e-6))
             entropy = torch.sum(entropy, dim=1)
 
         # add into memory
         for i, data in enumerate(batch_data):
-            # SỬA ĐỔI: pseudo_label giờ là một vector
             p_l = pseudo_label[i] 
             uncertainty = entropy[i].item()
             
@@ -98,21 +86,19 @@ class RoTTA_MultiLabels(BaseAdapter):
         # get memory data
         sup_data, ages = self.mem.get_memory()
         l_sup = None
-        # print(f'len(sup_data) => {len(sup_data)}')
         if len(sup_data) > 0:
-            sup_data = torch.stack(sup_data).to(DEVICE) # Chuyển lên device
-            ages = torch.tensor(ages).float().to(DEVICE) # Chuyển lên device
+            sup_data = torch.stack(sup_data).to(DEVICE)
+            ages = torch.tensor(ages).float().to(DEVICE)
 
             strong_sup_aug = self.transform(sup_data)
             
-            # Tắt grad cho teacher model
+            # Disable gradient computation for the teacher model
             with torch.no_grad():
                 ema_sup_out = self.model_ema(sup_data)
                 
             stu_sup_out = model(strong_sup_aug)
             instance_weight = timeliness_reweighting(ages)
             
-            # SỬA ĐỔI: Sử dụng loss consistency cho đa nhãn (BCE-based)
             l_sup = (bce_entropy(stu_sup_out, ema_sup_out) * instance_weight).mean()
 
         l = l_sup
@@ -120,7 +106,6 @@ class RoTTA_MultiLabels(BaseAdapter):
             optimizer.zero_grad()
             l.backward()
             optimizer.step()
-            # print(f'Training student -> loss: {l}')
 
         self.update_ema_variables(self.model_ema, self.model, self.nu)
         
@@ -130,28 +115,20 @@ class RoTTA_MultiLabels(BaseAdapter):
     
     def analyze_memory_bank(self):
         """
-        Tính toán và trả về các chỉ số thống kê của memory bank đa nhãn.
+        Compute and return statistical metrics of the multi-label memory bank
         """
-        # Lấy tất cả các item từ memory bank
         all_items = self.mem.get_all_items()
         
-        # Kiểm tra xem memory có rỗng không
         if not all_items:
             print("Memory bank is empty. No stats to analyze.")
             return None
 
-        # 1. Các chỉ số cơ bản
         stats = {
             "memory/occupancy": self.mem.get_occupancy(),
-            # Đối với CSTU_MultiLabel, không có khái niệm "unique" theo id(data) nữa
-            # vì mỗi item là duy nhất. occupancy là đủ.
         }
 
-        # 2. Phân phối lớp trong memory
-        # Sử dụng hàm per_class_dist đã sửa đổi
+        # Class distribution in the memory
         class_dist = self.mem.per_class_dist()
-        # Giả sử self.labels_list được lưu trong adapter
-        # Bạn có thể cần truyền nó vào từ config trong __init__
         if hasattr(self, 'labels_list'):
             for i, class_name in enumerate(self.labels_list):
                 stats[f"memory/dist/{class_name}"] = class_dist[i]
@@ -159,8 +136,7 @@ class RoTTA_MultiLabels(BaseAdapter):
              for i, count in enumerate(class_dist):
                 stats[f"memory/dist/class_{i}"] = count
 
-        # 3. Thống kê về Uncertainty và Age
-        # Trích xuất dữ liệu từ danh sách các item
+        # Statistics on Uncertainty and Age
         uncertainties = [item.uncertainty for item in all_items]
         ages = [item.age for item in all_items]
         
@@ -199,7 +175,5 @@ class RoTTA_MultiLabels(BaseAdapter):
             set_named_submodule(model, name, momentum_bn)
         return model
 
-# timeliness_reweighting không thay đổi
 def timeliness_reweighting(ages):
-    # Đảm bảo ages đã ở trên đúng device
     return torch.exp(-ages) / (1 + torch.exp(-ages))

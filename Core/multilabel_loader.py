@@ -9,8 +9,8 @@ from .metrics import AUCProcessor
 
 class CleanSingleDomainDataset(Dataset):
     """
-    Lớp Dataset chỉ để đọc MỘT domain dữ liệu "sạch" duy nhất.
-    Việc áp dụng nhiễu sẽ được thực hiện bên ngoài.
+    The Dataset class is designed to read only ONE single "clean" data domain.
+    The application of noise will be handled externally.
     """
     def __init__(self, cfg, transform=None):
         base_domain_cfg = cfg.DATASET.BASE_DOMAIN
@@ -20,12 +20,8 @@ class CleanSingleDomainDataset(Dataset):
         
         csv_path = os.path.join(base_domain_cfg.PATH, base_domain_cfg.CSV)
         print(f"Loading clean data from: {csv_path}")
-        self.df = pd.read_csv(csv_path)
-        
-        self.image_col = 'image_id' # Giả sử cho CheXpert/NIH
-        if 'vindr' in base_domain_cfg.PATH:
-            self.image_col = 'image_id'
-            
+        self.df = pd.read_csv(csv_path)        
+        self.image_col = 'image_id'
         print(f"Initialized clean dataset with {len(self.df)} samples.")
 
     def __len__(self):
@@ -35,12 +31,11 @@ class CleanSingleDomainDataset(Dataset):
         row = self.df.iloc[idx]
         img_name = str(row[self.image_col])
         
-        # Xử lý các trường hợp đường dẫn khác nhau
         if ("CheXpert-v1.0-small" in img_name):
             img_path = f"/home/ngoto/Working/Data/{img_name}"
         elif not os.path.isabs(img_name):
              img_path = os.path.join(self.root_dir, img_name)
-        else: # Nếu đường dẫn đã là tuyệt đối
+        else:
              img_path = img_name
         try:
             image = Image.open(img_path).convert('RGB')
@@ -53,7 +48,6 @@ class CleanSingleDomainDataset(Dataset):
         if self.transform:
             image = self.transform(image)
             
-        # Trả về tên domain gốc để tham khảo nếu cần, không bắt buộc
         return {'image': image, 'label': labels, 'domain': 'clean_base'}
 
 def collate_fn_skip_none(batch):
@@ -64,11 +58,6 @@ def collate_fn_skip_none(batch):
 
 
 def build_loader_multilabel(cfg):
-    """
-    Xây dựng DataLoader chỉ để nạp dữ liệu SẠCH.
-    Logic nhiễu và domain sẽ được xử lý trong vòng lặp chính.
-    """
-    # Chỉ cần định nghĩa transform cơ bản để chuẩn bị dữ liệu
     base_transform = transforms.Compose([
         transforms.Resize((224, 224)),
         transforms.ToTensor(),
@@ -80,15 +69,12 @@ def build_loader_multilabel(cfg):
     loader = DataLoader(
         clean_dataset,
         batch_size=cfg.TEST.BATCH_SIZE,
-        shuffle=False,  # Quan trọng: KHÔNG shuffle để duyệt qua dataset theo thứ tự
+        shuffle=False,  # Important: DO NOT shuffle to ensure the dataset is traversed in order
         num_workers=cfg.LOADER.NUM_WORKS,
         collate_fn=collate_fn_skip_none,
         pin_memory=True
     )
     
-    # Processor vẫn được tạo ở đây như cũ
-    # LABELS_LIST phải chứa tất cả các nhãn mà mô hình được huấn luyện
     result_processor = AUCProcessor(num_classes=len(cfg.DATASET.LABELS_LIST))
-    
     print("Clean data loader and AUC processor are built successfully.")
     return loader, result_processor

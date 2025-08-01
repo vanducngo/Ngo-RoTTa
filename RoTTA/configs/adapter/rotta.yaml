@@ -33,12 +33,9 @@ LOADER:
   SAMPLER:
     TYPE: "temporal"
 
-# LOADER:
-#   NUM_WORKS: 4
-
 MODEL:
-  ARCH: 'resnet18' # Kiến trúc mô hình > resnet18, resnet50, mobilenet_v3_small, densenet121
-  NUM_CLASSES: 5 # Rất quan trọng
+  ARCH: 'resnet18' # resnet18, resnet50, mobilenet_v3_small, densenet121
+  NUM_CLASSES: 5
 
 DATASET:
   NAME: 'CXR'
@@ -68,7 +65,7 @@ DATASET:
 
 
   ADAPTATION_MODE: "corruption" # domain, corruption
-  #Add nhieu single domain
+  # Single domain
   BASE_DOMAIN:
     # PATH: "/home/ngoto/Working/Data/CheXpert-v1.0-small"
     # CSV: "valid_split.csv" # "validate_reordered.csv, validate_reordered_subset.csv, valid_split"

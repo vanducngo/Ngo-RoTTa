@@ -1,20 +1,10 @@
 import torch
 import numpy as np
-from PIL import Image, ImageFilter
-import torchvision.transforms.functional as TF
 import torch.nn.functional as F
 from scipy.ndimage import gaussian_filter as scipy_gaussian_filter
-from io import BytesIO
 from scipy.ndimage import map_coordinates
 
-# ==============================================================================
-# Hàm Helper
-# ==============================================================================
-
 def _linear_interpolate(value: float, points: list):
-    """
-    Nội suy tuyến tính các giá trị dựa trên các điểm nguyên 0, 1, 2, ...
-    """
     lower_pt = int(np.floor(value))
     upper_pt = int(np.ceil(value))
     
@@ -25,10 +15,7 @@ def _linear_interpolate(value: float, points: list):
     return (1 - weight) * points[lower_pt] + weight * points[upper_pt]
 
 def _apply_gaussian_blur(image_tensor: torch.Tensor, sigma: float) -> torch.Tensor:
-    """
-    Hàm helper nội bộ để áp dụng Gaussian blur với sigma cụ thể.
-    """
-    if sigma < 0.1: # Ngưỡng nhỏ để tránh tính toán không cần thiết
+    if sigma < 0.1: 
         return image_tensor
         
     channels = image_tensor.shape[0]
@@ -45,7 +32,7 @@ def _apply_gaussian_blur(image_tensor: torch.Tensor, sigma: float) -> torch.Tens
     return F.conv2d(image_tensor.unsqueeze(0), kernel, padding=kernel_size // 2, groups=channels).squeeze(0)
 
 # ==============================================================================
-# Các hàm tạo nhiễu (phiên bản Tensor-native)
+#  Add noise with Tensor-native
 # ==============================================================================
 
 def gaussian_noise(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
@@ -55,16 +42,7 @@ def gaussian_noise(image_tensor: torch.Tensor, severity: float = 1) -> torch.Ten
     noise = torch.randn_like(image_tensor) * scale
     return torch.clamp(image_tensor + noise, 0, 1)
 
-# def shot_noise(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
-#     c_levels = [float('inf'), 500, 250, 100, 75, 50]
-#     scale = _linear_interpolate(severity, c_levels)
-#     if scale == float('inf'): return image_tensor
-#     return torch.clamp(torch.poisson(image_tensor * scale) / scale, 0, 1)
 def shot_noise(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
-    """
-    Thêm nhiễu Shot (Poisson) vào ảnh tensor đã được chuẩn hóa.
-    Nó sẽ tạm thời un-normalize, áp dụng nhiễu, rồi re-normalize.
-    """
     mean=[0.485, 0.456, 0.406]
     std=[0.229, 0.224, 0.225]
     c_levels = [float('inf'), 500, 250, 100, 75, 50]
@@ -72,24 +50,18 @@ def shot_noise(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
     if scale == float('inf'): 
         return image_tensor
 
-    # Đảm bảo các tensor mean/std ở cùng device với ảnh
     device = image_tensor.device
     mean = torch.tensor([0.485, 0.456, 0.406], device=device).view(3, 1, 1)
     std = torch.tensor([0.229, 0.224, 0.225], device=device).view(3, 1, 1)
 
-    # --- BƯỚC 1: UN-NORMALIZE ---
-    # Chuyển dữ liệu từ miền đã chuẩn hóa về lại miền [0, 1]
+    # --- Step 1: UN-NORMALIZE ---
     image_unnormalized = image_tensor * std + mean
-    
-    # Kẹp lại để đảm bảo không có giá trị nào < 0 do sai số float
     image_unnormalized = torch.clamp(image_unnormalized, 0, 1)
 
-    # --- BƯỚC 2: ÁP DỤNG NHIỄU TRÊN DỮ LIỆU [0, 1] ---
-    # Bây giờ đầu vào của torch.poisson sẽ luôn không âm
+    # --- Step 2: Apply noise in the data [0, 1] ---
     corrupted_unnormalized = torch.clamp(torch.poisson(image_unnormalized * scale) / scale, 0, 1)
 
     # --- BƯỚC 3: RE-NORMALIZE ---
-    # Chuẩn hóa lại dữ liệu nhiễu để trả về
     corrupted_normalized = (corrupted_unnormalized - mean) / std
 
     return corrupted_normalized
@@ -223,7 +195,6 @@ def glass_blur(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
         
     return torch.clamp(image_batch.squeeze(0), 0, 1)
 
-
 def defocus_blur(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
     c_radius = [0, 0.5, 1, 1.5, 2, 2.5]
     radius = _linear_interpolate(severity, c_radius)
@@ -265,33 +236,40 @@ def snow(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
     
     return torch.clamp(image_tensor + snow_pattern * alpha, 0, 1)
 
-
 def fog(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
-    """Phiên bản mới, nhận toàn bộ batch"""
     c_levels = [0, 0.2, 0.3, 0.4, 0.5, 0.6]
     alpha = _linear_interpolate(severity, c_levels)
     if alpha == 0: return image_tensor
     
     b, c, h, w = image_tensor.shape
     
-    # Tạo MỘT fog pattern và lặp lại cho cả batch
     fog_pattern_single = torch.randn(1, h, w, device=image_tensor.device)
     fog_pattern_single = _apply_gaussian_blur(fog_pattern_single, sigma=10).squeeze(0) # Vẫn có thể giảm sigma
     fog_pattern_single = (fog_pattern_single - fog_pattern_single.min()) / (fog_pattern_single.max() - fog_pattern_single.min())
     
-    # Lặp lại pattern này cho tất cả các kênh và các ảnh trong batch
     fog_pattern_batch = fog_pattern_single.repeat(b, c, 1, 1)
     
     return torch.clamp((1 - alpha) * image_tensor + alpha * fog_pattern_batch, 0, 1)
 
 # ==============================================================================
-# Dictionary và Hàm điều phối chính
+# Dictionary và fuctions
 # ==============================================================================
 CORRUPTION_FUNCS = {
-    'gaussian_noise': gaussian_noise, 'shot_noise': shot_noise, 'impulse_noise': impulse_noise,
-    'defocus_blur': defocus_blur, 'glass_blur': glass_blur, 'motion_blur': motion_blur, 'zoom_blur': zoom_blur,
-    'snow': snow, 'frost': frost, 'fog': fog, 'brightness': brightness,
-    'contrast': contrast, 'elastic_transform': elastic_transform, 'pixelate': pixelate, 'jpeg_compression': jpeg_compression,
+    'gaussian_noise': gaussian_noise, 
+    'shot_noise': shot_noise, 
+    'impulse_noise': impulse_noise,
+    'defocus_blur': defocus_blur, 
+    'glass_blur': glass_blur, 
+    'motion_blur': motion_blur, 
+    'zoom_blur': zoom_blur,
+    'snow': snow, 
+    'frost': frost, 
+    'fog': fog, 
+    'brightness': brightness,
+    'contrast': contrast, 
+    'elastic_transform': elastic_transform, 
+    'pixelate': pixelate, 
+    'jpeg_compression': jpeg_compression,
     'gaussian_blur': gaussian_blur
 }
 
@@ -306,10 +284,8 @@ def apply_corruption(image_tensor: torch.Tensor, corruption_name: str, severity:
     original_device = image_tensor.device
 
     if corruption_name == 'fog':
-        # Gọi hàm fog đã được vector hóa
         return fog(image_tensor, severity)
 
-    # Chuyển về CPU để xử lý, đặc biệt cho các hàm dùng numpy/scipy
     image_tensor_cpu = image_tensor.cpu() 
     corruption_func = CORRUPTION_FUNCS[corruption_name]
 

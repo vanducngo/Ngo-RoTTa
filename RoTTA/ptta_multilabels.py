@@ -13,7 +13,6 @@ import copy
 from core.configs import cfg
 from core.utils import *
 
-# Import các thành phần cần thiết
 from core.utils.constants import IS_CPU_DEVICE
 from Core.metrics import AUCProcessor
 from core.model import build_model
@@ -25,13 +24,8 @@ from tqdm import tqdm
 from setproctitle import setproctitle
 
 def testTimeAdaptationMultiLabel(cfg):
-    """
-    Hàm chính thực hiện Test-Time Adaptation cho bài toán đa nhãn.
-    Hỗ trợ hai chế độ: 'corruption' và 'domain', và có thể chạy nhiều epoch.
-    """
     logger = logging.getLogger("TTA.test_time_multilabel")
     
-    # --- 1. Khởi tạo Model, Adapter, Optimizer (chỉ một lần) ---
     model = build_model(cfg)
     optimizer = build_optimizer(cfg)
     tta_adapter = build_adapter(cfg)
@@ -44,7 +38,6 @@ def testTimeAdaptationMultiLabel(cfg):
     
     logger.info("Model and TTA adapter initialized.")
 
-    # --- 2. Vòng lặp Epochs ---
     num_epochs = 1
     best_auc = 0.0
     best_model_state = None
@@ -53,12 +46,12 @@ def testTimeAdaptationMultiLabel(cfg):
     for epoch in range(1, num_epochs + 1):
         logger.info(f"=========== Starting TTA Epoch {epoch}/{num_epochs} ===========")
 
-        # 2.1 Tạo lại processor cho mỗi epoch để đo lường riêng lẻ
+        # Tạo lại processor cho mỗi epoch để đo lường riêng lẻ
         class_names_list = cfg.DATASET.LABELS_LIST
         processor = AUCProcessor(num_classes=len(cfg.DATASET.LABELS_LIST), class_names=class_names_list)
 
         if adaptation_mode == 'corruption':
-            # --- Chế độ ĐA-NHIỄU ---
+            # --- Corruptions mode ---
             logger.info("Running in 'corruption' adaptation mode for this epoch.")
             
             corruptions_list = cfg.DATASET.TEST_CORRUPTIONS if cfg.DATASET.TEST_CORRUPTIONS else ['none']
@@ -74,7 +67,7 @@ def testTimeAdaptationMultiLabel(cfg):
                     clean_images, labels = data_package["image"].cpu(), data_package['label'].cpu()
                 else:
                     clean_images, labels = data_package["image"].cuda(), data_package['label'].cuda()
-                    
+
                 current_corruption = corruptions_list[corruption_idx]
                 data_to_adapt = apply_corruption(clean_images, current_corruption, severity)
                 
@@ -101,7 +94,7 @@ def testTimeAdaptationMultiLabel(cfg):
                 corruption_idx = (corruption_idx + 1) % len(corruptions_list)
 
         elif adaptation_mode == 'domain':
-            # --- Chế độ ĐA-DOMAIN ---
+            # --- Multi-domain mode ---
             logger.info("Running in 'domain' adaptation mode for this epoch.")
             
             test_domains = cfg.DATASET.TEST_DOMAINS
@@ -143,14 +136,14 @@ def testTimeAdaptationMultiLabel(cfg):
         else:
             raise ValueError(f"Unknown ADAPTATION_MODE: '{adaptation_mode}'. Must be 'corruption' or 'domain'.")
 
-        # 2.2 Kết thúc một epoch, tính toán và ghi lại kết quả
+        # End of an epoch: compute and log the results
         processor.calculate()
         epoch_auc = processor.results.get('mean_auc', 0.0)
         
         logger.info(f"--- Epoch {epoch} Final Results ---\n{processor.info()}")
         print(f"\n--- Epoch {epoch} Final Results ---\n{processor.info()}")
 
-        # 2.3 Lưu lại mô hình tốt nhất dựa trên AUC của epoch
+        # Save the best model based on the epoch's AUC
         if epoch_auc > best_auc:
             best_auc = epoch_auc
             best_model_state = {
@@ -159,7 +152,6 @@ def testTimeAdaptationMultiLabel(cfg):
             }
             logger.info(f"New best AUC found: {best_auc:.4f}. Saving model state for epoch {epoch}.")
 
-    # --- 3. Kết thúc tất cả các epoch ---
     logger.info(f"=========== TTA Finished ===========")
     logger.info(f"Best Mean AUC achieved across {num_epochs} epochs: {best_auc:.4f}")
     
@@ -195,7 +187,6 @@ def main():
     cfg.merge_from_file(args.config_file)
     cfg.merge_from_list(args.opts)
     
-    # Thêm các khóa mặc định để tránh lỗi
     cfg.defrost()
     cfg.TEST.NUM_EPOCHS = cfg.TEST.get("NUM_EPOCHS", 1)
     cfg.freeze()

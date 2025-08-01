@@ -33,12 +33,9 @@ COMMON_DISEASES:
 
 # Cấu hình mô hình
 MODEL:
-  ARCH: "resnet18"           # Kiến trúc mô hình > resnet18, resnet50, mobilenet_v3_small, densenet121
-  NUM_CLASSES: 5                       # Số lớp bệnh chung
-  NUM_CLASSES_SOURCE: 14 # Số lớp của mô hình gốc
-  NUM_CLASSES_TTA: 5     # Số lớp mục tiêu cho adaptation
+  ARCH: "resnet18"           # resnet18, resnet50, mobilenet_v3_small, densenet121
+  NUM_CLASSES: 5             # Common Lable
 
-# Cấu hình huấn luyện
 TRAINING:
   DEVICE: "cuda"
   EPOCHS: 50
@@ -54,16 +51,6 @@ OPTIM:
   STEPS: 1
   BETA: 0.9
   WD: 0.
-
-ADAPTER: # Cấu hình riêng cho RoTTA
-  NAME: "TENT" # RoTTAMultiLabel, TENT
-  LR: 1e-4
-  MEMORY_SIZE: 128
-  BATCH_SIZE: 32  # Batch size để học từ memory
-  EMA_DECAY: 0.9
-  UPDATE_FREQUENCY: 64 # Cập nhật model sau mỗi 64 mẫu
-  LAMBDA_T: 1.0 # Trọng số cho tuổi
-  LAMBDA_U: 1.0 # Trọng số cho uncertainty
 
 INPUT:
   SIZE: (224, 224)

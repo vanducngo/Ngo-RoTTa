@@ -69,14 +69,14 @@ def bce_entropy(x, x_ema):
     x: student output (logits)
     x_ema: teacher output (logits)
     """
-    # Không tính grad cho teacher
+    # Do not compute gradients for the teacher model
     x_ema = x_ema.detach()
     
-    # Tính target probability từ teacher
+    # Compute target probabilities from the teacher model
     prob_ema = torch.sigmoid(x_ema)
     
-    # Tính loss BCE giữa student và teacher's soft pseudo-labels
+    # Compute BCE loss between student predictions and teacher's soft pseudo-labels
     loss = F.binary_cross_entropy_with_logits(x, prob_ema, reduction='none')
     
-    # Tổng loss trên các lớp để có loss cho mỗi instance
+    # Sum loss across classes to obtain per-instance loss
     return loss.sum(1)
