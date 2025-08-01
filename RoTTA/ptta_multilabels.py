@@ -1,17 +1,21 @@
+import os
+import sys
+# Lấy đường dẫn của thư mục gốc project
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(project_root)
 import logging
 import torch
 import argparse
 from sklearn.metrics import roc_auc_score
 import numpy as np
 import copy
-import os
 
 from core.configs import cfg
 from core.utils import *
 
 # Import các thành phần cần thiết
 from core.utils.constants import IS_CPU_DEVICE
-from Core.metrics import AUCProcessor 
+from Core.metrics import AUCProcessor
 from core.model import build_model
 from Core.multilabel_loader import build_loader_multilabel
 from Core.corruptions import apply_corruption
@@ -19,7 +23,6 @@ from core.optim import build_optimizer
 from core.adapter import build_adapter
 from tqdm import tqdm
 from setproctitle import setproctitle
-
 
 def testTimeAdaptationMultiLabel(cfg):
     """
@@ -66,8 +69,12 @@ def testTimeAdaptationMultiLabel(cfg):
             tbar = tqdm(loader, desc=f"Epoch {epoch} [Corruption]")
             for batch_id, data_package in enumerate(tbar):
                 if not data_package['image'].numel(): continue
-
-                clean_images, labels = data_package["image"].cuda(), data_package['label'].cuda()
+                
+                if IS_CPU_DEVICE:
+                    clean_images, labels = data_package["image"].cpu(), data_package['label'].cpu()
+                else:
+                    clean_images, labels = data_package["image"].cuda(), data_package['label'].cuda()
+                    
                 current_corruption = corruptions_list[corruption_idx]
                 data_to_adapt = apply_corruption(clean_images, current_corruption, severity)
                 
