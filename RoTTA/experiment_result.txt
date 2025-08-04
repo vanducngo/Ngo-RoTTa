@@ -1,7 +1,70 @@
+- Base (Source Domain):
+    - 
+- Rotta (Target Domain)
+    - Clean Data
+        - ZeroShot:
+            - mean: 0.7739
+            - Atelectasis: 0.7156
+            - Cardiomegaly: 0.8801
+            - Consolidation: 0.6717
+            - Pleural Effusion: 0.7896
+            - Pneumothorax: 0.8127
+        - PTTA:
+            - mean: 0.7593
+            - Atelectasis: 0.7002
+            - Cardiomegaly: 0.8680
+            - Consolidation: 0.6348
+            - Pleural Effusion: 0.7793
+            - Pneumothorax: 0.8141
+    - Severity 0.01
+        - ZeroShot
+            - mean: 0.6829
+            - Atelectasis: 0.6465
+            - Cardiomegaly: 0.7680
+            - Consolidation: 0.6084
+            - Pleural Effusion: 0.6841
+            - Pneumothorax: 0.7074
+        - PTTA
+            - mean: 0.6950
+            - Atelectasis: 0.6522
+            - Cardiomegaly: 0.7618
+            - Consolidation: 0.5978
+            - Pleural Effusion: 0.7236
+            - Pneumothorax: 0.7398
+    - Severity 1.00
+        - ZeroShot
+            - mean: 0.6312
+            - Atelectasis: 0.6034
+            - Cardiomegaly: 0.6925
+            - Consolidation: 0.5634
+            - Pleural Effusion: 0.6524
+            - Pneumothorax: 0.6442
+        - PTTA
+            - mean: 0.6608
+            - Atelectasis: 0.6233
+            - Cardiomegaly: 0.6968
+            - Consolidation: 0.5818
+            - Pleural Effusion: 0.7060
+            - Pneumothorax: 0.6960
+    - Severity 5.00
+        - ZeroShot
+            - mean: 0.6165
+            - Atelectasis: 0.5881
+            - Cardiomegaly: 0.6936
+            - Consolidation: 0.5422
+            - Pleural Effusion: 0.6408
+            - Pneumothorax: 0.6176
+        - PTTA
+            - mean: 0.6402
+            - Atelectasis: 0.6023
+            - Cardiomegaly: 0.6830
+            - Consolidation: 0.5708
+            - Pleural Effusion: 0.6892
+            - Pneumothorax: 0.6556
 - Tent
     - Severity 1
-        - Mean AUC: 0.6226
-        - Per-class AUC:
+        - PTTA
+            - Mean AUC: 0.6226
             - Atelectasis      : 0.5937
             - Cardiomegaly     : 0.6872
             - Consolidation    : 0.5287
