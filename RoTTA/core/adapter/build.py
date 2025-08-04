@@ -1,4 +1,5 @@
 from RoTTA.core.adapter.tent_multilabel import TentMultiLabel
+from RoTTA.core.adapter.norm_multilabel import NormMultiLabel
 from .base_adapter import BaseAdapter
 from .rotta import RoTTA
 from .rotta_multiple_labels import RoTTA_MultiLabels
@@ -13,6 +14,8 @@ def build_adapter(cfg) -> type(BaseAdapter):
         return RoTTA_MultiLabels
     elif adapterName == 'tent':
         return TentMultiLabel
+    elif adapterName == 'norm':
+        return NormMultiLabel
     # elif adapterName == 'cotta':
     #     return CoTTAMultiLabel # (Ví dụ cho tương lai)
     else:
