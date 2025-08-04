@@ -1,5 +1,10 @@
 - Base (Source Domain):
-    - 
+    - mean: 0.7916
+    - Atelectasis: 0.6979
+    - Cardiomegaly: 0.8613
+    - Consolidation: 0.6849
+    - Pleural Effusion: 0.8523
+    - Pneumothorax: 0.8617
 - ZeroShot:
     - Severity 0:
         - mean: 0.7739
