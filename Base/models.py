@@ -1,5 +1,26 @@
 import torch.nn as nn
 from torchvision.models import resnet18, ResNet18_Weights, resnet50, ResNet50_Weights, mobilenet_v3_small, MobileNet_V3_Small_Weights, densenet121, DenseNet121_Weights
+import torch
+import os
+
+from RoTTA.core.utils.constants import DEVICE
+
+def get_pretrained_model(cfg):
+    model_path = './ckpt/resnet_5class_jul26_02h00.pth'
+    print(f"Loading fine-tuned weights from: {model_path}")
+    if not os.path.exists(model_path):
+        raise FileNotFoundError(f"Model file not found at {model_path}. Please run the training script first.")
+    
+    print(f"Found fine-tuned model at {model_path}")
+    # Load the pre-trained model architecture
+    model = get_model(cfg, feature_extract=False, useWeight = True, numclasses=5)
+    # Load the fine-tuned weights
+    model.load_state_dict(torch.load(model_path, map_location=DEVICE))
+    model.to(DEVICE)
+    print(f"Loaded fine-tuned model from {model_path}")
+    
+    print("Fine-tuned model loaded successfully.")
+    return model
 
 def set_parameter_requires_grad(model, feature_extracting):
     if feature_extracting:

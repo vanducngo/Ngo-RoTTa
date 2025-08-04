@@ -9,9 +9,9 @@ from core.utils import *
 
 # Import các thành phần cần thiết
 from core.utils.constants import DEVICE
-from Core.metrics import AUCProcessor 
+from Base.metrics import AUCProcessor 
 from core.model import build_model
-from Core.multilabel_loader import build_loader_multilabel
+from Base.multilabel_loader import build_loader_multilabel
 from tqdm import tqdm
 from setproctitle import setproctitle
 

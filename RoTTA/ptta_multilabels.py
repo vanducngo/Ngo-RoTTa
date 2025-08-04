@@ -14,10 +14,10 @@ from core.configs import cfg
 from core.utils import *
 
 from core.utils.constants import IS_CPU_DEVICE
-from Core.metrics import AUCProcessor
+from Base.metrics import AUCProcessor
 from core.model import build_model
-from Core.multilabel_loader import build_loader_multilabel
-from Core.corruptions import apply_corruption
+from Base.multilabel_loader import build_loader_multilabel
+from Base.corruptions import apply_corruption
 from core.optim import build_optimizer
 from core.adapter import build_adapter
 from tqdm import tqdm

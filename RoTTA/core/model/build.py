@@ -3,7 +3,7 @@ from robustbench.utils import load_model
 
 from robustbench.model_zoo.enums import ThreatModel
 from robustbench.utils import load_model
-from Core.models import get_pretrained_model
+from Base.models import get_pretrained_model
 
 def build_model(cfg):
     """
@@ -21,7 +21,6 @@ def build_model(cfg):
             dataset_name, 
             ThreatModel.corruptions
         ).cpu()
-
     elif 'CXR' in dataset_name:
         base_model = get_pretrained_model(cfg)
     else:

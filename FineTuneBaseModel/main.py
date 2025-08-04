@@ -5,7 +5,7 @@ from omegaconf import OmegaConf
 import os
 import torch.nn as nn
 
-from Core.models import get_model_chexpert
+from Base.models import get_model_chexpert
 
 
 def main(cfg):

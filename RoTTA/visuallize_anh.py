@@ -8,7 +8,7 @@ from torchvision import transforms
 
 # Import các hàm từ project của bạn
 # Giả sử script này nằm ở thư mục gốc của project
-from Core.corruptions import apply_corruption
+from Base.corruptions import apply_corruption
 
 def visualize_single_corruption(csv_path, image_root, image_col, labels_list, sample_idx, corruption_name, severity):
     """
