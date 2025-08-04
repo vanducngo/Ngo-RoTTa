@@ -19,7 +19,7 @@ INPUT:
   PIXEL_STD: [0.229, 0.224, 2.225]
 
 ADAPTER:
-  NAME: tent # tent rotta_multilabels norm
+  NAME: norm # tent rotta_multilabels norm
   RoTTA:
     NU: 0.001
     MEMORY_SIZE: 64
@@ -96,4 +96,6 @@ DATASET:
     - snow
     - fog
 
-  SEVERITY: 1.00 # Mức độ nhiễu (0-5)
+  # SEVERITY: 0.01 # Mức độ nhiễu (0-5)
+  # SEVERITY: 1.00
+  SEVERITY: 5.00
