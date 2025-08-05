@@ -1,3 +1,4 @@
+from RoTTA.core.adapter.cotta_multilabel import CoTTAMultiLabel
 from RoTTA.core.adapter.tent_multilabel import TentMultiLabel
 from RoTTA.core.adapter.norm_multilabel import NormMultiLabel
 from .base_adapter import BaseAdapter
@@ -16,8 +17,8 @@ def build_adapter(cfg) -> type(BaseAdapter):
         return TentMultiLabel
     elif adapterName == 'norm':
         return NormMultiLabel
-    # elif adapterName == 'cotta':
-    #     return CoTTAMultiLabel # (Ví dụ cho tương lai)
+    elif adapterName == 'cotta':
+        return CoTTAMultiLabel
     else:
         raise NotImplementedError("Implement your own adapter")
 
