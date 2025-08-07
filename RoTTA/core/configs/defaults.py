@@ -66,6 +66,16 @@ _C.OPTIM.MOMENTUM = 0.9
 _C.OPTIM.DAMPENING = 0.0
 _C.OPTIM.NESTEROV = True
 _C.OPTIM.WD = 0.0
+  
+# --- Các tham số đặc trưng của CoTTA ---
+# Mean Teacher update rate
+_C.MT = 0.999
+
+# Stochastic Restore probability
+_C.RST = 0.01
+
+# Augmentation-averaging threshold
+_C.AP = 0.72
 
 # ------------------------------- Testing options --------------------------- #
 _C.TEST = CN()

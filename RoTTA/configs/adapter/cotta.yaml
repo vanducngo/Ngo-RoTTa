@@ -8,6 +8,16 @@ OPTIM:
   # LR: 1e-5
   LR: 0.001 # 00025 (TENT), CoTTA: 0.001, Other: 00001
   WD: 0.
+  
+  # --- Các tham số đặc trưng của CoTTA ---
+  # Mean Teacher update rate
+  MT: 0.999
+  
+  # Stochastic Restore probability
+  RST: 0.01
+  
+  # Augmentation-averaging threshold
+  AP: 0.72
 
 INPUT:
   # Cifar
