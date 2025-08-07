@@ -19,7 +19,7 @@ INPUT:
   PIXEL_STD: [0.229, 0.224, 2.225]
 
 ADAPTER:
-  NAME: norm # tent rotta_multilabels norm
+  NAME: rotta_multilabels # tent rotta_multilabels norm
   RoTTA:
     NU: 0.001
     MEMORY_SIZE: 64

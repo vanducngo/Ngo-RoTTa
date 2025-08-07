@@ -153,26 +153,41 @@ class RoTTA_MultiLabels(BaseAdapter):
             ema_param.data[:] = (1 - nu) * ema_param[:].data[:] + nu * param[:].data[:]
         return ema_model
 
+    # def configure_model(self, model: nn.Module):
+    #     model.requires_grad_(False)
+    #     normlayer_names = []
+
+    #     for name, sub_module in model.named_modules():
+    #         if isinstance(sub_module, nn.BatchNorm1d) or isinstance(sub_module, nn.BatchNorm2d):
+    #             normlayer_names.append(name)
+
+    #     for name in normlayer_names:
+    #         bn_layer = get_named_submodule(model, name)
+    #         if isinstance(bn_layer, nn.BatchNorm1d):
+    #             NewBN = RobustBN1d
+    #         elif isinstance(bn_layer, nn.BatchNorm2d):
+    #             NewBN = RobustBN2d
+    #         else:
+    #             raise RuntimeError()
+
+    #         momentum_bn = NewBN(bn_layer, self.cfg.ADAPTER.RoTTA.ALPHA)
+    #         momentum_bn.requires_grad_(True)
+    #         set_named_submodule(model, name, momentum_bn)
+    #     return model
     def configure_model(self, model: nn.Module):
         model.requires_grad_(False)
-        normlayer_names = []
-
         for name, sub_module in model.named_modules():
-            if isinstance(sub_module, nn.BatchNorm1d) or isinstance(sub_module, nn.BatchNorm2d):
-                normlayer_names.append(name)
-
-        for name in normlayer_names:
-            bn_layer = get_named_submodule(model, name)
-            if isinstance(bn_layer, nn.BatchNorm1d):
-                NewBN = RobustBN
-            elif isinstance(bn_layer, nn.BatchNorm2d):
-                NewBN = RobustBN
-            else:
-                raise RuntimeError()
-
-            momentum_bn = NewBN(bn_layer, self.cfg.ADAPTER.RoTTA.ALPHA)
-            momentum_bn.requires_grad_(True)
-            set_named_submodule(model, name, momentum_bn)
+            if isinstance(sub_module, nn.BatchNorm2d):
+                # Tạo lớp RobustBN mới
+                robust_bn = RobustBN(sub_module, self.cfg.ADAPTER.RoTTA.ALPHA)
+                
+                # Chỉ các tham số affine của nó mới được học
+                robust_bn.requires_grad_(False)
+                robust_bn.weight.requires_grad = True
+                robust_bn.bias.requires_grad = True
+                
+                # Thay thế lớp cũ bằng lớp mới
+                set_named_submodule(model, name, robust_bn)
         return model
 
 def timeliness_reweighting(ages):
