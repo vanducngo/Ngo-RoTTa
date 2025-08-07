@@ -84,13 +84,21 @@ class CoTTAMultiLabel(BaseAdapter):
         # 3. Cập nhật Teacher model bằng EMA
         self._update_ema_variables(self.teacher, model, self.mt_alpha)
 
-        # 4. Stochastic Restoration
-        for (name, param), (state_name, state_param) in zip(model.named_parameters(), self.model_state.items()):
+        # 4. Stochastic Restoration (PHIÊN BẢN ĐÃ SỬA LỖI)
+        for name, param in model.named_parameters():
             if param.requires_grad:
-                mask = (torch.rand_like(param) < self.rst_prob).float()
-                with torch.no_grad():
-                    # Đảm bảo state_param ở đúng device với param
-                    param.data = state_param.to(param.device) * mask + param.data * (1. - mask)
+                # Lấy tham số gốc tương ứng từ state_dict bằng tên (key)
+                if name in self.model_state:
+                    state_param = self.model_state[name]
+                    
+                    # Tạo mask ngẫu nhiên
+                    mask = (torch.rand_like(param) < self.rst_prob).float()
+                    
+                    with torch.no_grad():
+                        # Thực hiện restore
+                        param.data = state_param.to(param.device) * mask + param.data * (1. - mask)
+                else:
+                    self.logger.warning(f"Parameter '{name}' not found in the initial model state. Skipping stochastic restoration for it.")
         
         # Trả về dự đoán của teacher (ổn định hơn) để đánh giá
         return final_teacher_logits
