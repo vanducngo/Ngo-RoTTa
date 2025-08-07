@@ -6,7 +6,7 @@ import torch.nn as nn
 from ..utils import memory_multilabel as memory
 from .base_adapter import BaseAdapter
 from .base_adapter import bce_entropy
-from ..utils.bn_layers import RobustBN1d, RobustBN2d, RobustBN
+from ..utils.bn_layers import EMAUpdatedBN, RobustBN1d, RobustBN2d
 from ..utils.utils import set_named_submodule, get_named_submodule
 from ..utils.custom_transforms import get_tta_transforms
 from ..utils.constants import DEVICE
@@ -178,16 +178,23 @@ class RoTTA_MultiLabels(BaseAdapter):
         model.requires_grad_(False)
         for name, sub_module in model.named_modules():
             if isinstance(sub_module, nn.BatchNorm2d):
-                # Tạo lớp RobustBN mới
-                robust_bn = RobustBN(sub_module, self.cfg.ADAPTER.RoTTA.ALPHA)
+                # Tạo lớp lai mới
+                ema_bn = EMAUpdatedBN(sub_module, self.cfg.ADAPTER.RoTTA.ALPHA)
                 
-                # Chỉ các tham số affine của nó mới được học
-                robust_bn.requires_grad_(False)
-                robust_bn.weight.requires_grad = True
-                robust_bn.bias.requires_grad = True
+                # Mở băng các tham số affine BÊN TRONG lớp lai
+                for param in ema_bn.bn_layer.parameters():
+                    param.requires_grad = True
                 
                 # Thay thế lớp cũ bằng lớp mới
-                set_named_submodule(model, name, robust_bn)
+                set_named_submodule(model, name, ema_bn)
+            
+            # Mở rộng cho BatchNorm1d nếu cần
+            elif isinstance(sub_module, nn.BatchNorm1d):
+                # (Tương tự cho 1D)
+                pass
+
+        # Mở băng cả classifier của bạn nữa
+        # (Thêm logic mở băng classifier ở đây nếu cần)
         return model
 
 def timeliness_reweighting(ages):

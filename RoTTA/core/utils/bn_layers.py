@@ -114,3 +114,42 @@ class RobustBN(nn.Module):
             momentum=0,     # Không để F.batch_norm tự cập nhật running stats
             eps=self.eps
         )
+    
+class EMAUpdatedBN(nn.Module):
+    """
+    A BatchNorm layer that behaves identically to nn.BatchNorm2d in eval mode,
+    but updates its running statistics using a custom EMA rule in train mode.
+    """
+    def __init__(self, bn_layer: nn.BatchNorm2d, momentum: float):
+        super().__init__()
+        self.momentum = momentum
+        
+        # Giữ một bản sao của lớp BN gốc để thực hiện forward pass
+        # Điều này đảm bảo hành vi chuẩn của PyTorch
+        self.bn_layer = deepcopy(bn_layer)
+        
+        # Lưu lại thống kê nguồn ban đầu để dùng trong công thức EMA
+        self.register_buffer("source_mean", deepcopy(bn_layer.running_mean))
+        self.register_buffer("source_var", deepcopy(bn_layer.running_var))
+
+    def forward(self, x):
+        # Khi model ở chế độ train (tức là trong lúc update_model của RoTTA)
+        if self.training:
+            # 1. Tính toán thống kê của batch hiện tại
+            batch_mean = x.mean(dim=[0, 2, 3])
+            batch_var = x.var(dim=[0, 2, 3], unbiased=True) # Dùng unbiased=True cho nhất quán
+            
+            # 2. Cập nhật running_stats của bn_layer bên trong bằng công thức EMA của RoTTA
+            # Pha trộn giữa thống kê nguồn và thống kê batch, không phải EMA truyền thống
+            with torch.no_grad():
+                self.bn_layer.running_mean.data = (1 - self.momentum) * self.source_mean + \
+                                                   self.momentum * batch_mean
+                self.bn_layer.running_var.data = (1 - self.momentum) * self.source_var + \
+                                                  self.momentum * batch_var
+        
+        # Dù ở chế độ train hay eval, luôn forward qua lớp BN chuẩn.
+        # Ở chế độ train, nó sẽ dùng batch stats (không mong muốn lắm nhưng TTA cần).
+        # Ở chế độ eval, nó sẽ dùng running_stats đã được cập nhật ở trên (mong muốn).
+        # Để nhất quán, ta có thể luôn đặt nó ở eval và chỉ cập nhật stats thủ công.
+        self.bn_layer.eval() # Buộc dùng running stats
+        return self.bn_layer(x)
