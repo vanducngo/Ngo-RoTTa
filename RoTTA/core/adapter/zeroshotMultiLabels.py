@@ -10,9 +10,9 @@ class ZeroshotMultiLabels(BaseAdapter):
 
     @torch.enable_grad()
     def forward_and_adapt(self, batch_data, model, optimizer):
-        teacher_logits = self.teacher(batch_data)
+        logits = model(batch_data)
 
-        return teacher_logits
+        return logits
 
     def configure_model(self, model: nn.Module):
         return model
