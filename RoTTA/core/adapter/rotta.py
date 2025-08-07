@@ -9,6 +9,7 @@ from ..utils.utils import set_named_submodule, get_named_submodule
 from ..utils.custom_transforms import get_tta_transforms
 
 
+
 class RoTTA(BaseAdapter):
     def __init__(self, cfg, model, optimizer):
         super(RoTTA, self).__init__(cfg, model, optimizer)

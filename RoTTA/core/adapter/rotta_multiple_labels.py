@@ -6,7 +6,7 @@ import torch.nn as nn
 from ..utils import memory_multilabel as memory
 from .base_adapter import BaseAdapter
 from .base_adapter import bce_entropy
-from ..utils.bn_layers import RobustBN1d, RobustBN2d
+from ..utils.bn_layers import RobustBN1d, RobustBN2d, RobustBN
 from ..utils.utils import set_named_submodule, get_named_submodule
 from ..utils.custom_transforms import get_tta_transforms
 from ..utils.constants import DEVICE
@@ -164,9 +164,9 @@ class RoTTA_MultiLabels(BaseAdapter):
         for name in normlayer_names:
             bn_layer = get_named_submodule(model, name)
             if isinstance(bn_layer, nn.BatchNorm1d):
-                NewBN = RobustBN1d
+                NewBN = RobustBN
             elif isinstance(bn_layer, nn.BatchNorm2d):
-                NewBN = RobustBN2d
+                NewBN = RobustBN
             else:
                 raise RuntimeError()
 
