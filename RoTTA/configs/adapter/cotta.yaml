@@ -83,7 +83,7 @@ DATASET:
     
     PATH: "/home/ngoto/Working/Data/MixData/nih_14_structured"
     # PATH: "/Users/admin/Working/Data/MixData/nih_14_structured"
-    CSV: "validate.csv" # "validate_reordered.csv, validate_reordered_subset.csv, valid_split"
+    CSV: "validate_subset_seed42.csv" # "validate_reordered.csv, validate_reordered_subset.csv, valid_split"
     IMAGE_DIR: "images"
 
   TEST_CORRUPTIONS:
