@@ -16,7 +16,7 @@ from core.utils import *
 from core.utils.constants import IS_CPU_DEVICE
 from Base.metrics import AUCProcessor
 from core.model import build_model
-from Base.multilabel_loader import build_loader_multilabel
+from Base.multilabel_loader_v2 import build_loader_multilabel
 from Base.corruptions import apply_corruption
 from core.optim import build_optimizer
 from core.adapter import build_adapter
