@@ -190,7 +190,7 @@ def testTimeAdaptationMultiLabel(cfg):
         if adaptation_mode == 'corruption':
             # --- Corruptions mode ---
             logger.info("Running in 'corruption' adaptation mode for this epoch.")
-            loader, _ = build_loader_multilabel(cfg)
+            loader, processor = build_loader_multilabel(cfg)
 
             tbar = tqdm(loader, desc=f"[Corruption]")
             for batch_id, data_package in enumerate(tbar):
