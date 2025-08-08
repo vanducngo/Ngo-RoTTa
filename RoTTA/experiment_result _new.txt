@@ -124,3 +124,19 @@ Rotta:
         - Class 2 : 0.5548
         - Class 3 : 0.6894
         - Class 4 : 0.6768
+CoTTA:
+    - Severity 5:
+        - Mean AUC: 0.6644
+        - Class 0 : 0.6453
+        - Class 1 : 0.7338
+        - Class 2 : 0.6073
+        - Class 3 : 0.6801
+        - Class 4 : 0.6554
+Tent:
+    - Severity 5:
+        - Mean AUC: 0.5029
+        - Class 0 : 0.4905
+        - Class 1 : 0.5054
+        - Class 2 : 0.5025
+        - Class 3 : 0.5104
+        - Class 4 : 0.5059
