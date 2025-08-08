@@ -2,6 +2,35 @@ import pandas as pd
 import os
 from sklearn.model_selection import train_test_split
 
+def analyze_label_distribution(df, label_columns, dataset_name="Dataset"):
+    """
+    Phân tích và in ra số lượng mẫu dương tính, âm tính, và tổng số
+    cho từng nhãn trong một DataFrame.
+
+    Args:
+        df (pd.DataFrame): DataFrame chứa dữ liệu.
+        label_columns (list): Danh sách các cột nhãn cần phân tích.
+        dataset_name (str): Tên của bộ dữ liệu để in ra tiêu đề.
+    """
+    print(f"\n--- Phân tích phân phối nhãn cho: {dataset_name} ({len(df)} mẫu) ---")
+    
+    # Tạo một DataFrame để lưu kết quả
+    dist_data = []
+    for col in label_columns:
+        if col in df.columns:
+            positive_count = df[col].sum()
+            negative_count = len(df) - positive_count
+            dist_data.append({
+                "Label": col,
+                "Positive (1s)": int(positive_count),
+                "Negative (0s)": int(negative_count),
+                "Total": len(df),
+                "Positive (%)": f"{(positive_count / len(df) * 100):.2f}%"
+            })
+    
+    dist_df = pd.DataFrame(dist_data)
+    print(dist_df.to_string(index=False)) # .to_string() để in ra đẹp hơn
+
 def create_nih_stratified_subset():
     INPUT_CSV_PATH = "/home/ngoto/Working/Data/MixData/nih_14_structured/validate.csv"
 
@@ -38,6 +67,8 @@ def create_nih_stratified_subset():
 
     print(f"Đã đọc thành công {len(full_df)} mẫu.")
     
+    analyze_label_distribution(full_df, LABEL_COLUMNS, "Dataset")
+
     # --- 2. Kiểm tra các cột nhãn ---
     for col in LABEL_COLUMNS:
         if col not in full_df.columns:
