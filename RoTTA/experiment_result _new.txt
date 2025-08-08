@@ -95,4 +95,9 @@
     - Severity 1.00
         - 
     - Severity 5.00
-        -
+        - Mean AUC: 0.6785
+        - Atelectasis      : 0.6437
+        - Cardiomegaly     : 0.7443
+        - Consolidation    : 0.6137
+        - Pleural Effusion : 0.6990
+        - Pneumothorax     : 0.6920
