@@ -237,19 +237,64 @@ def snow(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
     return torch.clamp(image_tensor + snow_pattern * alpha, 0, 1)
 
 def fog(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
-    c_levels = [0, 0.2, 0.3, 0.4, 0.5, 0.6]
-    alpha = _linear_interpolate(severity, c_levels)
-    if alpha == 0: return image_tensor
+    """
+    Thêm hiệu ứng sương mù vào một batch ảnh.
+    Phiên bản này được tối ưu hóa bằng cách tạo nhiễu tần số thấp
+    thông qua việc phóng to một pattern nhiễu nhỏ.
+
+    Args:
+        image_tensor (torch.Tensor): Batch ảnh đầu vào, shape [B, C, H, W].
+        severity (float): Mức độ hiệu ứng, từ 0 đến 5.
+
+    Returns:
+        torch.Tensor: Batch ảnh đã được thêm hiệu ứng sương mù.
+    """
+    # 1. Tính toán các tham số dựa trên severity
+    # alpha: độ mờ đục của lớp sương mù
+    # scale_factor: kích thước của pattern nhiễu ban đầu (càng nhỏ, sương mù càng "dày")
+    alpha_levels = [0, 0.15, 0.25, 0.35, 0.45, 0.55] # Điều chỉnh alpha để hiệu ứng rõ hơn
+    scale_levels = [1, 16, 14, 12, 10, 8] # Mẫu số để chia (ví dụ: h/16)
     
+    alpha = _linear_interpolate(severity, alpha_levels)
+    if alpha == 0: 
+        return image_tensor
+        
+    scale_divisor = _linear_interpolate(severity, scale_levels)
+    
+    # Lấy kích thước của batch
     b, c, h, w = image_tensor.shape
+    device = image_tensor.device
     
-    fog_pattern_single = torch.randn(1, h, w, device=image_tensor.device)
-    fog_pattern_single = _apply_gaussian_blur(fog_pattern_single, sigma=10).squeeze(0) # Vẫn có thể giảm sigma
-    fog_pattern_single = (fog_pattern_single - fog_pattern_single.min()) / (fog_pattern_single.max() - fog_pattern_single.min())
+    # 2. Tạo một tensor nhiễu rất nhỏ
+    # Kích thước nhỏ hơn sẽ tạo ra các đám sương mù "lớn" hơn, "dày" hơn
+    small_h, small_w = max(1, int(h / scale_divisor)), max(1, int(w / scale_divisor))
     
-    fog_pattern_batch = fog_pattern_single.repeat(b, c, 1, 1)
+    # Tạo nhiễu cho cả batch, nhưng chỉ 1 kênh
+    fog_pattern_small = torch.randn(b, 1, small_h, small_w, device=device)
+
+    # 3. Phóng to (interpolate) pattern nhiễu lên kích thước đầy đủ
+    # Quá trình này sẽ tự động làm "mịn" nhiễu, tạo ra hiệu ứng mượt mà
+    # 'bicubic' cho kết quả mịn hơn 'bilinear'
+    fog_pattern_large = F.interpolate(fog_pattern_small, size=(h, w), mode='bicubic', align_corners=False)
     
-    return torch.clamp((1 - alpha) * image_tensor + alpha * fog_pattern_batch, 0, 1)
+    # 4. Chuẩn hóa pattern về khoảng [0, 1]
+    # Thực hiện trên từng ảnh trong batch một cách độc lập
+    # reshape(-1) -> tính min/max trên toàn bộ ảnh -> reshape lại
+    fog_pattern_flat = fog_pattern_large.view(b, -1)
+    min_vals = fog_pattern_flat.min(dim=1, keepdim=True)[0]
+    max_vals = fog_pattern_flat.max(dim=1, keepdim=True)[0]
+    fog_pattern_normalized = (fog_pattern_large.view(b, -1) - min_vals) / (max_vals - min_vals + 1e-6)
+    fog_pattern_normalized = fog_pattern_normalized.view(b, 1, h, w)
+
+    # 5. Lặp lại pattern cho tất cả các kênh màu (ví dụ 3 kênh R,G,B)
+    fog_pattern_batch = fog_pattern_normalized.repeat(1, c, 1, 1)
+    
+    # 6. Trộn ảnh gốc với lớp sương mù
+    # Công thức: new_image = (1 - alpha) * original_image + alpha * fog_pattern
+    corrupted_image = (1 - alpha) * image_tensor + alpha * fog_pattern_batch
+    
+    return torch.clamp(corrupted_image, 0, 1)
+
 
 # ==============================================================================
 # Dictionary và fuctions
@@ -273,6 +318,31 @@ CORRUPTION_FUNCS = {
     'gaussian_blur': gaussian_blur
 }
 
+# def apply_corruption(image_tensor: torch.Tensor, corruption_name: str, severity: float = 1) -> torch.Tensor:
+#     if severity == 0 or corruption_name.lower() == 'none':
+#         return image_tensor
+#     if not (0 < severity <= 5):
+#         raise ValueError(f"Severity must be between 0 (exclusive) and 5 (inclusive), but got {severity}")
+#     if corruption_name not in CORRUPTION_FUNCS:
+#         raise ValueError(f"Unknown corruption type: {corruption_name}")
+
+#     original_device = image_tensor.device
+
+#     if corruption_name == 'fog':
+#         return fog(image_tensor, severity)
+
+#     image_tensor_cpu = image_tensor.cpu() 
+#     corruption_func = CORRUPTION_FUNCS[corruption_name]
+
+#     if image_tensor_cpu.dim() == 4: # Batch
+#         corrupted_images = [corruption_func(img, severity) for img in image_tensor_cpu]
+#         return torch.stack(corrupted_images).to(original_device)
+#     elif image_tensor_cpu.dim() == 3: # Single image
+#         return corruption_func(image_tensor_cpu, severity).to(original_device)
+#     else:
+#         raise ValueError("Input tensor must have 3 or 4 dimensions")
+
+BATCH_CORRUPTION_FUNCS = ['fog'] 
 def apply_corruption(image_tensor: torch.Tensor, corruption_name: str, severity: float = 1) -> torch.Tensor:
     if severity == 0 or corruption_name.lower() == 'none':
         return image_tensor
@@ -282,17 +352,27 @@ def apply_corruption(image_tensor: torch.Tensor, corruption_name: str, severity:
         raise ValueError(f"Unknown corruption type: {corruption_name}")
 
     original_device = image_tensor.device
-
-    if corruption_name == 'fog':
-        return fog(image_tensor, severity)
-
-    image_tensor_cpu = image_tensor.cpu() 
     corruption_func = CORRUPTION_FUNCS[corruption_name]
 
-    if image_tensor_cpu.dim() == 4: # Batch
-        corrupted_images = [corruption_func(img, severity) for img in image_tensor_cpu]
-        return torch.stack(corrupted_images).to(original_device)
-    elif image_tensor_cpu.dim() == 3: # Single image
-        return corruption_func(image_tensor_cpu, severity).to(original_device)
+    # --- LOGIC MỚI ĐỂ XỬ LÝ BATCH HOẶC SINGLE IMAGE ---
+    
+    # 1. Nếu hàm nhiễu được thiết kế để xử lý cả batch
+    if corruption_name in BATCH_CORRUPTION_FUNCS:
+        # Và input là một batch
+        if image_tensor.dim() == 4:
+            # Truyền thẳng cả batch vào
+            return corruption_func(image_tensor, severity)
+        # Nếu input là ảnh đơn, vẫn phải unsqueeze để nó thành batch 1 ảnh
+        elif image_tensor.dim() == 3:
+            return corruption_func(image_tensor.unsqueeze(0), severity).squeeze(0)
+
+    # 2. Nếu là hàm nhiễu thông thường (chỉ xử lý ảnh đơn)
     else:
-        raise ValueError("Input tensor must have 3 or 4 dimensions")
+        image_tensor_cpu = image_tensor.cpu()
+        if image_tensor_cpu.dim() == 4: # Batch
+            corrupted_images = [corruption_func(img, severity) for img in image_tensor_cpu]
+            return torch.stack(corrupted_images).to(original_device)
+        elif image_tensor_cpu.dim() == 3: # Single image
+            return corruption_func(image_tensor_cpu, severity).to(original_device)
+        else:
+            raise ValueError("Input tensor must have 3 or 4 dimensions")
