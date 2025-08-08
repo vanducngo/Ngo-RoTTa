@@ -101,3 +101,26 @@
         - Consolidation    : 0.6137
         - Pleural Effusion : 0.6990
         - Pneumothorax     : 0.6920
+
+
+
+
+Sample dfsfldflsd
+
+
+ZeroShot:
+    - Severity 5:
+        - Mean AUC: 0.6557
+        - Class 0 : 0.6180
+        - Class 1 : 0.7382
+        - Class 2 : 0.5553
+        - Class 3 : 0.6885
+        - Class 4 : 0.6785
+Rotta:
+    - Severity: 5
+        - Mean AUC: 0.6559
+        - Class 0 : 0.6169
+        - Class 1 : 0.7416
+        - Class 2 : 0.5548
+        - Class 3 : 0.6894
+        - Class 4 : 0.6768
