@@ -46,9 +46,8 @@ class RoTTA_MultiLabels(BaseAdapter):
             model.eval()
             self.model_ema.eval()
             
-            ema_out_14_cls = self.model_ema(batch_data)
-            ema_out_5_cls = torch.index_select(ema_out_14_cls, 1, self.target_indices)
-            predict_prob = torch.sigmoid(ema_out_5_cls)
+            ema_out = self.model_ema(batch_data)
+            predict_prob = torch.sigmoid(ema_out)
             pseudo_label = (predict_prob > 0.5).float() 
             
             # Compute uncertainty for Sigmoid outputs
@@ -75,10 +74,9 @@ class RoTTA_MultiLabels(BaseAdapter):
                 pass
         
         with torch.no_grad():
-            final_logits_14_cls = self.model_ema(batch_data)
-            final_logits_5_cls = torch.index_select(final_logits_14_cls, 1, self.target_indices)
+            final_logits = self.model_ema(batch_data)
 
-        return final_logits_5_cls
+        return final_logits
 
     def update_model(self, model, optimizer):
         model.train()
