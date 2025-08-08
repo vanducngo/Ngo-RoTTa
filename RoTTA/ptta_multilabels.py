@@ -203,7 +203,7 @@ def testTimeAdaptationMultiLabel(cfg):
                 logits = tta_model(data_to_adapt)
                 
                 probabilities = torch.sigmoid(logits)
-                processor.process(probabilities, labels, domain_info)
+                processor.process(probabilities, labels, domain)
                 
                 if batch_id > 0 and batch_id % 50 == 0:
                     if len(processor.all_labels) > 0:
