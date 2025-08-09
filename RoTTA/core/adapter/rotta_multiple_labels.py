@@ -43,12 +43,12 @@ class RoTTA_MultiLabels(BaseAdapter):
     def forward_and_adapt(self, batch_data, model, optimizer):
         # batch data
         with torch.no_grad():
-            model.eval()
-            self.model_ema.eval()
+            # model.eval()
+            # self.model_ema.eval()
             
             ema_out = self.model_ema(batch_data)
             predict_prob = torch.sigmoid(ema_out)
-            pseudo_label = (predict_prob > 0.5).float() 
+            pseudo_label = (predict_prob > 0.7).float() 
             
             # Compute uncertainty for Sigmoid outputs
             # (Sum of binary cross-entropy across classes)

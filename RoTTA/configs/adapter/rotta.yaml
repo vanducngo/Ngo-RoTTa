@@ -21,12 +21,12 @@ INPUT:
 ADAPTER:
   NAME: rotta_multilabels # tent rotta_multilabels norm
   RoTTA:
-    NU: 0.1
+    NU: 0.001
     MEMORY_SIZE: 64
     UPDATE_FREQUENCY: 64
     LAMBDA_T: 1.0
     LAMBDA_U: 1.0
-    ALPHA: 0.05
+    ALPHA: 0.5
 
 LOADER:
   NUM_WORKS: 4
