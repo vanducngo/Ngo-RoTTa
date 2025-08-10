@@ -14,7 +14,7 @@ def create_stratified_subset(input_csv_path, subset_fraction, label_columns, ran
     input_filename = os.path.basename(input_csv_path)
     subset_percent = int(subset_fraction * 100)
     # Thêm seed vào tên file để phân biệt các lần chạy
-    output_filename = input_filename.replace('.csv', f'_subset_seed{random_seed}.csv')
+    output_filename = input_filename.replace('.csv', f'_subset_{subset_percent}_seed{random_seed}.csv')
     output_csv_path = os.path.join(input_dir, output_filename)
 
     # --- 2. Đọc dữ liệu ---
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     # --- CẤU HÌNH ---
     
     INPUT_CSV_PATH = "/home/ngoto/Working/Data/MixData/nih_14_structured/validate.csv"
-    SUBSET_FRACTION = 0.2
+    SUBSET_FRACTION = 0.5
     LABEL_COLUMNS = [
         'Atelectasis', 'Cardiomegaly', 'Consolidation', 
         'Pleural Effusion', 'Pneumothorax'
