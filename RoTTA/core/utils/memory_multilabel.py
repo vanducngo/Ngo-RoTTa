@@ -1,5 +1,6 @@
 # memory_multilabel.py
 
+import numpy as np
 import torch
 import math
 
@@ -63,6 +64,7 @@ class CSTU_MultiLabel:
         return tmp_data, tmp_age
     
     def add_instance(self, instance):
+        isAdded = False
         assert len(instance) == 3
         
         x, prediction, uncertainty = instance
@@ -70,9 +72,11 @@ class CSTU_MultiLabel:
         new_score = self.heuristic_score(0, uncertainty)
 
         if self.remove_instance(prediction, new_score):
+            isAdded = True
             self.memory.append(new_item)
 
         self.add_age()
+        return isAdded
 
     def remove_instance(self, new_prediction, new_score) -> bool:
         if new_prediction.sum() == 0:
@@ -95,7 +99,7 @@ class CSTU_MultiLabel:
                 break
 
         if is_under_represented:
-            majority_classes_indices = self.get_majority_classes_indices(current_counts)
+            majority_classes_indices = self.get_majority_classes_indices_v2(current_counts)
             return self.remove_from_classes(majority_classes_indices, new_score)
         else:
             return self.remove_from_classes(new_item_classes.tolist(), new_score)
@@ -137,6 +141,34 @@ class CSTU_MultiLabel:
         max_occupied = torch.max(current_counts).item()
         return torch.where(current_counts == max_occupied)[0].tolist()
     
+    def get_majority_classes_indices_v2(self, current_counts=None) -> list:
+        """
+        Xác định các lớp chiếm ưu thế.
+        Một lớp được coi là "chiếm ưu thế" nếu số lượng mẫu của nó
+        vượt quá số lượng trung bình mong muốn.
+        Nếu không có lớp nào như vậy, nó sẽ trả về lớp có số lượng lớn nhất.
+        """
+        if current_counts is None:
+            current_counts = self._recalculate_class_counts()
+            
+        # 1. Tính ngưỡng trung bình mong muốn
+        # desired_count_per_class đã được định nghĩa trong __init__
+        desired_count = self.desired_count_per_class
+
+        # 2. Tìm tất cả các lớp có số lượng vượt ngưỡng
+        # Chuyển sang numpy để thao tác dễ hơn
+        current_counts_np = current_counts.cpu().numpy()
+        majority_indices = np.where(current_counts_np >= desired_count)[0]
+        
+        # 3. Xử lý trường hợp biên: nếu không có lớp nào vượt ngưỡng
+        if len(majority_indices) == 0:
+            # Quay lại chiến lược cũ: tìm lớp có số lượng lớn nhất
+            max_occupied = np.max(current_counts_np)
+            # Có thể có nhiều lớp cùng có số lượng lớn nhất
+            majority_indices = np.where(current_counts_np == max_occupied)[0]
+        
+        return majority_indices.tolist()
+
     def _recalculate_class_counts(self) -> torch.Tensor: 
         if not self.memory:
             return torch.zeros(self.num_class, dtype=torch.long, device=self.device)

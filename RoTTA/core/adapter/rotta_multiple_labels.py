@@ -43,8 +43,8 @@ class RoTTA_MultiLabels(BaseAdapter):
     def forward_and_adapt(self, batch_data, model, optimizer):
         # batch data
         with torch.no_grad():
-            # model.eval()
-            # self.model_ema.eval()
+            model.train()
+            self.model_ema.train()
             
             ema_out = self.model_ema(batch_data)
             predict_prob = torch.sigmoid(ema_out)
@@ -66,12 +66,12 @@ class RoTTA_MultiLabels(BaseAdapter):
             if p_l.sum() == 0:
                 continue
 
-            self.mem.add_instance(current_instance)
-            self.current_instance += 1
+            isAdded = self.mem.add_instance(current_instance)
+            if isAdded: 
+                self.current_instance += 1
 
             if self.current_instance % self.update_frequency == 0:
                 self.update_model(model, optimizer)
-                pass
         
         with torch.no_grad():
             final_logits = self.model_ema(batch_data)

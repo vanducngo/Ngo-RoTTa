@@ -142,3 +142,16 @@ Tent:
         - Class 4 : 0.5059
 Norm
     - Severity 5:
+
+
+
+
+
+
+--- Epoch 1 Final Results ---
+-Mean AUC: 0.6714
+- Class 0 : 0.6297
+- Class 1 : 0.7617
+- Class 2 : 0.5611
+- Class 3 : 0.7061
+- Class 4 : 0.6984
