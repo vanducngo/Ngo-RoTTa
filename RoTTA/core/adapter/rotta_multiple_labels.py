@@ -30,6 +30,8 @@ class RoTTA_MultiLabels(BaseAdapter):
         target_indices_list = [0, 1, 2, 3, 4]
         self.target_indices = torch.tensor(target_indices_list, device=DEVICE)
 
+        print(f"self.optimizer -{self.optimizer}")
+
          # Init wandb run
         cfg2 = OmegaConf.load("configs/adapter/rotta.yaml")
         wandb.init(
@@ -48,7 +50,7 @@ class RoTTA_MultiLabels(BaseAdapter):
             
             ema_out = self.model_ema(batch_data)
             predict_prob = torch.sigmoid(ema_out)
-            pseudo_label = (predict_prob > 0.7).float() 
+            pseudo_label = (predict_prob > 0.8).float() 
             
             # Compute uncertainty for Sigmoid outputs
             # (Sum of binary cross-entropy across classes)
@@ -72,7 +74,7 @@ class RoTTA_MultiLabels(BaseAdapter):
 
             if self.current_instance % self.update_frequency == 0:
                 self.update_model(model, optimizer)
-        
+        # self.mem.add_age()
         with torch.no_grad():
             final_logits = self.model_ema(batch_data)
 
@@ -152,6 +154,7 @@ class RoTTA_MultiLabels(BaseAdapter):
         return ema_model
 
     def configure_model(self, model: nn.Module):
+
         model.requires_grad_(False)
         normlayer_names = []
 
@@ -168,7 +171,8 @@ class RoTTA_MultiLabels(BaseAdapter):
             else:
                 raise RuntimeError()
 
-            momentum_bn = NewBN(bn_layer, self.cfg.ADAPTER.RoTTA.ALPHA)
+            momentum_bn = NewBN(bn_layer,
+                                self.cfg.ADAPTER.RoTTA.ALPHA)
             momentum_bn.requires_grad_(True)
             set_named_submodule(model, name, momentum_bn)
         return model
