@@ -11,7 +11,6 @@ class ZeroshotMultiLabels(BaseAdapter):
     @torch.enable_grad()
     def forward_and_adapt(self, batch_data, model, optimizer):
         logits = model(batch_data)
-
         return logits
 
     def configure_model(self, model: nn.Module):

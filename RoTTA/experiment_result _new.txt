@@ -144,53 +144,21 @@ Norm
     - Severity 5:
 
 
-===============Chay 30% - Nhieu lan luot ===================
+===============Chay Full - Nhieu lan luot Severity = 5 ===================
 ZeroShot
-    - Mean AUC: 0.6564
-    - Class 0 : 0.6084
-    - Class 1 : 0.7443
-    - Class 2 : 0.5625
-    - Class 3 : 0.6827
-    - Class 4 : 0.6843
+    - Mean AUC: 0.6404
+    - Class 0 : 0.6075
+    - Class 1 : 0.7106
+    - Class 2 : 0.5547
+    - Class 3 : 0.6700
+    - Class 4 : 0.6591
 Rotta:
-    - Mean AUC: 0.6562
-    - Class 0 : 0.6101
-    - Class 1 : 0.7420
-    - Class 2 : 0.5633
-    - Class 3 : 0.6816
-    - Class 4 : 0.6838
+    - Mean AUC: 0.6530
+    - Class 0 : 0.6125
+    - Class 1 : 0.7326
+    - Class 2 : 0.5587
+    - Class 3 : 0.6846
+    - Class 4 : 0.6768
 CoTTA:
-    - Mean AUC: 0.6638
-    - Class 0 : 0.6131
-    - Class 1 : 0.7452
-    - Class 2 : 0.5936
-    - Class 3 : 0.6906
-    - Class 4 : 0.6766
 TENT:
-    - Mean AUC: 0.5485
-    - Class 0 : 0.5168
-    - Class 1 : 0.5826
-    - Class 2 : 0.5113
-    - Class 3 : 0.5835
-    - Class 4 : 0.5485
 Norm:
-    - Mean AUC: 0.6552
-    - Class 0 : 0.6108
-    - Class 1 : 0.7370
-    - Class 2 : 0.5645
-    - Class 3 : 0.6816
-    - Class 4 : 0.6821
-
-
-===============Chay 100% - Nhieu tren tung batch ===================
-ZeroShot
-- Mean AUC: 0.6588
-- Atelectasis      : 0.6088
-- Cardiomegaly     : 0.7368
-- Consolidation    : 0.5766
-- Pleural Effusion : 0.6975
-- Pneumothorax     : 0.6742
-
-
-
-Mai kiem tra lai RoTTa voi tta_transform = Identity

@@ -204,7 +204,7 @@ def testTimeAdaptationMultiLabel(cfg):
                 probabilities = torch.sigmoid(logits)
                 processor.process(probabilities, labels, domain)
                 
-                if batch_id > 0 and batch_id % 50 == 0:
+                if batch_id > 0 and batch_id % 1 == 0:
                     if len(processor.all_labels) > 0:
                         temp_labels = np.concatenate(processor.all_labels, axis=0)
                         temp_preds = np.concatenate(processor.all_predictions, axis=0)
