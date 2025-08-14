@@ -7,7 +7,7 @@ from PIL import Image
 
 # Import các thành phần cần thiết
 from .metrics import AUCProcessor
-from .corruptions2 import apply_corruption # Đảm bảo đường dẫn này đúng
+from .corruptions import apply_corruption # Đảm bảo đường dẫn này đúng
 
 # ==============================================================================
 # Lớp Dataset mới: ContinualCorruptionDataset

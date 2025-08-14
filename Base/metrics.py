@@ -78,7 +78,7 @@ class AUCProcessor:
 
     def info(self) -> str:
         self.calculate()        
-        info_str = f"-Mean AUC: {self.results['mean_auc']:.4f}\n"        
+        info_str = f"- Mean AUC: {self.results['mean_auc']:.4f}\n"        
         per_class_results = self.results.get("per_class_auc", {})
         if per_class_results:
             max_len = max(len(name) for name in per_class_results.keys())
