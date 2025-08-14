@@ -1,5 +1,3 @@
-# RoTTA.py
-
 import numpy as np
 import torch
 import torch.nn as nn
@@ -29,8 +27,6 @@ class RoTTA_MultiLabels(BaseAdapter):
 
         target_indices_list = [0, 1, 2, 3, 4]
         self.target_indices = torch.tensor(target_indices_list, device=DEVICE)
-
-        print(f"self.optimizer -{self.optimizer}")
 
          # Init wandb run
         cfg2 = OmegaConf.load("configs/adapter/rotta.yaml")
@@ -74,7 +70,6 @@ class RoTTA_MultiLabels(BaseAdapter):
 
             if self.current_instance % self.update_frequency == 0:
                 self.update_model(model, optimizer)
-        # self.mem.add_age()
         with torch.no_grad():
             final_logits = self.model_ema(batch_data)
 
@@ -114,9 +109,6 @@ class RoTTA_MultiLabels(BaseAdapter):
             wandb.log(stats, step=self.current_instance)
     
     def analyze_memory_bank(self):
-        """
-        Compute and return statistical metrics of the multi-label memory bank
-        """
         all_items = self.mem.get_all_items()
         
         if not all_items:

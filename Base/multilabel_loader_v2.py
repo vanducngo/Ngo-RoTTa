@@ -5,9 +5,8 @@ import pandas as pd
 import os
 from PIL import Image
 
-# Import các thành phần cần thiết
 from .metrics import AUCProcessor
-from .corruptions import apply_corruption # Đảm bảo đường dẫn này đúng
+from .corruptions import apply_corruption
 
 # ==============================================================================
 # Lớp Dataset mới: ContinualCorruptionDataset
@@ -62,7 +61,6 @@ class ContinualCorruptionDataset(Dataset):
         row = self.df.iloc[sample_idx]
         img_name = str(row[self.image_col])
         
-        # Logic tải ảnh (giữ lại từ code cũ của bạn)
         if ("CheXpert-v1.0-small" in img_name):
             img_path = f"/home/ngoto/Working/Data/{img_name}"
         elif not os.path.isabs(img_name):
@@ -76,23 +74,16 @@ class ContinualCorruptionDataset(Dataset):
             print(f"Warning: File not found at {img_path}. Returning None.")
             return None
 
-        # --- Pipeline xử lý ---
-        # 1. Chuyển PIL sang Tensor [0, 1]
+        # Chuyển PIL sang Tensor [0, 1]
         image_tensor = self.to_tensor_transform(image_pil)
-        
-        # 2. Áp dụng nhiễu trên Tensor [0, 1]
+        # Áp dụng nhiễu trên Tensor [0, 1]
         corrupted_tensor = apply_corruption(image_tensor, corruption_name, self.severity)
-        
-        # 3. Chuẩn hóa (Normalize)
+        # 3Chuẩn hóa (Normalize)
         final_image = self.normalize_transform(corrupted_tensor)
 
         labels = torch.tensor(row[self.labels_list].values.astype('float'), dtype=torch.float32)
         
         return {'image': final_image, 'label': labels, 'domain': corruption_name}
-
-# ==============================================================================
-# Các hàm tiện ích (giữ nguyên)
-# ==============================================================================
 
 def collate_fn_skip_none(batch):
     batch = list(filter(lambda x: x is not None, batch))
@@ -100,21 +91,13 @@ def collate_fn_skip_none(batch):
         return {'image': torch.empty(0), 'label': torch.empty(0), 'domain': []}
     return torch.utils.data.dataloader.default_collate(batch)
 
-
-# ==============================================================================
-# Hàm build_loader chính - ĐÃ ĐƯỢC CẬP NHẬT
-# ==============================================================================
-
 def build_loader_multilabel(cfg):
-    """
-    Xây dựng DataLoader và Processor cho kịch bản Continual Corruption,
-    mô phỏng theo RoTTA gốc.
-    """
-    # 1. Khởi tạo Dataset mới
-    # Tất cả logic về transform và corruption đã được xử lý bên trong Dataset
+    '''
+        # Construct a DataLoader for the continual adaptation benchmark, 
+        # where the entire target dataset is sequentially exposed to different 
+        # corruption types, mimicking the original RoTTA evaluation setup
+    '''
     continual_corruption_dataset = ContinualCorruptionDataset(cfg)
-    
-    # 2. Tạo DataLoader từ dataset này
     loader = DataLoader(
         continual_corruption_dataset,
         batch_size=cfg.TEST.BATCH_SIZE,
@@ -124,7 +107,7 @@ def build_loader_multilabel(cfg):
         pin_memory=True
     )
     
-    # 3. Tạo processor để tính toán metric
+    # Create processor for calculate metric
     result_processor = AUCProcessor(num_classes=len(cfg.DATASET.LABELS_LIST))
     
     print("Continual corruption data loader and AUC processor built successfully.")

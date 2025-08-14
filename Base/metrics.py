@@ -21,8 +21,6 @@ class AUCProcessor:
     def process(self, predictions, labels, domains):
         self._calculated = False
         
-        # self.all_predictions.append(predictions.cpu().numpy())
-        # self.all_labels.append(labels.cpu().numpy())
         self.all_predictions.append(predictions.detach().cpu().numpy())
         self.all_labels.append(labels.detach().cpu().numpy())
         

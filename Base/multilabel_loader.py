@@ -9,8 +9,8 @@ from .metrics import AUCProcessor
 
 class CleanSingleDomainDataset(Dataset):
     """
-    The Dataset class is designed to read only ONE single "clean" data domain.
-    The application of noise will be handled externally.
+        The Dataset class is designed to read only ONE single "clean" data domain.
+        The application of noise will be handled externally.
     """
     def __init__(self, cfg, transform=None):
         base_domain_cfg = cfg.DATASET.BASE_DOMAIN
@@ -69,7 +69,7 @@ def build_loader_multilabel(cfg):
     loader = DataLoader(
         clean_dataset,
         batch_size=cfg.TEST.BATCH_SIZE,
-        shuffle=False,  # Important: DO NOT shuffle to ensure the dataset is traversed in order
+        shuffle=False,
         num_workers=cfg.LOADER.NUM_WORKS,
         collate_fn=collate_fn_skip_none,
         pin_memory=True

@@ -12,31 +12,24 @@ class CoTTAMultiLabel(BaseAdapter):
     and integrates it into the project's BaseAdapter framework.
     """
     def __init__(self, cfg, model, optimizer_func):
-        # BaseAdapter __init__ sẽ gọi self.configure_model và self.collect_params
         super().__init__(cfg, model, optimizer_func)
         self.steps = self.cfg.OPTIM.STEPS
         
-        # Lưu các tham số đặc trưng của CoTTA
         self.mt_alpha = self.cfg.OPTIM.MT
         self.rst_prob = self.cfg.OPTIM.RST
         self.ap_threshold = self.cfg.OPTIM.AP
         
-        # Khởi tạo các mô hình cần thiết
-        # self.model là student model (từ BaseAdapter), đã ở đúng device
         self.model_state, self.optimizer_state, self.teacher, self.anchor = \
             self._copy_model_and_optimizer(self.model, self.optimizer)
 
-        # CoTTA sử dụng augmentation mạnh để tạo nhãn giả
-        # get_tta_transforms cần được định nghĩa ở đâu đó trong project của bạn
         self.transform = get_tta_transforms(self.cfg) 
-        self.num_augmentations = 32 # Giữ nguyên như bản gốc
+        self.num_augmentations = 32
 
     def configure_model(self, model: nn.Module):
         """Configure model for CoTTA: enable training for all parameters."""
         model.train()
         model.requires_grad_(True) 
         
-        # Cấu hình riêng cho BN để dùng batch stats, giống TENT/CoTTA gốc
         for m in model.modules():
             if isinstance(m, (nn.BatchNorm2d, nn.BatchNorm1d)):
                 if hasattr(m, 'track_running_stats'):
@@ -54,7 +47,6 @@ class CoTTAMultiLabel(BaseAdapter):
     
     @torch.enable_grad()
     def forward_and_adapt(self, x, model, optimizer):
-        # 1. Tạo nhãn giả "mềm" chất lượng cao từ Teacher
         with torch.no_grad():
             # Sử dụng anchor model để quyết định có dùng augmentation averaging không
             anchor_probs = torch.sigmoid(self.anchor(x))
@@ -84,7 +76,7 @@ class CoTTAMultiLabel(BaseAdapter):
         # 3. Cập nhật Teacher model bằng EMA
         self._update_ema_variables(self.teacher, model, self.mt_alpha)
 
-        # 4. Stochastic Restoration (PHIÊN BẢN ĐÃ SỬA LỖI)
+        # 4. Stochastic Restoration
         for name, param in model.named_parameters():
             if param.requires_grad:
                 # Lấy tham số gốc tương ứng từ state_dict bằng tên (key)
@@ -104,7 +96,6 @@ class CoTTAMultiLabel(BaseAdapter):
         return final_teacher_logits
 
     def _copy_model_and_optimizer(self, model, optimizer):
-        """Tạo các bản sao cần thiết cho CoTTA."""
         model_state = deepcopy(model.state_dict())
         optimizer_state = deepcopy(optimizer.state_dict()) if optimizer is not None else None
         
@@ -118,7 +109,5 @@ class CoTTAMultiLabel(BaseAdapter):
 
     @staticmethod
     def _update_ema_variables(ema_model, model, alpha):
-        """Cập nhật trọng số của Teacher model."""
         for ema_param, param in zip(ema_model.parameters(), model.parameters()):
-            # Công thức EMA: ema = alpha * ema + (1 - alpha) * current
             ema_param.data.mul_(alpha).add_(param.data, alpha=1 - alpha)

@@ -96,9 +96,6 @@ def get_model(cfg, feature_extract=False, useWeight=True, numclasses=5):
     return model
 
 def unfreeze_specific_layers(model, layers_to_unfreeze=['layer4', 'fc']):
-    """
-    "UnFreeze" specific layers for fine-tune.
-    """
     print(f"\nUnfreezing specific layers: {layers_to_unfreeze}")
     for name, param in model.named_parameters():
         for layer_name in layers_to_unfreeze:

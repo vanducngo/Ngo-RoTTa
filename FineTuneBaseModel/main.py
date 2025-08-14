@@ -7,14 +7,12 @@ import torch.nn as nn
 
 from Base.models import get_model_chexpert
 
-
 def main(cfg):
     device = torch.device(cfg.TRAINING.DEVICE if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     
     model_save_path = os.path.join(cfg.OUTPUT_DIR, "finetuned_model.pth")
 
-    # Tải dữ liệu
     print("\n>>> Loading datasets...")
     train_loader, chexpert_test_loader = get_chexpert_full_label_loaders(cfg)
 
