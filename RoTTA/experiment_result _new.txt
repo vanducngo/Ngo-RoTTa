@@ -168,3 +168,9 @@ TENT:
     - Class 3 : 0.5119
     - Class 4 : 0.5063
 Norm:
+    - Mean AUC: 0.6404
+    - Class 0 : 0.6075
+    - Class 1 : 0.7106
+    - Class 2 : 0.5547
+    - Class 3 : 0.6700
+    - Class 4 : 0.6591
