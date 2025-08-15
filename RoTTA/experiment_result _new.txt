@@ -160,6 +160,12 @@ Rotta:
     - Class 3 : 0.6846
     - Class 4 : 0.6768
 CoTTA:
+    - Mean AUC: 0.6337
+    - Class 0 : 0.5914
+    - Class 1 : 0.6939
+    - Class 2 : 0.5827
+    - Class 3 : 0.6658
+    - Class 4 : 0.6347
 TENT:
     - Mean AUC: 0.5044
     - Class 0 : 0.4972
