@@ -142,18 +142,13 @@ class CSTU_MultiLabel:
         return torch.where(current_counts == max_occupied)[0].tolist()
     
     def get_majority_classes_indices_v2(self, current_counts=None) -> list:
-        """
-        Xác định các lớp chiếm ưu thế.
-        Một lớp được coi là "chiếm ưu thế" nếu số lượng mẫu của nó
-        vượt quá số lượng trung bình mong muốn.
-        Nếu không có lớp nào như vậy, nó sẽ trả về lớp có số lượng lớn nhất.
-        """
         if current_counts is None:
             current_counts = self._recalculate_class_counts()
             
         # 1. Tính ngưỡng trung bình mong muốn
         # desired_count_per_class đã được định nghĩa trong __init__
-        desired_count = self.desired_count_per_class
+        # desired_count = self.desired_count_per_class
+        desired_count = 0
 
         # 2. Tìm tất cả các lớp có số lượng vượt ngưỡng
         # Chuyển sang numpy để thao tác dễ hơn

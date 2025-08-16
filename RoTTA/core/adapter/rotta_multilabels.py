@@ -46,7 +46,7 @@ class RoTTA_MultiLabels(BaseAdapter):
             
             ema_out = self.model_ema(batch_data)
             predict_prob = torch.sigmoid(ema_out)
-            pseudo_label = (predict_prob > 0.8).float() 
+            pseudo_label = (predict_prob > 0.5).float() 
             
             # Compute uncertainty for Sigmoid outputs
             # (Sum of binary cross-entropy across classes)

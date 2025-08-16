@@ -153,12 +153,12 @@ ZeroShot
     - Class 3 : 0.6700
     - Class 4 : 0.6591
 Rotta:
-    - Mean AUC: 0.6530
-    - Class 0 : 0.6125
-    - Class 1 : 0.7326
-    - Class 2 : 0.5587
-    - Class 3 : 0.6846
-    - Class 4 : 0.6768
+    - Mean AUC: 0.6626
+    - Class 0 : 0.6391
+    - Class 1 : 0.7762
+    - Class 2 : 0.5794
+    - Class 3 : 0.6751
+    - Class 4 : 0.6433
 CoTTA:
     - Mean AUC: 0.6337
     - Class 0 : 0.5914
@@ -180,3 +180,39 @@ Norm:
     - Class 2 : 0.5547
     - Class 3 : 0.6700
     - Class 4 : 0.6591
+
+
+===============Chay Full - Nhieu lan luot Severity = 1 ===================
+ZeroShot
+
+Rotta:
+
+CoTTA:
+
+TENT:
+
+Norm:
+
+
+
+===============Chay Full - Nhieu lan luot Severity = 0.01 ===================
+ZeroShot
+    - Mean AUC: 0.7173
+    - Class 0 : 0.6695
+    - Class 1 : 0.8185
+    - Class 2 : 0.5990
+    - Class 3 : 0.7455
+    - Class 4 : 0.7539
+Rotta:
+    - Mean AUC: 0.7375
+    - Class 0 : 0.6848
+    - Class 1 : 0.8462
+    - Class 2 : 0.6046
+    - Class 3 : 0.7628
+    - Class 4 : 0.7893
+CoTTA:
+
+TENT:
+
+Norm:
+

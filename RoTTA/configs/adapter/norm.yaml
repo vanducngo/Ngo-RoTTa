@@ -92,7 +92,7 @@ DATASET:
     - fog               # 0.6382
     - frost             # 0.6079
     - impulse_noise     # 0.5999
-
-  # SEVERITY: 0.01 # Mức độ nhiễu (0-5)
+  
+  SEVERITY: 0.01 # Mức độ nhiễu (0-5)
   # SEVERITY: 1.00
-  SEVERITY: 5.00
+  # SEVERITY: 5.00
