@@ -24,7 +24,7 @@ from setproctitle import setproctitle
 from Base.constants import COMMON_FINAL_LABEL_SET
 
 # def testTimeAdaptationMultiLabel(cfg):
-#     logger = logging.getLogger("TTA.test_time_multilabel")
+#     logger = logging.getLogger("TTA.TTA-ML")
     
 #     model = build_model(cfg)
 #     optimizer = build_optimizer(cfg)
@@ -161,7 +161,7 @@ from Base.constants import COMMON_FINAL_LABEL_SET
 #         logger.info(f"Best model state saved to {save_path}")
 
 def testTimeAdaptationMultiLabel(cfg):
-    logger = logging.getLogger("TTA.test_time_multilabel")
+    logger = logging.getLogger("TTA-ML")
     
     model = build_model(cfg)
     optimizer = build_optimizer(cfg)
@@ -309,7 +309,7 @@ def main():
     torch.backends.cudnn.benchmark = True
 
     cfg.merge_from_file(args.config_file)
-    cfg.merge_from_list(args.opts)
+    # cfg.merge_from_list(args.opts)
     
     cfg.defrost()
     cfg.TEST.NUM_EPOCHS = cfg.TEST.get("NUM_EPOCHS", 1)

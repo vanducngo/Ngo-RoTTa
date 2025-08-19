@@ -78,21 +78,23 @@ DATASET:
 
   TEST_CORRUPTIONS:
     - elastic_transform # 0.7404
-    - contrast          # 0.7336
-    - snow              # 0.7291
-    - pixelate          # 0.7191
-    - defocus_blur      # 0.7134
-    - motion_blur       # 0.6622
-    - zoom_blur         # 0.6567  
-    - brightness        # 0.6562
-    - gaussian_noise    # 0.6547
-    - jpeg_compression  # 0.6543
-    - glass_blur        # 0.6494
-    - shot_noise        # 0.6411
-    - fog               # 0.6382
-    - frost             # 0.6079
-    - impulse_noise     # 0.5999
+    # - contrast          # 0.7336
+    # - snow              # 0.7291
+    # - pixelate          # 0.7191
+    # - defocus_blur      # 0.7134
+    # - motion_blur       # 0.6622
+    # - zoom_blur         # 0.6567  
+    # - brightness        # 0.6562
+    # - gaussian_noise    # 0.6547
+    # - jpeg_compression  # 0.6543
+    # - glass_blur        # 0.6494
+    # - shot_noise        # 0.6411
+    # - fog               # 0.6382
+    # - frost             # 0.6079
+    # - impulse_noise     # 0.5999
 
   # SEVERITY: 0.01 # Mức độ nhiễu (0-5)
   # SEVERITY: 1.00
-  SEVERITY: 5.00
+  SEVERITY: 0.00
+
+OUTPUT_DIR: 'Log/Zero_Shot'

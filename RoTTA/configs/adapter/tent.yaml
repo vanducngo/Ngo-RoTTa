@@ -62,7 +62,7 @@ DATASET:
   CHEXPERT_PATH: '/Users/admin/Working/Data/MixData/nih_14_structured'
   CHEXPERT_CSV: 'validate.csv'
   CHEXPERT_IMAGE_DIR: 'valid'
-
+  
   ADAPTATION_MODE: "corruption" # domain, corruption
   # Single domain
   BASE_DOMAIN:
@@ -92,6 +92,8 @@ DATASET:
     - frost             # 0.6079
     - impulse_noise     # 0.5999
 
-  SEVERITY: 0.01 # Mức độ nhiễu (0-5)
+  # SEVERITY: 0.01 # Mức độ nhiễu (0-5)
   # SEVERITY: 1.00
-  # SEVERITY: 5.00
+  SEVERITY: 0.00
+
+OUTPUT_DIR: 'Log/Tent'

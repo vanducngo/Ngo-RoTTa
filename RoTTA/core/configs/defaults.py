@@ -161,3 +161,5 @@ if 'INPUT' not in _C:
 _C.INPUT.SIZE = (224, 224)
 _C.INPUT.PIXEL_MEAN = [0.485, 0.456, 0.406]
 _C.INPUT.PIXEL_STD = [0.229, 0.224, 0.225]
+
+_C.OUTPUT_DIR = "Log/unknow"
