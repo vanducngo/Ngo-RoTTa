@@ -6,14 +6,14 @@ import os
 from RoTTA.core.utils.constants import DEVICE
 
 def get_pretrained_model(cfg):
-    model_path = './ckpt/Resnet18_60_aug18_00h00.pth'
+    model_path = './ckpt/Resnet18_60_no_dropout_aug19_12h00.pth'
     print(f"Loading fine-tuned weights from: {model_path}")
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model file not found at {model_path}. Please run the training script first.")
     
     print(f"Found fine-tuned model at {model_path}")
     # Load the pre-trained model architecture
-    model = get_model(cfg, feature_extract=False, useWeight = False, numclasses=5)
+    model = get_model(cfg, feature_extract=False, useWeight = True, numclasses=5)
     # Load the fine-tuned weights
     model.load_state_dict(torch.load(model_path, map_location=DEVICE))
     model.to(DEVICE)
@@ -28,7 +28,7 @@ def set_parameter_requires_grad(model, feature_extracting):
             param.requires_grad = False
 
 def get_model_chexpert(cfg):
-    return get_model(cfg, feature_extract=False, useWeight = False, numclasses=5)
+    return get_model(cfg, feature_extract=False, useWeight = True, numclasses=5)
 
 def get_model(cfg, feature_extract=False, useWeight=True, numclasses=5):
     model = None
@@ -60,7 +60,7 @@ def get_model(cfg, feature_extract=False, useWeight=True, numclasses=5):
     if hasattr(model, 'fc'): # ResNet
         num_ftrs = model.fc.in_features
         model.fc = nn.Sequential(
-            nn.Dropout(p=0.5),
+            # nn.Dropout(p=0.5),
             nn.Linear(num_ftrs, numclasses)
         )
     elif hasattr(model, 'classifier'): # DenseNet và MobileNet
@@ -68,7 +68,7 @@ def get_model(cfg, feature_extract=False, useWeight=True, numclasses=5):
         if isinstance(model.classifier, nn.Linear):
             num_ftrs = model.classifier.in_features
             model.classifier = nn.Sequential(
-                nn.Dropout(p=0.5),
+                # nn.Dropout(p=0.5),
                 nn.Linear(num_ftrs, numclasses)
             )
         # MobileNet (classifier is a Sequential)
@@ -77,7 +77,7 @@ def get_model(cfg, feature_extract=False, useWeight=True, numclasses=5):
             model.classifier = nn.Sequential(
                 nn.Linear(model.classifier[0].in_features, 512), # Lớp ẩn mới
                 nn.ReLU(),
-                nn.Dropout(p=0.5),
+                # nn.Dropout(p=0.5),
                 nn.Linear(512, numclasses)
             )
         else:

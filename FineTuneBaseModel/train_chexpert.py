@@ -5,7 +5,7 @@ from tqdm import tqdm
 from sklearn.metrics import roc_auc_score
 import numpy as np
 import copy
-from constants import TRAINING_LABEL_SET
+from Base.constants import TRAINING_LABEL_SET
 import wandb
 from omegaconf import OmegaConf
 import os
