@@ -48,7 +48,7 @@
     - Pending
 
 
-3. Kịch bản Add lần lươt 15 loại nhiễu trên toàn bộ tập dữ liệu
+3. Kịch bản Add lần lươt 15 loại nhiễu trên toàn bộ tập dữ liệu với Severity 5.00
 - ZeroShot:
         - Mean AUC: 0.6529
         - Atelectasis      : 0.6236
@@ -71,20 +71,38 @@
     - Pleural Effusion : 0.6867
     - Pneumothorax     : 0.6975
 - Tent
-        - Mean AUC: 0.5086
-        - Atelectasis      : 0.5074
-        - Cardiomegaly     : 0.5121
-        - Consolidation    : 0.4916
-        - Pleural Effusion : 0.5243
-        - Pneumothorax     : 0.5075
+    - Mean AUC: 0.5086
+    - Atelectasis      : 0.5074
+    - Cardiomegaly     : 0.5121
+    - Consolidation    : 0.4916
+    - Pleural Effusion : 0.5243
+    - Pneumothorax     : 0.5075
 - Norm
 - CoTTA
 
 
 4. Kịch bản Add lần lươt 15 loại nhiễu trên từng batch của dữ liệu với Severity 5.00
 - ZeroShot:
+    - Mean AUC: 0.6598
+    - Atelectasis      : 0.6196
+    - Cardiomegaly     : 0.7280
+    - Consolidation    : 0.5752
+    - Pleural Effusion : 0.7012
+    - Pneumothorax     : 0.6751
 - Rotta (Target Domain) - Trainable BatchNorm and FC (Classifier)
+    - Mean AUC: 0.6371
+    - Atelectasis      : 0.5973
+    - Cardiomegaly     : 0.6837
+    - Consolidation    : 0.5663
+    - Pleural Effusion : 0.6892
+    - Pneumothorax     : 0.6490
 - Rotta (Target Domain) - Trainable BatchNorm only
+    - Mean AUC: 0.6365
+    - Atelectasis      : 0.5947
+    - Cardiomegaly     : 0.6850
+    - Consolidation    : 0.5645
+    - Pleural Effusion : 0.6899
+    - Pneumothorax     : 0.6487
 - Tent
 - Norm
 - CoTTA
