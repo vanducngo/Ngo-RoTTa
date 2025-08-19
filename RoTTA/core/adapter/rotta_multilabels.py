@@ -170,34 +170,39 @@ class RoTTA_MultiLabels(BaseAdapter):
 
         # --- Phần 2: Mở băng lớp Classifier (Bổ sung) ---
     
-        classifier_found = False
-        # Logic tìm kiếm đơn giản và mạnh mẽ hơn:
-        # Tìm thuộc tính 'fc' hoặc 'classifier' và mở băng nó, BẤT KỂ nó là gì
-        # (Linear, Sequential, hay một nn.Module tùy chỉnh khác).
+        # classifier_found = False
+        # # Logic tìm kiếm đơn giản và mạnh mẽ hơn:
+        # # Tìm thuộc tính 'fc' hoặc 'classifier' và mở băng nó, BẤT KỂ nó là gì
+        # # (Linear, Sequential, hay một nn.Module tùy chỉnh khác).
         
-        if hasattr(model, 'fc'):
-            print("Found 'fc' attribute, making all its parameters trainable.")
-            classifier_module = model.fc
-            for param in classifier_module.parameters():
-                param.requires_grad = True
-            classifier_found = True
+        # if hasattr(model, 'fc'):
+        #     print("Found 'fc' attribute, making all its parameters trainable.")
+        #     classifier_module = model.fc
+        #     for param in classifier_module.parameters():
+        #         param.requires_grad = True
+        #     classifier_found = True
             
-        elif hasattr(model, 'classifier'):
-            print("Found 'classifier' attribute, making all its parameters trainable.")
-            classifier_module = model.classifier
-            for param in classifier_module.parameters():
-                param.requires_grad = True
-            classifier_found = True
+        # elif hasattr(model, 'classifier'):
+        #     print("Found 'classifier' attribute, making all its parameters trainable.")
+        #     classifier_module = model.classifier
+        #     for param in classifier_module.parameters():
+        #         param.requires_grad = True
+        #     classifier_found = True
             
-        if not classifier_found:
-            print("Warning: Could not find a standard classifier attribute ('fc' or 'classifier') to make trainable.")
+        # if not classifier_found:
+        #     print("Warning: Could not find a standard classifier attribute ('fc' or 'classifier') to make trainable.")
 
-        # In ra tất cả các tham số có thể huấn luyện để xác nhận
-        print("\n--- Trainable Parameters ---")
+        # In ra để xác nhận
+        print("\n--- Trainable Parameters (ALL) ---")
+        count = 0
+        trainable_params_list = []
         for name, param in model.named_parameters():
             if param.requires_grad:
-                print(f"  - {name}")
-        print("--------------------------\n")
+                trainable_params_list.append(name)
+                count += 1
+        print(f"Total number of trainable parameters: {count}")
+        # print("Trainable parameters:", trainable_params_list) # Bỏ comment nếu muốn xem chi tiết
+        print("--------------------------------\n")
 
         return model
 

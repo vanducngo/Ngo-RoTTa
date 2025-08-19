@@ -1,0 +1,94 @@
+1. Base domain AUC, trên tập test của bộ dữ liệu CheXpert (Source Domain)
+- Base (Source Domain):
+    - Mean AUC: 0.7873
+    - Atelectasis: 0.6872
+    - Cardiomegaly': 0.8608
+    - Consolidation': 0.6840
+    - Pleural Effusion': 0.8458
+    - Pneumothorax': 0.8588
+
+
+
+
+2. Kịch bản Clean Data trên tập NIH-14 (Target Domain)
+- ZeroShot:
+    - Mean AUC: 0.7262
+    - Atelectasis      : 0.6840
+    - Cardiomegaly     : 0.8180
+    - Consolidation    : 0.6004
+    - Pleural Effusion : 0.7570
+    - Pneumothorax     : 0.7718
+- Rotta (Target Domain) - Trainable BatchNorm and FC (Classifier)
+    - Mean AUC: 0.7500
+    - Atelectasis      : 0.7002
+    - Cardiomegaly     : 0.8513
+    - Consolidation    : 0.6139
+    - Pleural Effusion : 0.7771
+    - Pneumothorax     : 0.8074
+- Rotta (Target Domain) - Trainable BatchNorm only
+    - Mean AUC: 0.7489
+    - Atelectasis      : 0.6992
+    - Cardiomegaly     : 0.8493
+    - Consolidation    : 0.6129
+    - Pleural Effusion : 0.7758
+    - Pneumothorax     : 0.8073
+- Tent
+    - Mean AUC: 0.6704
+    - Atelectasis      : 0.6102
+    - Cardiomegaly     : 0.7797
+    - Consolidation    : 0.5585
+    - Pleural Effusion : 0.7070
+    - Pneumothorax     : 0.6965
+- Norm
+    - Mean AUC: 0.7262
+    - Atelectasis      : 0.6840
+    - Cardiomegaly     : 0.8180
+    - Consolidation    : 0.6004
+    - Pleural Effusion : 0.7570
+    - Pneumothorax     : 0.7718
+- CoTTA
+    - Pending
+
+
+
+
+3. Kịch bản Add lần lươt 15 loại nhiễu trên toàn bộ tập dữ liệu
+- ZeroShot:
+        - Mean AUC: 0.6529
+        - Atelectasis      : 0.6236
+        - Cardiomegaly     : 0.7174
+        - Consolidation    : 0.5655
+        - Pleural Effusion : 0.6843
+        - Pneumothorax     : 0.6740
+- Rotta (Target Domain) - Trainable BatchNorm and FC (Classifier)
+        - Mean AUC: 0.6785
+        - Atelectasis      : 0.6680
+        - Cardiomegaly     : 0.7929
+        - Consolidation    : 0.5472
+        - Pleural Effusion : 0.6870
+        - Pneumothorax     : 0.6974
+- Rotta (Target Domain) - Trainable BatchNorm only
+    - Mean AUC: 0.6775
+    - Atelectasis      : 0.6684
+    - Cardiomegaly     : 0.7690
+    - Consolidation    : 0.5657
+    - Pleural Effusion : 0.6867
+    - Pneumothorax     : 0.6975
+- Tent
+        - Mean AUC: 0.5086
+        - Atelectasis      : 0.5074
+        - Cardiomegaly     : 0.5121
+        - Consolidation    : 0.4916
+        - Pleural Effusion : 0.5243
+        - Pneumothorax     : 0.5075
+- Norm
+- CoTTA
+
+
+4. Kịch bản Add lần lươt 15 loại nhiễu trên từng batch của dữ liệu với Severity 5.00
+- ZeroShot:
+- Rotta (Target Domain) - Trainable BatchNorm and FC (Classifier)
+- Rotta (Target Domain) - Trainable BatchNorm only
+- Tent
+- Norm
+- CoTTA
