@@ -8,8 +8,6 @@
     - Pneumothorax': 0.8588
 
 
-
-
 2. Kịch bản Clean Data trên tập NIH-14 (Target Domain)
 - ZeroShot:
     - Mean AUC: 0.7262
@@ -48,8 +46,6 @@
     - Pneumothorax     : 0.7718
 - CoTTA
     - Pending
-
-
 
 
 3. Kịch bản Add lần lươt 15 loại nhiễu trên toàn bộ tập dữ liệu
