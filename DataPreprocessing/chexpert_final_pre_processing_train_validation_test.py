@@ -14,7 +14,11 @@ TARGET_DISEASES = [
 ]
 
 METADATA_COLS_TO_DROP = ['Sex', 'Age', 'Frontal/Lateral', 'AP/PA']
-TRAIN_RATIO = 0.8
+
+TRAIN_RATIO = 0.6
+VALID_RATIO = 0.2
+TEST_RATIO = 0.2
+
 RANDOM_STATE = 42
 
 def step_1_clean_and_restructure(df: pd.DataFrame) -> pd.DataFrame:
@@ -62,69 +66,88 @@ def step_3_filter_positive_cases(df: pd.DataFrame, diseases: list) -> pd.DataFra
     
     return df_filtered
 
-def step_4_split_data(df: pd.DataFrame, target_diseases: list, output_dir: str) -> tuple[pd.DataFrame, pd.DataFrame]:
-    print("--- Step 4: Start splitting the data into train and validation sets ---")
-    # Reordering is implicitly done by step 2, but this ensures it
-    df = df[['image_id'] + target_diseases]
 
-    stratify_key = df[target_diseases].apply(lambda x: ''.join(x.astype(str)), axis=1)
+def step_4_split_data(df: pd.DataFrame, target_diseases: list, output_dir: str) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    print("--- Step 4: Start splitting the data into train, validation, and test sets (60-20-20) ---")
     
-    train_df, valid_df = train_test_split(
+    most_common_disease = df[target_diseases].sum().idxmax()
+    print(f" -> Stratifying based on the most common disease: '{most_common_disease}'")
+    stratify_col = df[most_common_disease]
+    
+    # Lần chia thứ nhất
+    train_df, remaining_df = train_test_split(
         df,
         train_size=TRAIN_RATIO,
-        stratify=stratify_key,
+        stratify=stratify_col, # Dùng cột duy nhất để phân tầng
+        random_state=RANDOM_STATE
+    )
+    
+    # Lần chia thứ hai
+    valid_ratio_in_remaining = VALID_RATIO / (VALID_RATIO + TEST_RATIO)
+    
+    # Lấy lại cột phân tầng cho tập còn lại
+    remaining_stratify_col = remaining_df[most_common_disease]
+    
+    valid_df, test_df = train_test_split(
+        remaining_df,
+        train_size=valid_ratio_in_remaining,
+        stratify=remaining_stratify_col, # Dùng cột duy nhất để phân tầng
         random_state=RANDOM_STATE
     )
     
     train_output_path = os.path.join(output_dir, 'train_final.csv')
     valid_output_path = os.path.join(output_dir, 'valid_final.csv')
+    test_output_path = os.path.join(output_dir, 'test_final.csv') # File mới cho TTA
     
     train_df.to_csv(train_output_path, index=False)
     valid_df.to_csv(valid_output_path, index=False)
+    test_df.to_csv(test_output_path, index=False)
     
-    print(f" -> Training set ({len(train_df)} samples) has been saved to: {train_output_path}")
-    print(f" -> Validation set ({len(valid_df)} samples) has been saved to: {valid_output_path}")
+    print(f" -> Training set ({len(train_df)} samples) saved to: {train_output_path}")
+    print(f" -> Validation set ({len(valid_df)} samples) saved to: {valid_output_path}")
+    print(f" -> Test/TTA set ({len(test_df)} samples) saved to: {test_output_path}")
     print("--- Step 4: Completed ---\n")
     
-    return train_df, valid_df
+    return train_df, valid_df, test_df
 
-def step_5_visualize_distribution(train_df: pd.DataFrame, valid_df: pd.DataFrame, target_diseases: list, output_path: str):
-    print("--- Step 5: Start generating detailed label distribution plots ---")
-    
+
+def step_5_visualize_distribution(train_df, valid_df, test_df, target_diseases, output_path):
+    print("--- Step 5: Start generating distribution plots for all 3 sets ---")
     train_counts = train_df[target_diseases].sum()
     valid_counts = valid_df[target_diseases].sum()
+    test_counts = test_df[target_diseases].sum()
+    
     train_total = len(train_df)
     valid_total = len(valid_df)
-    train_percentages = (train_counts / train_total) * 100
-    valid_percentages = (valid_counts / valid_total) * 100
+    test_total = len(test_df)
 
     x = np.arange(len(target_diseases))
-    width = 0.35
-    fig, ax = plt.subplots(figsize=(15, 9))
+    width = 0.25
+    fig, ax = plt.subplots(figsize=(18, 10))
     
-    rects1 = ax.bar(x - width/2, train_counts, width, label=f'Train Set ({train_total} mẫu)')
-    rects2 = ax.bar(x + width/2, valid_counts, width, label=f'Validation Set ({valid_total} mẫu)')
+    rects1 = ax.bar(x - width, train_counts, width, label=f'Train ({train_total} samples)')
+    rects2 = ax.bar(x, valid_counts, width, label=f'Validation ({valid_total} samples)')
+    rects3 = ax.bar(x + width, test_counts, width, label=f'Test/TTA ({test_total} samples)')
     
     ax.set_ylabel('Số lượng ca dương tính (Count)')
-    ax.set_title('So sánh phân bổ nhãn bệnh (Số lượng và Tỷ lệ %)', fontsize=16)
+    ax.set_title('So sánh phân bổ nhãn bệnh trên 3 tập Train/Validation/Test', fontsize=16)
     ax.set_xticks(x)
     ax.set_xticklabels(target_diseases, rotation=20, ha='right', fontsize=12)
     ax.legend(fontsize=12)
     
-    train_labels = [f'{c}\n({p:.1f}%)' for c, p in zip(train_counts, train_percentages)]
-    valid_labels = [f'{c}\n({p:.1f}%)' for c, p in zip(valid_counts, valid_percentages)]
+    ax.bar_label(rects1, padding=3, fontsize=9)
+    ax.bar_label(rects2, padding=3, fontsize=9)
+    ax.bar_label(rects3, padding=3, fontsize=9)
 
-    ax.bar_label(rects1, labels=train_labels, padding=5, fontsize=10)
-    ax.bar_label(rects2, labels=valid_labels, padding=5, fontsize=10)
-
-    ax.set_ylim(0, max(train_counts.max(), valid_counts.max()) * 1.2)
+    ax.set_ylim(0, max(train_counts.max(), valid_counts.max(), test_counts.max()) * 1.2)
     
     fig.tight_layout()
     plt.savefig(output_path, dpi=150)
     plt.close(fig)
     
-    print(f" -> Detailed plot has been saved to: {output_path}")
+    print(f" -> Distribution plot saved to: {output_path}")
     print("--- Step 5: Completed ---")
+
 
 def main(input_csv_path: str):
     print(f"Starting processing pipeline for file: {input_csv_path}\n")    
@@ -144,12 +167,13 @@ def main(input_csv_path: str):
     df_step2 = step_2_reduce_columns(df_step1, TARGET_DISEASES)
     df_step3 = step_3_filter_positive_cases(df_step2, TARGET_DISEASES)
     
-    train_df, valid_df = step_4_split_data(df_step3, TARGET_DISEASES, output_dir)
-    chart_output_path = os.path.join(output_dir, 'label_distribution_final.png')
-    step_5_visualize_distribution(train_df, valid_df, TARGET_DISEASES, chart_output_path)
+    train_df, valid_df, test_df = step_4_split_data(df_step3, TARGET_DISEASES, output_dir)
+    
+    chart_output_path = os.path.join(output_dir, 'label_distribution_final_3_sets.png')
+    step_5_visualize_distribution(train_df, valid_df, test_df, TARGET_DISEASES, chart_output_path)
     
     print("\n>>> PROCESSING PIPELINE COMPLETED! <<<")
 
 if __name__ == "__main__":
-    input_file = '/Users/admin/Working/Data/CheXpert-v1.0-small/train_origin.csv'    
+    input_file = '/home/ngoto/Working/Data/CheXpert-v1.0-small/train_origin.csv'    
     main(input_file)

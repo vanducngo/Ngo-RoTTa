@@ -99,7 +99,7 @@ class CSTU_MultiLabel:
                 break
 
         if is_under_represented:
-            majority_classes_indices = self.get_majority_classes_indices_v2(current_counts)
+            majority_classes_indices = self.get_majority_classes_indices(current_counts)
             return self.remove_from_classes(majority_classes_indices, new_score)
         else:
             return self.remove_from_classes(new_item_classes.tolist(), new_score)

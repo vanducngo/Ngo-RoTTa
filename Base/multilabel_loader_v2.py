@@ -36,7 +36,7 @@ class ContinualCorruptionDataset(Dataset):
 
         # 3. Định nghĩa các transform cơ bản
         self.to_tensor_transform = transforms.ToTensor()
-        self.normalize_transform = transforms.Normalize(mean=cfg.INPUT.PIXEL_MEAN, std=cfg.INPUT.PIXEL_STD)
+        self.normalize_transform = transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         self.resize_transform = transforms.Resize((224, 224))
 
         # 4. Tạo danh sách mẫu lớn, được sắp xếp theo từng loại nhiễu

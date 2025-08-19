@@ -1,8 +1,13 @@
+import os
+import sys
+# Lấy đường dẫn của thư mục gốc project
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(project_root)
+
 import torch
 from data_loader import get_chexpert_full_label_loaders
-from FineTuneBaseModel.train_chexpert import evaluate, fine_tune
+from train_chexpert import evaluate, fine_tune
 from omegaconf import OmegaConf
-import os
 import torch.nn as nn
 
 from Base.models import get_model_chexpert
@@ -33,12 +38,12 @@ def main(cfg):
         torch.save(model.state_dict(), model_save_path)
         print(f"Fine-tuned model saved to {model_save_path}")
 
-        print("\n--- Performance Evaluation ---")
-        print("Evaluating on CheXpert test set (In-Domain)...")
-        criterion = nn.BCEWithLogitsLoss()
-        mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate(model, chexpert_test_loader, device, criterion)
-        print(f"Valid Loss: {epoch_valid_loss:.4f} | Valid AUC: {mean_valid_auc:.4f}")
-        print(f"Per class auc: \n {per_class_auc}")
+    print("\n--- Performance Evaluation ---")
+    print("Evaluating on CheXpert test set (In-Domain)...")
+    criterion = nn.BCEWithLogitsLoss(pos_weight=None)
+    mean_valid_auc, epoch_valid_loss, per_class_auc = evaluate(model, chexpert_test_loader, device, criterion)
+    print(f"Valid Loss: {epoch_valid_loss:.4f} | Valid AUC: {mean_valid_auc:.4f}")
+    print(f"Per class auc: \n {per_class_auc}")
         
 if __name__ == "__main__":
     cfg = OmegaConf.load('configs/base_config.yaml')

@@ -68,7 +68,7 @@ DATASET:
   # Single domain
   BASE_DOMAIN:
     # PATH: "/home/ngoto/Working/Data/CheXpert-v1.0-small"
-    # CSV: "valid_split.csv" # "validate_reordered.csv, validate_reordered_subset.csv, valid_split"
+    # CSV: "test_final.csv" # "validate_reordered.csv, validate_reordered_subset.csv, valid_split"
     # IMAGE_DIR: "images"
     
     PATH: "/home/ngoto/Working/Data/MixData/nih_14_structured"
@@ -93,6 +93,6 @@ DATASET:
     - frost             # 0.6079
     - impulse_noise     # 0.5999
 
-  SEVERITY: 0.01 # Mức độ nhiễu (0-5)
+  # SEVERITY: 0.01 # Mức độ nhiễu (0-5)
   # SEVERITY: 1.00
-  # SEVERITY: 5.00
+  SEVERITY: 5.00

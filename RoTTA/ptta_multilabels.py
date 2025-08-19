@@ -21,6 +21,7 @@ from core.optim import build_optimizer
 from core.adapter import build_adapter
 from tqdm import tqdm
 from setproctitle import setproctitle
+from Base.constants import COMMON_FINAL_LABEL_SET
 
 # def testTimeAdaptationMultiLabel(cfg):
 #     logger = logging.getLogger("TTA.test_time_multilabel")
@@ -183,13 +184,12 @@ def testTimeAdaptationMultiLabel(cfg):
         logger.info(f"=========== Starting TTA Epoch {epoch}/{num_epochs} ===========")
 
         # Tạo lại processor cho mỗi epoch để đo lường riêng lẻ
-        class_names_list = cfg.DATASET.LABELS_LIST
-        processor = AUCProcessor(num_classes=len(cfg.DATASET.LABELS_LIST), class_names=class_names_list)
+        processor = AUCProcessor(num_classes=len(cfg.DATASET.LABELS_LIST), class_names=COMMON_FINAL_LABEL_SET)
 
         if adaptation_mode == 'corruption':
             # --- Corruptions mode ---
             logger.info("Running in 'corruption' adaptation mode for this epoch.")
-            loader, processor = build_loader_multilabel(cfg)
+            loader, _ = build_loader_multilabel(cfg)
 
             tbar = tqdm(loader, desc=f"[Corruption]")
             for batch_id, data_package in enumerate(tbar):

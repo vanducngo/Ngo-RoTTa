@@ -6,7 +6,7 @@ from PIL import Image
 import os
 import torchvision.transforms.functional as TF
 
-from constants import COMMON_FINAL_LABEL_SET, TRAINING_LABEL_SET
+from Base.constants import COMMON_FINAL_LABEL_SET, TRAINING_LABEL_SET
 
 class QuantizationAugmentation:
     """
@@ -25,6 +25,8 @@ class CheXpertFullLabelDataset(Dataset):
         csv_file = cfg.DATA.CHEXPERT_TRAIN_CSV if mode in ['train', 'valid'] else cfg.DATA.CHEXPERT_TEST_CSV
         csv_path = os.path.join(cfg.DATA.CHEXPERT_PATH, csv_file)
         
+        print(f'csv_file for {mode}: {csv_file}')
+
         raw_df = pd.read_csv(csv_path)
         self.df = raw_df
         self.root_dir = cfg.DATA.CHEXPERT_PATH_ROOT_PATH
