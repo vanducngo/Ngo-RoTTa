@@ -387,3 +387,106 @@ TEST:
 2025-08-19 18:30:52,169 TTA-ML INFO: New best AUC found: 0.5086. Saving model state for epoch 1.
 2025-08-19 18:30:52,169 TTA-ML INFO: =========== TTA Finished ===========
 2025-08-19 18:30:52,169 TTA-ML INFO: Best Mean AUC achieved across 1 epochs: 0.5086
+2025-08-20 09:14:15,539 TTA-ML INFO: Namespace(config_file='configs/adapter/tent.yaml', opts=[])
+2025-08-20 09:14:15,540 TTA-ML INFO: Loaded configuration file: configs/adapter/tent.yaml
+2025-08-20 09:14:15,540 TTA-ML INFO: Running with config:
+ADAPTER:
+  NAME: tent
+  RoTTA:
+    ALPHA: 0.05
+    LAMBDA_T: 1.0
+    LAMBDA_U: 1.0
+    MEMORY_SIZE: 64
+    NU: 0.001
+    UPDATE_FREQUENCY: 64
+BN:
+  EPS: 1e-05
+  MOM: 0.1
+CKPT_DIR: ./ckpt
+CORRUPTION:
+  DATASET: cifar10
+  NUM_CLASS: -1
+  NUM_EX: 10000
+  SEVERITY: [5, 4, 3, 2, 1]
+  SOURCE: 
+  TYPE: ['gaussian_noise', 'shot_noise', 'impulse_noise', 'defocus_blur', 'glass_blur', 'motion_blur', 'zoom_blur', 'snow', 'frost', 'fog', 'brightness', 'contrast', 'elastic_transform', 'pixelate', 'jpeg_compression']
+CUDNN:
+  BENCHMARK: True
+DATASET:
+  ADAPTATION_MODE: corruption
+  BASE_DOMAIN:
+    CSV: validate_reordered.csv
+    IMAGE_DIR: images
+    PATH: /home/ngoto/Working/Data/MixData/nih_14_structured
+  CHEXPERT_CSV: validate.csv
+  CHEXPERT_IMAGE_DIR: valid
+  CHEXPERT_PATH: /Users/admin/Working/Data/MixData/nih_14_structured
+  LABELS_LIST: ['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Pleural Effusion', 'Pneumothorax']
+  NAME: CXR
+  NIH14_CSV: validate_reordered.csv
+  NIH14_IMAGE_DIR: images
+  NIH14_PATH: /home/ngoto/Working/Data/MixData/nih_14_structured
+  PADCHEST_CSV: refined_padchest_labels_reordered.csv
+  PADCHEST_IMAGE_DIR: images-224
+  PADCHEST_PATH: /home/ngoto/Working/Data/MixData/PadChestPruning
+  SEVERITY: 5.0
+  TEST_CORRUPTIONS: ['elastic_transform', 'contrast', 'snow', 'pixelate', 'defocus_blur', 'motion_blur', 'zoom_blur', 'brightness', 'gaussian_noise', 'jpeg_compression', 'glass_blur', 'shot_noise', 'fog', 'frost', 'impulse_noise']
+  TEST_DOMAINS: ['nih14']
+  VINDR_CSV: validate_reordered.csv
+  VINDR_IMAGE_DIR: images
+  VINDR_PATH: /home/ngoto/Working/Data/MixData/vinbigdata_structured
+DATA_DIR: ./datasets
+DEBUG: 0
+DESC: 
+INPUT:
+  INTERPOLATION: bilinear
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 2.225]
+  SIZE: (224, 224)
+  TRANSFORMS: ('normalize',)
+LOADER:
+  NUM_WORKS: 4
+  SAMPLER:
+    GAMMA: 0.1
+    TYPE: temporal
+LOG_DEST: log.txt
+LOG_TIME: 
+MODEL:
+  ARCH: resnet18
+  EPISODIC: False
+  NUM_CLASSES: 5
+  PROJECTION:
+    EMB_DIM: 2048
+    FEA_DIM: 128
+    HEAD: linear
+OPTIM:
+  AP: 0.72
+  BETA: 0.9
+  DAMPENING: 0.0
+  LR: 0.00025
+  METHOD: Adam
+  MOMENTUM: 0.9
+  MT: 0.999
+  NESTEROV: True
+  RST: 0.01
+  STEPS: 1
+  WD: 0.0
+OUTPUT_DIR: Log/Tent
+SEED: 42
+TEST:
+  BATCH_SIZE: 64
+  NUM_EPOCHS: 1
+2025-08-20 09:14:16,115 TTA-ML INFO: Model and TTA adapter initialized.
+2025-08-20 09:14:16,115 TTA-ML INFO: =========== Starting TTA Epoch 1/1 ===========
+2025-08-20 09:14:16,116 TTA-ML INFO: Running in 'corruption' adaptation mode for this epoch.
+2025-08-20 09:21:00,288 TTA-ML INFO: --- Epoch 1 Final Results ---
+- Mean AUC: 0.6200
+- Atelectasis      : 0.5711
+- Cardiomegaly     : 0.7020
+- Consolidation    : 0.5304
+- Pleural Effusion : 0.6690
+- Pneumothorax     : 0.6277
+2025-08-20 09:21:00,297 TTA-ML INFO: New best AUC found: 0.6200. Saving model state for epoch 1.
+2025-08-20 09:21:00,297 TTA-ML INFO: =========== TTA Finished ===========
+2025-08-20 09:21:00,297 TTA-ML INFO: Best Mean AUC achieved across 1 epochs: 0.6200
+2025-08-20 09:21:00,363 TTA-ML INFO: Best model state saved to Log/Tent/best_tta_model.pth

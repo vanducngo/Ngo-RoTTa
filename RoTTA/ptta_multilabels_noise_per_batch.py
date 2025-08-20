@@ -155,10 +155,10 @@ def testTimeAdaptationMultiLabel(cfg):
     logger.info(f"=========== TTA Finished ===========")
     logger.info(f"Best Mean AUC achieved across {num_epochs} epochs: {best_auc:.4f}")
     
-    if best_model_state and cfg.OUTPUT_DIR:
-        save_path = os.path.join(cfg.OUTPUT_DIR, "best_tta_model.pth")
-        torch.save(best_model_state, save_path)
-        logger.info(f"Best model state saved to {save_path}")
+    # if best_model_state and cfg.OUTPUT_DIR:
+    #     save_path = os.path.join(cfg.OUTPUT_DIR, "best_tta_model.pth")
+    #     torch.save(best_model_state, save_path)
+    #     logger.info(f"Best model state saved to {save_path}")
 
 # def testTimeAdaptationMultiLabel(cfg):
 #     logger = logging.getLogger("TTA-ML")
