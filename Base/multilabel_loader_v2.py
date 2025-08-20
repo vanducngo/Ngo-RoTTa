@@ -19,12 +19,13 @@ class ContinualCorruptionDataset(Dataset):
     
     Luồng dữ liệu sẽ là: [tất cả ảnh với nhiễu A], [tất cả ảnh với nhiễu B], ...
     """
-    def __init__(self, cfg):
+    def __init__(self, cfg, disable_normalize=False):
         # 1. Đọc cấu hình
         base_domain_cfg = cfg.DATASET.BASE_DOMAIN
         self.corruptions_to_apply = cfg.DATASET.TEST_CORRUPTIONS if cfg.DATASET.TEST_CORRUPTIONS else ['none']
         self.severity = cfg.DATASET.SEVERITY
         self.labels_list = cfg.DATASET.LABELS_LIST
+        self.disable_normalize = disable_normalize
 
         # 2. Tải dữ liệu "sạch" gốc
         self.root_dir = os.path.join(base_domain_cfg.PATH, base_domain_cfg.IMAGE_DIR)
@@ -78,8 +79,12 @@ class ContinualCorruptionDataset(Dataset):
         image_tensor = self.to_tensor_transform(image_pil)
         # Áp dụng nhiễu trên Tensor [0, 1]
         corrupted_tensor = apply_corruption(image_tensor, corruption_name, self.severity)
-        # 3Chuẩn hóa (Normalize)
-        final_image = self.normalize_transform(corrupted_tensor)
+        
+        if not self.disable_normalize:
+            final_image = self.normalize_transform(corrupted_tensor)
+        else:
+             # Nếu bị vô hiệu hóa, trả về tensor [0, 1]
+            final_image = corrupted_tensor 
 
         labels = torch.tensor(row[self.labels_list].values.astype('float'), dtype=torch.float32)
         
