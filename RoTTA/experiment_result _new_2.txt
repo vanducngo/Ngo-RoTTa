@@ -45,24 +45,29 @@
     - Pleural Effusion : 0.7570
     - Pneumothorax     : 0.7718
 - CoTTA
-    - Pending
+    - Mean AUC: 0.7256
+    - Atelectasis      : 0.6850
+    - Cardiomegaly     : 0.8070
+    - Consolidation    : 0.6169
+    - Pleural Effusion : 0.7556
+    - Pneumothorax     : 0.7634
 
 
 3. Kịch bản Add lần lươt 15 loại nhiễu trên toàn bộ tập dữ liệu với Severity 5.00
 - ZeroShot:
-        - Mean AUC: 0.6529
-        - Atelectasis      : 0.6236
-        - Cardiomegaly     : 0.7174
-        - Consolidation    : 0.5655
-        - Pleural Effusion : 0.6843
-        - Pneumothorax     : 0.6740
+    - Mean AUC: 0.6529
+    - Atelectasis      : 0.6236
+    - Cardiomegaly     : 0.7174
+    - Consolidation    : 0.5655
+    - Pleural Effusion : 0.6843
+    - Pneumothorax     : 0.6740
 - Rotta (Target Domain) - Trainable BatchNorm and FC (Classifier)
-        - Mean AUC: 0.6785
-        - Atelectasis      : 0.6680
-        - Cardiomegaly     : 0.7929
-        - Consolidation    : 0.5472
-        - Pleural Effusion : 0.6870
-        - Pneumothorax     : 0.6974
+    - Mean AUC: 0.6785
+    - Atelectasis      : 0.6680
+    - Cardiomegaly     : 0.7929
+    - Consolidation    : 0.5472
+    - Pleural Effusion : 0.6870
+    - Pneumothorax     : 0.6974
 - Rotta (Target Domain) - Trainable BatchNorm only
     - Mean AUC: 0.6775
     - Atelectasis      : 0.6684
@@ -111,16 +116,16 @@
     - Pleural Effusion : 0.6690
     - Pneumothorax     : 0.6277
 - Norm
-    - Mean AUC: 0.7262
-    - Atelectasis      : 0.6844
-    - Cardiomegaly     : 0.8179
-    - Consolidation    : 0.5997
-    - Pleural Effusion : 0.7572
-    - Pneumothorax     : 0.7716
+    - Mean AUC: 0.6594
+    - Atelectasis      : 0.6181
+    - Cardiomegaly     : 0.7272
+    - Consolidation    : 0.5753
+    - Pleural Effusion : 0.7001
+    - Pneumothorax     : 0.6764
 - CoTTA
-    - Mean AUC: 0.7256
-    - Atelectasis      : 0.6850
-    - Cardiomegaly     : 0.8070
-    - Consolidation    : 0.6169
-    - Pleural Effusion : 0.7556
-    - Pneumothorax     : 0.7634
+    - Mean AUC: 0.6647
+    - Atelectasis      : 0.6251
+    - Cardiomegaly     : 0.7334
+    - Consolidation    : 0.5856
+    - Pleural Effusion : 0.7063
+    - Pneumothorax     : 0.6734

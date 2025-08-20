@@ -11,7 +11,7 @@ from core.utils import *
 from core.utils.constants import DEVICE
 from Base.metrics import AUCProcessor 
 from core.model import build_model
-from Base.multilabel_loader_v2 import build_loader_multilabel
+from Base.multilabel_loader import build_loader_multilabel
 from tqdm import tqdm
 from setproctitle import setproctitle
 
