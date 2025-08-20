@@ -83,6 +83,12 @@
     - Pleural Effusion : 0.5243
     - Pneumothorax     : 0.5075
 - Norm
+    - Mean AUC: 0.6529
+    - Atelectasis      : 0.6236
+    - Cardiomegaly     : 0.7174
+    - Consolidation    : 0.5655
+    - Pleural Effusion : 0.6843
+    - Pneumothorax     : 0.6740
 - CoTTA
 
 
