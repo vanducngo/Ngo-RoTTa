@@ -80,19 +80,19 @@ if __name__ == '__main__':
     ])
     # ==========================================================================
 
-    # print("\n--- Analyzing CheXpert (Source Domain) ---")
-    # chexpert_cfg = cfg.clone(); chexpert_cfg.defrost()
-    # chexpert_cfg.DATASET.BASE_DOMAIN.PATH = "/home/ngoto/Working/Data/CheXpert-v1.0-small" 
-    # chexpert_cfg.DATASET.BASE_DOMAIN.CSV = "valid_final.csv"
-    # chexpert_cfg.DATASET.BASE_DOMAIN.IMAGE_DIR = ""
-    # chexpert_cfg.freeze()
+    print("\n--- Analyzing CheXpert (Source Domain) ---")
+    chexpert_cfg = cfg.clone(); chexpert_cfg.defrost()
+    chexpert_cfg.DATASET.BASE_DOMAIN.PATH = "/home/ngoto/Working/Data/CheXpert-v1.0-small" 
+    chexpert_cfg.DATASET.BASE_DOMAIN.CSV = "valid_final.csv"
+    chexpert_cfg.DATASET.BASE_DOMAIN.IMAGE_DIR = ""
+    chexpert_cfg.freeze()
     
-    # chexpert_dataset = CleanSingleDomainDataset(chexpert_cfg, transform=transform_no_norm)
-    # chexpert_loader = DataLoader(chexpert_dataset, batch_size=cfg.TEST.BATCH_SIZE, num_workers=cfg.LOADER.NUM_WORKS, collate_fn=collate_fn_skip_none)
+    chexpert_dataset = CleanSingleDomainDataset(chexpert_cfg, transform=transform_no_norm)
+    chexpert_loader = DataLoader(chexpert_dataset, batch_size=cfg.TEST.BATCH_SIZE, num_workers=cfg.LOADER.NUM_WORKS, collate_fn=collate_fn_skip_none)
     
-    # chexpert_mean, chexpert_std = calculate_distribution_stats(chexpert_loader)
-    # print(f"CheXpert Mean: {chexpert_mean.tolist()}")
-    # print(f"CheXpert Std:  {chexpert_std.tolist()}")
+    chexpert_mean, chexpert_std = calculate_distribution_stats(chexpert_loader)
+    print(f"CheXpert Mean: {chexpert_mean.tolist()}")
+    print(f"CheXpert Std:  {chexpert_std.tolist()}")
 
     
     # NIH Clearn
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     # Vẫn dùng dataloader sạch, nhưng truyền config nhiễu vào hàm tính toán
     corruption_config_to_test = {
         'name': 'gaussian_noise',
-        'severity': 1.0
+        'severity': 5.0
     }
     
     nih_corrupted_mean, nih_corrupted_std = calculate_distribution_stats(

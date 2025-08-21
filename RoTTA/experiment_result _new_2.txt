@@ -284,17 +284,17 @@ ZERO-SHOT RESULTS ON CheXpert-C (Per Corruption)
 
 
 Không ảnh hưởng:
-- snow (AUC = 0.7873):
-- elastic_transform (AUC = 0.7867):
+- snow (AUC = 0.7873)
+- elastic_transform (AUC = 0.7867)
 
 Ảnh hưởng nhẹ: 
-- pixelate (AUC = 0.7448):
-- contrast (AUC = 0.7389):
+- pixelate (AUC = 0.7448)
+- contrast (AUC = 0.7389)
 - defocus_blur (AUC = 0.7224)
-- brightness (AUC = 0.7136):
+- brightness (AUC = 0.7136)
 
 Ảnh hưởng trung bình
-- glass_blur (AUC = 0.6789):
-- motion_blur (AUC = 0.6744):
-- zoom_blur (AUC = 0.6654):
-- frost (AUC = 0.6305):
+- glass_blur (AUC = 0.6789)
+- motion_blur (AUC = 0.6744)
+- zoom_blur (AUC = 0.6654)
+- frost (AUC = 0.6305)

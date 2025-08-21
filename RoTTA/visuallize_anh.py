@@ -23,7 +23,22 @@ if project_root not in sys.path:
 from Base.corruptions import snow, motion_blur, _linear_interpolate
 
 def visualize_snow_corruption(csv_path, image_root, image_col, sample_idx, severity):
-    noise = 'defocus_blur'
+        # - 'gaussian_noise'
+        # - 'shot_noise'
+        # - 'impulse_noise'
+        # - 'defocus_blur'
+        # - 'glass_blur'
+        # - 'motion_blur'
+        # - 'zoom_blur'
+        # - 'snow'
+        # - 'frost'
+        # - 'fog'
+        # - 'brightness'
+        # - 'contrast'
+        # - 'elastic_transform'
+        # - 'pixelate'
+        # - 'jpeg_compression'
+    noise = 'jpeg_compression'
     # --- 1. Tải ảnh gốc ---
     try:
         df = pd.read_csv(csv_path)
@@ -49,30 +64,6 @@ def visualize_snow_corruption(csv_path, image_root, image_col, sample_idx, sever
     original_tensor = base_transform(original_pil_image)
     corrupted_tensor = apply_corruption(original_tensor, noise, 5)
 
-    # # --- 3. Áp dụng nhiễu và lưu lại các bước trung gian ---
-    # # Tái tạo lại logic bên trong hàm snow để có thể visualize mask
-    # alpha_levels = [0, 0.1, 0.15, 0.2, 0.3, 0.4] 
-    # blur_sev_levels = [0, 0.4, 0.6, 0.7, 0.8, 1.0]
-    # brightness_levels = [1.0, 1.8, 2.7, 3.6, 4.5, 5.5]
-    
-    # alpha = _linear_interpolate(severity, alpha_levels)
-    # blur_sev = _linear_interpolate(severity, blur_sev_levels)
-    # brightness_factor = _linear_interpolate(severity, brightness_levels)
-
-    # c, h, w = original_tensor.shape
-    # snow_pattern_1ch = torch.rand(1, h, w, device=original_tensor.device)
-    # snow_pattern_3ch = snow_pattern_1ch.repeat(c, 1, 1)
-    
-    # motion_blur_severity = blur_sev * 4 + 1
-    # snow_pattern_blurred = motion_blur(snow_pattern_3ch, severity=motion_blur_severity)
-    
-    # snow_mask = (snow_pattern_blurred - snow_pattern_blurred.min()) / (snow_pattern_blurred.max() - snow_pattern_blurred.min() + 1e-6)
-    
-    # snow_layer = torch.ones_like(original_tensor) * brightness_factor
-    
-    # corrupted_tensor = original_tensor * (1 - snow_mask * alpha) + snow_layer * snow_mask * alpha
-    # corrupted_tensor = torch.clamp(corrupted_tensor, 0, 1)
-    
     # --- 4. In thông số ---
     print("\n--- Phân tích Tensor (phạm vi [0, 1]) ---")
     print(f"Ảnh gốc:      Min={original_tensor.min():.4f}, Max={original_tensor.max():.4f}, Mean={original_tensor.mean():.4f}")
