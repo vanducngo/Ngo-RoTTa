@@ -1,0 +1,58 @@
+# configs/eval_chexpert_c.yaml
+
+# Đường dẫn đến checkpoint của mô hình ResNet-18 đã fine-tune trên CheXpert
+CKPT_DIR: "./ckpt/Resnet18_60_no_dropout_aug19_12h00.pth" 
+MODEL:
+  ARCH: 'resnet18' # Hoặc kiến trúc bạn đã dùng
+  NUM_CLASSES: 5  # Số lớp của mô hình
+
+DATASET:
+  NAME: 'CXR'
+  CHEXPERT_PATH: "/home/ngoto/Working/Data/CheXpert-v1.0-small"
+  CHEXPERT_CSV: 'valid_final.csv'
+  CHEXPERT_IMAGE_DIR: 'images'
+
+  # SOURCE_DOMAIN:
+  #   PATH: "/path/to/your/chexpert/test_data_folder"
+  #   CSV: "chexpert_test_reordered.csv"
+  #   IMAGE_DIR: "" # CheXpert thường có đường dẫn đầy đủ trong CSV
+
+  # Danh sách 15 loại nhiễu để tạo CheXpert-C
+  TEST_CORRUPTIONS:
+    - 'gaussian_noise'
+    - 'shot_noise'
+    - 'impulse_noise'
+    - 'defocus_blur'
+    - 'glass_blur'
+    - 'motion_blur'
+    - 'zoom_blur'
+    - 'snow'
+    - 'frost'
+    - 'fog'
+    - 'brightness'
+    - 'contrast'
+    - 'elastic_transform'
+    - 'pixelate'
+    - 'jpeg_compression'
+  SEVERITY: 5.0
+
+  # Danh sách 5 nhãn mà mô hình đã được huấn luyện
+  LABELS_LIST: 
+    - 'Atelectasis'
+    - 'Cardiomegaly'
+    - 'Consolidation'
+    - 'Pleural Effusion'
+    - 'Pneumothorax'
+
+INPUT:
+  SIZE: [224, 224]
+  PIXEL_MEAN: [0.485, 0.456, 0.406]
+  PIXEL_STD: [0.229, 0.224, 0.225]
+
+TEST:
+  BATCH_SIZE: 64
+
+LOADER:
+  NUM_WORKS: 4
+
+SEED: 42
