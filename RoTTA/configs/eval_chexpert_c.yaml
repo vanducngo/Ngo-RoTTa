@@ -19,21 +19,21 @@ DATASET:
 
   # Danh sách 15 loại nhiễu để tạo CheXpert-C
   TEST_CORRUPTIONS:
-    - 'gaussian_noise'
-    - 'shot_noise'
-    - 'impulse_noise'
-    - 'defocus_blur'
-    - 'glass_blur'
-    - 'motion_blur'
-    - 'zoom_blur'
-    - 'snow'
-    - 'frost'
-    - 'fog'
-    - 'brightness'
-    - 'contrast'
-    - 'elastic_transform'
-    - 'pixelate'
-    - 'jpeg_compression'
+    # - 'gaussian_noise'
+    # - 'shot_noise'
+    # - 'impulse_noise'
+    # - 'defocus_blur'
+    # - 'glass_blur'
+    # - 'motion_blur'
+    # - 'zoom_blur'
+    # - 'snow'
+    # - 'frost'
+    # - 'fog'
+    # - 'brightness'
+    # - 'contrast'
+    # - 'elastic_transform'
+    # - 'pixelate'
+    # - 'jpeg_compression'
   SEVERITY: 5.0
 
   # Danh sách 5 nhãn mà mô hình đã được huấn luyện

@@ -91,42 +91,23 @@ def impulse_noise(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tens
     return out
 
 def elastic_transform(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
-    """
-    Áp dụng biến dạng đàn hồi với các tham số đã được điều chỉnh để có hiệu ứng rõ rệt hơn.
-    """
-    # --- THAM SỐ ĐÃ ĐƯỢC ĐIỀU CHỈNH ---
-    # Giữ alpha cao, nhưng giảm mạnh sigma để tăng biến dạng cục bộ
-    c_alpha = [0, 30, 45, 60, 75, 90]      # Cường độ dịch chuyển (pixel)
-    c_sigma = [0, 3.5, 4.0, 4.5, 5.0, 5.5] # Độ "mịn" của trường dịch chuyển (giảm từ 8.0)
-    # --- KẾT THÚC ĐIỀU CHỈNH ---
-    
+    c_alpha = [0, 244, 16, 24, 32, 40] 
+    c_sigma = [0, 4, 5, 6, 7, 8]
     alpha = _linear_interpolate(severity, c_alpha)
     sigma = _linear_interpolate(severity, c_sigma)
-    if alpha == 0: 
-        return image_tensor
-
-    # Chuyển sang numpy để xử lý với scipy
+    if alpha == 0: return image_tensor
+    
     image_np = image_tensor.permute(1, 2, 0).numpy()
     shape = image_np.shape
     
-    # Tạo trường dịch chuyển ngẫu nhiên
-    random_state = np.random.RandomState(None)
-    noise_x = random_state.rand(*shape) * 2 - 1
-    noise_y = random_state.rand(*shape) * 2 - 1
-
-    dx = scipy_gaussian_filter(noise_x, sigma, mode="reflect") * alpha
-    dy = scipy_gaussian_filter(noise_y, sigma, mode="reflect") * alpha
+    dx = scipy_gaussian_filter((np.random.rand(*shape) * 2 - 1), sigma) * alpha
+    dy = scipy_gaussian_filter((np.random.rand(*shape) * 2 - 1), sigma) * alpha
     dz = np.zeros_like(dx)
 
-    # Tạo lưới tọa độ và áp dụng trường dịch chuyển
-    y, x, z = np.meshgrid(np.arange(shape[0]), np.arange(shape[1]), np.arange(shape[2]), indexing='ij')
-    indices = (np.reshape(y + dy, (-1, 1)), 
-               np.reshape(x + dx, (-1, 1)), 
-               np.reshape(z, (-1, 1)))
-
-    # Áp dụng biến dạng
-    distorted_np = map_coordinates(image_np, indices, order=1, mode='reflect').reshape(shape)
+    x, y, z = np.meshgrid(np.arange(shape[1]), np.arange(shape[0]), np.arange(shape[2]))
+    indices = np.reshape(y+dy, (-1, 1)), np.reshape(x+dx, (-1, 1)), np.reshape(z+dz, (-1, 1))
     
+    distorted_np = map_coordinates(image_np, indices, order=1, mode='reflect').reshape(shape)
     return torch.from_numpy(distorted_np).permute(2, 0, 1)
 
 def motion_blur(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
@@ -269,12 +250,17 @@ def snow(image_tensor: torch.Tensor, severity: float = 1) -> torch.Tensor:
 
     c, h, w = image_tensor.shape
     
+    # --- SỬA LỖI: TẠO NHIỄU TRẮNG ---
+    # 1. Tạo nhiễu cho 1 kênh duy nhất
     snow_pattern_1ch = (torch.rand(1, h, w, device=image_tensor.device) > flake_threshold).float()
     
+    # 2. Làm mờ kênh duy nhất đó
     if blur_sigma > 0:
         snow_pattern_1ch = _apply_gaussian_blur(snow_pattern_1ch, sigma=blur_sigma)
 
+    # 3. Lặp lại (repeat) kênh đã mờ cho cả 3 kênh màu
     snow_mask = snow_pattern_1ch.repeat(c, 1, 1)
+    # --- KẾT THÚC SỬA LỖI ---
     
     snow_mask = (snow_mask - snow_mask.min()) / (snow_mask.max() - snow_mask.min() + 1e-6)
     snow_layer = torch.ones_like(image_tensor)

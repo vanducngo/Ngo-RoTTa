@@ -262,22 +262,27 @@ def testTimeAdaptationMultiLabel(cfg):
 
         # End of an epoch: compute and log the results
         processor.calculate()
-        epoch_auc = processor.results.get('mean_auc', 0.0)
+        # epoch_auc = processor.results.get('mean_auc', 0.0)
         
-        logger.info(f"--- Epoch {epoch} Final Results ---\n{processor.info()}")
-        print(f"\n--- Epoch {epoch} Final Results ---\n{processor.info()}")
+        # logger.info(f"--- Epoch {epoch} Final Results ---\n{processor.info()}")
+        # print(f"\n--- Epoch {epoch} Final Results ---\n{processor.info()}")
 
-        # Save the best model based on the epoch's AUC
-        if epoch_auc > best_auc:
-            best_auc = epoch_auc
-            best_model_state = {
-                'student': copy.deepcopy(tta_model.model.state_dict()),
-                'teacher': copy.deepcopy(tta_model.model_ema.state_dict()) if hasattr(tta_model, 'model_ema') else None
-            }
-            logger.info(f"New best AUC found: {best_auc:.4f}. Saving model state for epoch {epoch}.")
+        print("\n" + "="*50)
+        print("PTTA RESULTS")
+        print("="*50)
+        print(processor.info())
 
-    logger.info(f"=========== TTA Finished ===========")
-    logger.info(f"Best Mean AUC achieved across {num_epochs} epochs: {best_auc:.4f}")
+    #     # Save the best model based on the epoch's AUC
+    #     if epoch_auc > best_auc:
+    #         best_auc = epoch_auc
+    #         best_model_state = {
+    #             'student': copy.deepcopy(tta_model.model.state_dict()),
+    #             'teacher': copy.deepcopy(tta_model.model_ema.state_dict()) if hasattr(tta_model, 'model_ema') else None
+    #         }
+    #         logger.info(f"New best AUC found: {best_auc:.4f}. Saving model state for epoch {epoch}.")
+
+    # logger.info(f"=========== TTA Finished ===========")
+    # logger.info(f"Best Mean AUC achieved across {num_epochs} epochs: {best_auc:.4f}")
     
     # if best_model_state and cfg.OUTPUT_DIR:
     #     save_path = os.path.join(cfg.OUTPUT_DIR, "best_tta_model.pth")

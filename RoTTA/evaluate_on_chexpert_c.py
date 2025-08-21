@@ -80,7 +80,7 @@ class CheXpertCorruptionDataset(Dataset):
         
         labels = torch.tensor(row[self.labels_list].values.astype('float'), dtype=torch.float32)
         
-        return {'image': corrupted_tensor, 'label': labels}
+        return {'image': corrupted_tensor, 'label': labels, 'domain': corruption_name}
 
 # (collate_fn không đổi)
 def collate_fn_skip_none(batch):
@@ -118,7 +118,7 @@ def evaluate_zero_shot_on_chexpert_c(cfg):
     )
     
     # 3. Chuẩn bị processor và transform để Normalize
-    processor = AUCProcessor(num_classes=len(cfg.DATASET.LABELS_LIST))
+    processor = AUCProcessor(num_classes=len(cfg.DATASET.LABELS_LIST), class_names=cfg.DATASET.LABELS_LIST)
     normalize_transform = transforms.Normalize(mean=cfg.INPUT.PIXEL_MEAN, std=cfg.INPUT.PIXEL_STD)
 
     # 4. Chạy đánh giá
@@ -128,22 +128,22 @@ def evaluate_zero_shot_on_chexpert_c(cfg):
         for data_package in tbar:
             if not data_package['image'].numel(): continue
 
-            # Dữ liệu từ loader đã bị nhiễu, nhưng chưa normalize
-            images_corrupted_unnormalized = data_package['image'].to(device)
+            images_unnormalized = data_package['image'].to(device)
             labels = data_package['label'].to(device)
+            # Lấy thông tin domain (tên nhiễu) từ data_package
+            domains = data_package['domain'] 
             
-            # Normalize ngay trước khi đưa vào model
-            images = normalize_transform(images_corrupted_unnormalized)
-            
+            images = normalize_transform(images_unnormalized)
             logits = model(images)
             probabilities = torch.sigmoid(logits)
             
-            processor.process(probabilities.detach(), labels.detach(), ["chexpert-c"] * len(labels))
+            # Truyền danh sách domains vào processor
+            processor.process(probabilities.detach(), labels.detach(), domains)
 
-    # 5. In kết quả
+    # In kết quả
     processor.calculate()
     print("\n" + "="*50)
-    print("ZERO-SHOT RESULTS ON CheXpert-C")
+    print("ZERO-SHOT RESULTS ON CheXpert-C (Per Corruption)")
     print("="*50)
     print(processor.info())
 
