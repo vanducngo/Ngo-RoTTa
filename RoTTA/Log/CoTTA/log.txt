@@ -489,3 +489,13 @@ TEST:
 2025-08-20 20:22:30,994 TTA-ML INFO: Model and TTA adapter initialized.
 2025-08-20 20:22:30,994 TTA-ML INFO: =========== Starting TTA Epoch 1/1 ===========
 2025-08-20 20:22:30,995 TTA-ML INFO: Running in 'corruption' adaptation mode for this epoch.
+2025-08-21 07:41:29,669 TTA-ML INFO: --- Epoch 1 Final Results ---
+- Mean AUC: 0.6449
+- Atelectasis      : 0.6113
+- Cardiomegaly     : 0.6984
+- Consolidation    : 0.5825
+- Pleural Effusion : 0.6802
+- Pneumothorax     : 0.6518
+2025-08-21 07:41:29,682 TTA-ML INFO: New best AUC found: 0.6449. Saving model state for epoch 1.
+2025-08-21 07:41:29,682 TTA-ML INFO: =========== TTA Finished ===========
+2025-08-21 07:41:29,682 TTA-ML INFO: Best Mean AUC achieved across 1 epochs: 0.6449

@@ -90,6 +90,13 @@
     - Pleural Effusion : 0.6843
     - Pneumothorax     : 0.6740
 - CoTTA
+    - Mean AUC: 0.6449
+    - Atelectasis      : 0.6113
+    - Cardiomegaly     : 0.6984
+    - Consolidation    : 0.5825
+    - Pleural Effusion : 0.6802
+    - Pneumothorax     : 0.6518
+
 
 
 4. Kịch bản Add lần lươt 15 loại nhiễu trên từng batch của dữ liệu với Severity 5.00
