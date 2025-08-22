@@ -1535,3 +1535,5 @@ TEST:
 2025-08-22 12:01:32,893 TTA-ML INFO: Model and TTA adapter initialized.
 2025-08-22 12:01:32,893 TTA-ML INFO: =========== Starting TTA Epoch 1/1 ===========
 2025-08-22 12:01:32,893 TTA-ML INFO: Running in 'corruption' adaptation mode for this epoch.
+2025-08-22 12:10:39,858 TTA-ML INFO: =========== TTA Finished ===========
+2025-08-22 12:10:39,859 TTA-ML INFO: Best Mean AUC achieved across 1 epochs: 0.0000
