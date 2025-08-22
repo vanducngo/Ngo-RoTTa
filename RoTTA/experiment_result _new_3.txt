@@ -390,3 +390,48 @@ Results for Domain: elastic_transform ---
 ==================================================
 OVERALL MEAN AUC (avg of per-corruption AUCs): 0.6782
 ==================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--- Analyzing Distribution for Each Corruption Type ---
+Base Dataset: NIH-14
+Severity Level: 5.0
+Loading clean data from: /home/ngoto/Working/Data/MixData/nih_14_structured/validate_reordered.csv
+Initialized clean dataset with 29390 samples.
+
+Calculating stats for CLEAN data...
+                                                                                                                                                                                                                                        
+--- Distribution Stats per Corruption Type ---
+       Corruption   Mean    Std
+     Clean (Base) 0.4885 0.2473
+elastic_transform 0.4885 0.2468
+         contrast 0.4885 0.0950
+             snow 0.5249 0.2348
+         pixelate 0.4874 0.2472
+     defocus_blur 0.4828 0.2421
+      motion_blur 0.4814 0.2385
+        zoom_blur 0.3496 0.2738
+       brightness 0.8922 0.1562
+   gaussian_noise 0.4909 0.2594
+ jpeg_compression 0.4855 0.2695
+       glass_blur 0.4847 0.2392
+       shot_noise 0.4883 0.5366
+              fog 0.4949 0.1339
+            frost 0.4207 0.1782
+    impulse_noise 0.4888 0.2655
