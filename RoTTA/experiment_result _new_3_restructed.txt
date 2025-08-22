@@ -1,0 +1,141 @@
+Base domain, CheXpert TEST dataset
+- Base (Source Domain):
+    - Mean AUC: 0.7873
+    - Atelectasis: 0.6872
+    - Cardiomegaly': 0.8608
+    - Consolidation': 0.6840
+    - Pleural Effusion': 0.8458
+    - Pneumothorax': 0.8588
+
+1. Kịch bản TTA với NIH Clean Data
+- ZeroShot:
+    - Mean AUC: 0.7262
+    - Atelectasis      : 0.6840
+    - Cardiomegaly     : 0.8180
+    - Consolidation    : 0.6004
+    - Pleural Effusion : 0.7570
+    - Pneumothorax     : 0.7718
+- ZeroShot:
+    - Mean AUC: 0.7262
+    - Atelectasis      : 0.6840
+    - Cardiomegaly     : 0.8180
+    - Consolidation    : 0.6004
+    - Pleural Effusion : 0.7570
+    - Pneumothorax     : 0.7718
+- Rotta (Target Domain) - Trainable BatchNorm and FC (Classifier)
+    - Mean AUC: 0.7500
+    - Atelectasis      : 0.7002
+    - Cardiomegaly     : 0.8513
+    - Consolidation    : 0.6139
+    - Pleural Effusion : 0.7771
+    - Pneumothorax     : 0.8074
+- Rotta (Target Domain) - Trainable BatchNorm only
+    - Mean AUC: 0.7489
+    - Atelectasis      : 0.6992
+    - Cardiomegaly     : 0.8493
+    - Consolidation    : 0.6129
+    - Pleural Effusion : 0.7758
+    - Pneumothorax     : 0.8073
+- Tent
+    - Mean AUC: 0.6704
+    - Atelectasis      : 0.6102
+    - Cardiomegaly     : 0.7797
+    - Consolidation    : 0.5585
+    - Pleural Effusion : 0.7070
+    - Pneumothorax     : 0.6965
+- Norm
+    - Mean AUC: 0.7262
+    - Atelectasis      : 0.6840
+    - Cardiomegaly     : 0.8180
+    - Consolidation    : 0.6004
+    - Pleural Effusion : 0.7570
+    - Pneumothorax     : 0.7718
+- CoTTA
+    - Mean AUC: 0.7256
+    - Atelectasis      : 0.6850
+    - Cardiomegaly     : 0.8070
+    - Consolidation    : 0.6169
+    - Pleural Effusion : 0.7556
+    - Pneumothorax     : 0.7634
+
+2. Kịch bản NIH-C for Severity = 5, apply từng loại nhiễu trên toàn bộ data
+- ZERO_SHOT
+      - elastic_transform: Mean AUC: 0.7100
+      - contrast: Mean AUC: 0.7152
+      - snow: Mean AUC: 0.6765
+      - pixelate: Mean AUC: 0.7083
+      - defocus_blur: Mean AUC: 0.6852
+      - motion_blur: Mean AUC: 0.6559
+      - zoom_blur: Mean AUC: 0.6271
+      - brightness: Mean AUC: 0.6567
+      - gaussian_noise: Mean AUC: 0.6362
+      - jpeg_compression: Mean AUC: 0.5959
+      - glass_blur: Mean AUC: 0.6415
+      - shot_noise: Mean AUC: 0.5525
+      - fog: Mean AUC: 0.5744
+      - frost: Mean AUC: 0.6469
+      - impulse_noise: Mean AUC: 0.6030
+      - OVERALL MEAN AUC (avg of per-corruption AUCs): 0.6457
+- RoTTA (WiTH BN + FC)
+      - elastic_transform: Mean AUC: 0.7323
+      - contrast: Mean AUC: 0.7390
+      - snow: Mean AUC: 0.7128
+      - pixelate: Mean AUC: 0.7308
+      - defocus_blur: Mean AUC: 0.7126
+      - motion_blur: Mean AUC: 0.6916
+      - zoom_blur: Mean AUC: 0.6691
+      - brightness: Mean AUC: 0.6832
+      - gaussian_noise: Mean AUC: 0.6757
+      - jpeg_compression: Mean AUC: 0.6536
+      - glass_blur: Mean AUC: 0.6612
+      - shot_noise: Mean AUC: 0.6280
+      - fog: Mean AUC: 0.5979
+      - frost: Mean AUC: 0.6651
+      - impulse_noise: Mean AUC: 0.6536
+      - OVERALL MEAN AUC (avg of per-corruption AUCs): 0.6804
+- RoTTA (WiTH BN)
+      - elastic_transform: Mean AUC: 0.7305
+      - contrast: Mean AUC: 0.7372
+      - snow: Mean AUC: 0.7111
+      - pixelate: Mean AUC: 0.7320
+      - defocus_blur: Mean AUC: 0.7083
+      - motion_blur: Mean AUC: 0.6912
+      - zoom_blur: Mean AUC: 0.6602
+      - brightness: Mean AUC: 0.6870
+      - gaussian_noise: Mean AUC: 0.6679
+      - jpeg_compression: Mean AUC: 0.6593
+      - glass_blur: Mean AUC: 0.6627
+      - shot_noise: Mean AUC: 0.6227
+      - fog: Mean AUC: 0.5985
+      - frost: Mean AUC: 0.6578
+      - impulse_noise: Mean AUC: 0.6465
+      - OVERALL MEAN AUC (avg of per-corruption AUCs): 0.6782
+- TENT
+      - elastic_transform: Mean AUC: 0.6504
+      - contrast: Mean AUC: 0.5639
+      - snow: Mean AUC: 0.5386
+      - pixelate: Mean AUC: 0.5199
+      - defocus_blur: Mean AUC: 0.5060
+      - motion_blur: Mean AUC: 0.5033
+      - zoom_blur: Mean AUC: 0.5041
+      - brightness: Mean AUC: 0.5113
+      - gaussian_noise: Mean AUC: 0.4985
+      - jpeg_compression: Mean AUC: 0.4939
+      - glass_blur: Mean AUC: 0.4934
+      - shot_noise: Mean AUC: 0.4907
+      - fog: Mean AUC: 0.4991
+      - frost: Mean AUC: 0.4918
+      - impulse_noise
+      - OVERALL MEAN AUC (avg of per-corruption AUCs): 0.5171
+- Norm:
+- CoTTA:
+
+
+
+3. Kịch bản NIH-C for Severity = 5, apply từng loại nhiễu lần lượt trên từng batch - Fast Domain Changes
+- ZeroShot:
+- RoTTA (WiTH BN + FC)
+- RoTTA (WiTH BN)
+- TENT
+- Norm:
+- CoTTA:
