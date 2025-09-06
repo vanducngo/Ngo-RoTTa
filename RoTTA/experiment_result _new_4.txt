@@ -1,0 +1,263 @@
+2. Kịch bản NIH-C for Severity = 5, apply từng loại nhiễu trên toàn bộ data
+- ZERO_SHOT
+    --- Results for Domain: motion_blur ---
+    - Mean AUC: 0.6557
+    - auc/Atelectasis: 0.6166
+    - auc/Cardiomegaly: 0.7108
+    - auc/Consolidation: 0.5959
+    - auc/Pleural Effusion: 0.6969
+    - auc/Pneumothorax: 0.6584
+
+    --- Results for Domain: snow ---
+    - Mean AUC: 0.6770
+    - auc/Atelectasis: 0.6394
+    - auc/Cardiomegaly: 0.7713
+    - auc/Consolidation: 0.5509
+    - auc/Pleural Effusion: 0.6979
+    - auc/Pneumothorax: 0.7256
+
+    --- Results for Domain: fog ---
+    - Mean AUC: 0.5765
+    - auc/Atelectasis: 0.5659
+    - auc/Cardiomegaly: 0.5981
+    - auc/Consolidation: 0.5167
+    - auc/Pleural Effusion: 0.6012
+    - auc/Pneumothorax: 0.6007
+
+    --- Results for Domain: shot_noise ---
+    - Mean AUC: 0.5537
+    - auc/Atelectasis: 0.5423
+    - auc/Cardiomegaly: 0.5889
+    - auc/Consolidation: 0.5360
+    - auc/Pleural Effusion: 0.5570
+    - auc/Pneumothorax: 0.5445
+
+    --- Results for Domain: defocus_blur ---
+    - Mean AUC: 0.6851
+    - auc/Atelectasis: 0.6494
+    - auc/Cardiomegaly: 0.7724
+    - auc/Consolidation: 0.5767
+    - auc/Pleural Effusion: 0.7234
+    - auc/Pneumothorax: 0.7036
+
+    --- Results for Domain: contrast ---
+    - Mean AUC: 0.7154
+    - auc/Atelectasis: 0.6743
+    - auc/Cardiomegaly: 0.8033
+    - auc/Consolidation: 0.5949
+    - auc/Pleural Effusion: 0.7478
+    - auc/Pneumothorax: 0.7567
+
+    --- Results for Domain: zoom_blur ---
+    - Mean AUC: 0.6269
+    - auc/Atelectasis: 0.6297
+    - auc/Cardiomegaly: 0.6171
+    - auc/Consolidation: 0.5289
+    - auc/Pleural Effusion: 0.7017
+    - auc/Pneumothorax: 0.6571
+
+    --- Results for Domain: brightness ---
+    - Mean AUC: 0.6567
+    - auc/Atelectasis: 0.6205
+    - auc/Cardiomegaly: 0.7248
+    - auc/Consolidation: 0.5633
+    - auc/Pleural Effusion: 0.6581
+    - auc/Pneumothorax: 0.7165
+
+    --- Results for Domain: frost ---
+    - Mean AUC: 0.6450
+    - auc/Atelectasis: 0.6067
+    - auc/Cardiomegaly: 0.7240
+    - auc/Consolidation: 0.5559
+    - auc/Pleural Effusion: 0.6678
+    - auc/Pneumothorax: 0.6705
+
+    --- Results for Domain: elastic_transform ---
+    - Mean AUC: 0.7091
+    - auc/Atelectasis: 0.6677
+    - auc/Cardiomegaly: 0.7952
+    - auc/Consolidation: 0.5921
+    - auc/Pleural Effusion: 0.7387
+    - auc/Pneumothorax: 0.7518
+
+    --- Results for Domain: glass_blur ---
+    - Mean AUC: 0.6407
+    - auc/Atelectasis: 0.6148
+    - auc/Cardiomegaly: 0.7000
+    - auc/Consolidation: 0.5770
+    - auc/Pleural Effusion: 0.6660
+    - auc/Pneumothorax: 0.6456
+
+    --- Results for Domain: gaussian_noise ---
+    - Mean AUC: 0.6350
+    - auc/Atelectasis: 0.5985
+    - auc/Cardiomegaly: 0.7313
+    - auc/Consolidation: 0.5454
+    - auc/Pleural Effusion: 0.6722
+    - auc/Pneumothorax: 0.6274
+
+    --- Results for Domain: pixelate ---
+    - Mean AUC: 0.7078
+    - auc/Atelectasis: 0.6721
+    - auc/Cardiomegaly: 0.7743
+    - auc/Consolidation: 0.6021
+    - auc/Pleural Effusion: 0.7444
+    - auc/Pneumothorax: 0.7462
+
+    --- Results for Domain: jpeg_compression ---
+    - Mean AUC: 0.5956
+    - auc/Atelectasis: 0.5784
+    - auc/Cardiomegaly: 0.6358
+    - auc/Consolidation: 0.5304
+    - auc/Pleural Effusion: 0.6130
+    - auc/Pneumothorax: 0.6202
+
+    --- Results for Domain: impulse_noise ---
+    - Mean AUC: 0.6010
+    - auc/Atelectasis: 0.5906
+    - auc/Cardiomegaly: 0.6771
+    - auc/Consolidation: 0.5324
+    - auc/Pleural Effusion: 0.6188
+    - auc/Pneumothorax: 0.5861
+
+    ==================================================
+    OVERALL MEAN AUC (avg of per-corruption AUCs): 0.6454
+- RoTTA (WiTH BN + FC)
+- RoTTA (WiTH BN)
+- TENT
+- Norm:
+- CoTTA:
+    --- Results for Domain: motion_blur ---
+    - Mean AUC: 0.6592
+    - auc/Atelectasis: 0.6255
+    - auc/Cardiomegaly: 0.7135
+    - auc/Consolidation: 0.6090
+    - auc/Pleural Effusion: 0.6973
+    - auc/Pneumothorax: 0.6507
+
+    --- Results for Domain: snow ---
+    - Mean AUC: 0.6832
+    - auc/Atelectasis: 0.6406
+    - auc/Cardiomegaly: 0.7524
+    - auc/Consolidation: 0.5959
+    - auc/Pleural Effusion: 0.7060
+    - auc/Pneumothorax: 0.7210
+
+    --- Results for Domain: fog ---
+    - Mean AUC: 0.5792
+    - auc/Atelectasis: 0.5657
+    - auc/Cardiomegaly: 0.5969
+    - auc/Consolidation: 0.5535
+    - auc/Pleural Effusion: 0.5929
+    - auc/Pneumothorax: 0.5868
+
+    --- Results for Domain: shot_noise ---
+    - Mean AUC: 0.5731
+    - auc/Atelectasis: 0.5480
+    - auc/Cardiomegaly: 0.6243
+    - auc/Consolidation: 0.5737
+    - auc/Pleural Effusion: 0.5726
+    - auc/Pneumothorax: 0.5470
+
+    --- Results for Domain: defocus_blur ---
+    - Mean AUC: 0.6822
+    - auc/Atelectasis: 0.6450
+    - auc/Cardiomegaly: 0.7552
+    - auc/Consolidation: 0.5956
+    - auc/Pleural Effusion: 0.7219
+    - auc/Pneumothorax: 0.6932
+
+    --- Results for Domain: contrast ---
+    - Mean AUC: 0.6987
+    - auc/Atelectasis: 0.6655
+    - auc/Cardiomegaly: 0.7672
+    - auc/Consolidation: 0.5985
+    - auc/Pleural Effusion: 0.7416
+    - auc/Pneumothorax: 0.7207
+
+    --- Results for Domain: zoom_blur ---
+    - Mean AUC: 0.6265
+    - auc/Atelectasis: 0.6159
+    - auc/Cardiomegaly: 0.6195
+    - auc/Consolidation: 0.5572
+    - auc/Pleural Effusion: 0.6973
+    - auc/Pneumothorax: 0.6424
+
+    --- Results for Domain: brightness ---
+    - Mean AUC: 0.6302
+    - auc/Atelectasis: 0.5933
+    - auc/Cardiomegaly: 0.6804
+    - auc/Consolidation: 0.5648
+    - auc/Pleural Effusion: 0.6235
+    - auc/Pneumothorax: 0.6889
+
+    --- Results for Domain: frost ---
+    - Mean AUC: 0.6233
+    - auc/Atelectasis: 0.5726
+    - auc/Cardiomegaly: 0.6991
+    - auc/Consolidation: 0.5597
+    - auc/Pleural Effusion: 0.6517
+    - auc/Pneumothorax: 0.6333
+
+    --- Results for Domain: elastic_transform ---
+    - Mean AUC: 0.6847
+    - auc/Atelectasis: 0.6433
+    - auc/Cardiomegaly: 0.7385
+    - auc/Consolidation: 0.5993
+    - auc/Pleural Effusion: 0.7270
+    - auc/Pneumothorax: 0.7156
+
+    --- Results for Domain: glass_blur ---
+    - Mean AUC: 0.6261
+    - auc/Atelectasis: 0.5963
+    - auc/Cardiomegaly: 0.6677
+    - auc/Consolidation: 0.5921
+    - auc/Pleural Effusion: 0.6547
+    - auc/Pneumothorax: 0.6197
+
+    --- Results for Domain: gaussian_noise ---
+    - Mean AUC: 0.6189
+    - auc/Atelectasis: 0.5746
+    - auc/Cardiomegaly: 0.7134
+    - auc/Consolidation: 0.5675
+    - auc/Pleural Effusion: 0.6614
+    - auc/Pneumothorax: 0.5776
+
+    --- Results for Domain: pixelate ---
+    - Mean AUC: 0.6847
+    - auc/Atelectasis: 0.6482
+    - auc/Cardiomegaly: 0.7187
+    - auc/Consolidation: 0.6099
+    - auc/Pleural Effusion: 0.7337
+    - auc/Pneumothorax: 0.7130
+
+    --- Results for Domain: jpeg_compression ---
+    - Mean AUC: 0.5894
+    - auc/Atelectasis: 0.5612
+    - auc/Cardiomegaly: 0.6264
+    - auc/Consolidation: 0.5479
+    - auc/Pleural Effusion: 0.6102
+    - auc/Pneumothorax: 0.6013
+
+    --- Results for Domain: impulse_noise ---
+    - Mean AUC: 0.6024
+    - auc/Atelectasis: 0.5609
+    - auc/Cardiomegaly: 0.6821
+    - auc/Consolidation: 0.5539
+    - auc/Pleural Effusion: 0.6409
+    - auc/Pneumothorax: 0.5742
+
+    ==================================================
+    OVERALL MEAN AUC (avg of per-corruption AUCs): 0.6375
+    ==================================================
+
+
+
+
+3. Kịch bản NIH-C for Severity = 5, apply từng loại nhiễu lần lượt trên từng batch - Fast Domain Changes
+- ZeroShot:
+- RoTTA (WiTH BN + FC)
+- RoTTA (WiTH BN)
+- TENT
+- Norm:
+- CoTTA:
