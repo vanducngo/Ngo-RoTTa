@@ -57,7 +57,7 @@ def visualize_multiple_corruptions(csv_path, image_root, image_col, sample_idx, 
 
     # --- 4. Hiển thị ảnh ---
     # Tạo một lưới 2x4 để chứa 1 ảnh gốc + 6 ảnh nhiễu
-    fig, axes = plt.subplots(2, 4, figsize=(20, 10))
+    fig, axes = plt.subplots(3, 3, figsize=(15, 15))
     axes = axes.flatten() # Chuyển mảng axes 2D thành 1D để dễ truy cập
 
     # Ảnh gốc (vị trí đầu tiên)
